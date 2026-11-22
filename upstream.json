@@ -1,0 +1,10 @@
+{
+  "cuaderno": {
+    "repository": "ArchaiosMagister/CuadernoTextosLatinos",
+    "commit": "fe722985b482c442fd94b854796b4d092bdebfed"
+  },
+  "examinator": {
+    "repository": "ArchaiosMagister/examinator2",
+    "commit": "7fecd1c2c52d2c4d67d997393615d69643e7a28d"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "Thesaurus Scriptorum Latinorum",
+  "short_name": "Thesaurus",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1ea",
+  "theme_color": "#1d5466",
+  "icons": [
+    {"src":"./modulos/cuaderno-integrado/examinator-cuadernos/icons/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"./modulos/cuaderno-integrado/examinator-cuadernos/icons/icon-512.png","sizes":"512x512","type":"image/png"},
+    {"src":"./modulos/cuaderno-integrado/examinator-cuadernos/icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}

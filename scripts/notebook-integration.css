@@ -1,0 +1,677 @@
+@media screen {
+  #btnCuadernoTheme,
+  body[data-atl-bank="true"] > header,
+  #editor > [hidden],
+  body[data-atl-bank="true"] > header .brand,
+  body[data-atl-bank="true"] > .cuaderno-header-more,
+  .cuaderno-home-pwa,
+  .cuaderno-header-more .cuaderno-pwa-controls,
+  body[data-atl-bank="true"] [data-atl-bank-overlay="false"],
+  body[data-atl-bank="false"] [data-atl-bank-overlay="true"] {
+    display: none !important;
+  }
+  body[data-atl-bank="true"] #lib { inset-block-start: 0; }
+
+  #editor .atl-bank {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  #editor .atl-bank .cuaderno-home-bank {
+    margin: 0;
+    background: var(--panel);
+    border-radius: 10px;
+    box-shadow: none;
+  }
+
+  #editor .atl-bank .cuaderno-bank-heading-copy h4 {
+    color: var(--accent);
+    font: 700 1.55rem/1.2 var(--text-font);
+  }
+
+  #editor .atl-bank .cuaderno-home-text-heading-info strong {
+    font-family: var(--text-font);
+    font-size: 1.15rem;
+  }
+
+  #editor .atl-bank .cuaderno-home-text-snippet {
+    font-style: italic;
+  }
+
+  #editor .atl-bank .cuaderno-bank-main-actions button {
+    min-height: 40px;
+  }
+}
+
+@media screen {
+  #editor .cuaderno-bank-toolbar {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  }
+
+  #editor .cuaderno-bank-search { grid-column: 1 / -1; }
+
+  .atl-grammar-filters, .atl-tag-group {
+    padding: .5rem .75rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+  }
+
+  .atl-grammar-filters summary { cursor: pointer; font-weight: 650; }
+  .atl-tag-groups { display: grid; gap: .5rem; margin-block-start: .5rem; }
+  .atl-tag-group .atl-tag-group { margin-block-start: .35rem; }
+  .atl-tag-option { display: flex; align-items: center; gap: .35rem; min-height: 38px; cursor: pointer; }
+
+  #editor .cuaderno-home-text-heading {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  #editor .atl-bank-card {
+    display: block;
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: .5rem .65rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: inherit;
+    background: transparent;
+    text-align: start;
+  }
+
+  #editor .atl-bank-card:hover, #editor .atl-bank-card:focus-visible {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .atl-bank-reader h3 { font: 700 1.45rem/1.2 var(--text-font); }
+  .atl-reader-nav, .atl-reader-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; }
+  .atl-reader-latin { font: 1.2rem/1.6 var(--text-font); white-space: pre-wrap; overflow-wrap: anywhere; }
+}
+
+@media screen {
+  #editor .atl-pending-tag { border: 1px dashed var(--accent); background: transparent; }
+}
+
+@media screen {
+  .atl-source-vocabulary { margin-block: .6rem; }
+  .atl-source-vocabulary summary { cursor: pointer; font-weight: 650; }
+  .atl-source-vocabulary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    align-items: end;
+    gap: .5rem;
+    margin-block: .5rem;
+  }
+  .atl-source-vocabulary-row label { display: grid; gap: .2rem; }
+}
+
+@media screen {
+  #editor .atl-bank-group { display: grid; gap: .45rem; border-top: 1px solid var(--rule); padding-block: .65rem; }
+  #editor .atl-bank-group h5 { color: var(--accent); }
+  #editor .atl-bank-work h6 {
+    margin: .15rem 0 .3rem;
+    color: var(--ink);
+    font: 700 1.12rem/1.25 var(--text-font);
+  }
+}
+
+@media screen {
+  .atl-bank-edit-actions,
+  .atl-duplicate-card-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  .atl-duplicate-group {
+    height: auto;
+    padding: .8rem;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    background: var(--paper);
+  }
+
+  .atl-duplicate-group > summary { cursor: pointer; }
+  .atl-duplicate-group[open] > summary { margin-bottom: .65rem; }
+  .atl-duplicate-next { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; }
+  .atl-duplicate-group h3 {
+    display: inline;
+    margin: 0;
+    color: var(--accent);
+  }
+  .cuaderno-duplicate-audit .cuaderno-duplicate-results { max-height: none; overflow: visible; }
+  .cuaderno-duplicate-audit .cuaderno-duplicate-controls :is(input, select) {
+    min-height: 40px;
+    padding-inline: .55rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--ink);
+    font-weight: 400;
+  }
+
+  .atl-duplicate-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: .6rem;
+  }
+
+  .atl-duplicate-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: .55rem;
+    min-width: 0;
+    padding: .65rem .75rem;
+    border: 1px solid var(--rule-2);
+    border-radius: 9px;
+    background: var(--paper-2);
+    overflow-wrap: anywhere;
+  }
+
+  .atl-duplicate-card > details > summary {
+    position: relative;
+    display: block;
+    padding-block: .2rem;
+    padding-inline-start: 1rem;
+    list-style: none;
+    cursor: pointer;
+  }
+  .atl-duplicate-card > details > summary::-webkit-details-marker { display: none; }
+  .atl-duplicate-card > details > summary::before { content: '▸'; position: absolute; inset-inline-start: 0; }
+  .atl-duplicate-card > details[open] > summary::before { content: '▾'; }
+  .atl-duplicate-card > details > summary > * { display: block; margin-block-end: .2rem; }
+  .atl-duplicate-card strong { font: 700 1.16rem/1.2 var(--text-font); }
+  .atl-duplicate-card i { font: italic 1rem/1.4 var(--text-font); color: var(--ink-2); }
+  .atl-duplicate-comparisons { display: grid; gap: .35rem; padding-block: .45rem; }
+  .atl-duplicate-card .cuaderno-duplicate-latin { font-family: var(--text-font); }
+  .atl-duplicate-card-footer { justify-content: space-between; border-top: 1px solid var(--rule-2); padding-top: .5rem; }
+  .atl-duplicate-card-footer button, .atl-bank-edit-actions button { min-height: 40px; }
+}
+
+@media screen {
+  .atl-duplicate-card > details:not([open]) > .atl-duplicate-opened,
+  .atl-duplicate-card > details[open] > summary > .atl-duplicate-excerpt {
+    display: none;
+  }
+
+  #editor .atl-edition-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: .35rem 0;
+  }
+
+  #editor .atl-edition-toolbar .btn {
+    padding-inline: .65rem;
+  }
+
+  #editor .edition-menu-questions {
+    display: grid;
+    gap: .6rem;
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  #editor .edition-option-advanced-body .edition-academic-option {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: start;
+    gap: .35rem .6rem;
+  }
+
+  #editor .edition-vocab-add {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  #editor .edition-vocab-add input {
+    flex: 1 1 8rem;
+    min-width: 0;
+  }
+}
+
+@media screen {
+  #editor .edition-vocab-entries .edition-vocab-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    align-items: center;
+  }
+
+  #editor .edition-menu-questions > .edition-vocab-entries {
+    display: grid;
+    min-width: 0;
+    gap: .45rem;
+    padding: .6rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--panel);
+    container-type: inline-size;
+  }
+}
+
+@container (max-width: 365px) {
+  #editor .edition-vocab-column-heads {
+    display: none;
+  }
+
+  #editor .edition-vocab-row {
+    grid-template-columns: 20px minmax(0, 1fr) 84px 28px;
+  }
+
+  #editor .edition-vocab-row .edition-vocab-headword { grid-area: 1 / 2 / 2 / -1; }
+  #editor .edition-vocab-row .edition-vocab-meaning { grid-area: 2 / 2 / 3 / -1; }
+  #editor .edition-vocab-row .edition-vocab-note { grid-area: 3 / 2; }
+  #editor .edition-vocab-row .edition-vocab-save { grid-area: 3 / 3; }
+  #editor .edition-vocab-row :is(.edition-vocab-remove, .edition-vocab-reset) { grid-area: 3 / 4; }
+}
+
+@media screen {
+  #editor .edition-menu-questions { gap: 0; }
+  #editor .edition-menu-questions .edition-vocab-entries.card { display: block; }
+  #editor .edition-menu-questions .edition-vocab-entries .vopts { gap: 6px; margin-bottom: 6px; }
+  #editor .edition-menu-questions .edition-vocab-entries .vrow { opacity: 1; }
+  #editor .edition-menu-questions .edition-vocab-entries .vrow .xbtn {
+    box-sizing: border-box;
+    width: 24px;
+    min-width: 24px;
+  }
+  #editor .edition-menu-questions .edition-vocab-entries :is(.edition-vocab-bulk, .edition-vocab-add) {
+    margin-top: 6px;
+  }
+  #editor .edition-menu-questions .edition-question-panel .q4b {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+  }
+  #editor .edition-menu-questions .qrow .edition-field-label { position: absolute; clip-path: inset(50%); }
+  #editor .edition-menu-questions .qrow .edition-field { flex: 1; margin: 0; }
+}
+
+@media screen {
+  #editor .edition-menu-questions .edition-vocab-entries .vrow .vsave {
+    width: 90px;
+    min-width: 90px;
+    max-width: 90px;
+  }
+}
+
+@container (max-width: 365px) {
+  #editor .edition-menu-questions .edition-vocab-entries .vrow {
+    grid-template-columns: 24px minmax(0, 1fr) 90px 25px !important;
+  }
+}
+
+@media screen {
+  #editor .edition-menu-questions .edition-vocab-add[hidden] { display: none; }
+  #editor .edition-menu-questions .edition-vocab-entries .vhint { margin-bottom: 6px; }
+}
+
+@media screen {
+  body[data-has-editor="true"] #editor { overflow-anchor: none; }
+  #editor .edition-menu-questions > .edition-menu-text.card {
+    display: block;
+    min-width: 0;
+  }
+}
+
+@media screen {
+  #editor .atl-bank {
+    max-width: 76rem;
+    margin-inline: auto;
+  }
+
+  #editor .atl-bank .cuaderno-home-bank {
+    padding: clamp(.8rem, 2.2vw, 1.5rem);
+  }
+
+  #editor .atl-bank .cuaderno-bank-main-actions {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .55rem;
+    padding-block: .5rem .8rem;
+    border-bottom: 1px solid var(--rule-2);
+  }
+
+  .atl-bank-action-group, .atl-bank-card-actions, .atl-bank-custom-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .45rem;
+  }
+
+  #editor .atl-bank .cuaderno-bank-toolbar,
+  .atl-bank-more-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    align-items: end;
+    gap: .65rem;
+  }
+
+  .atl-bank-more, .atl-grammar-filters, #editor .atl-bank .cuaderno-bank-bulk {
+    border: 1px solid var(--rule);
+    padding: .55rem .75rem;
+    border-radius: 8px;
+    background: var(--panel);
+  }
+
+  .atl-bank-more > summary, #editor .atl-bank .cuaderno-bank-bulk > summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 650;
+  }
+
+  .atl-bank-more-fields, .cuaderno-bank-bulk .atl-bank-action-group {
+    margin-top: .55rem;
+  }
+
+  .atl-bank-active-tags:empty { display: none; }
+
+  #editor .atl-bank .cuaderno-home-text {
+    border: 1px solid var(--rule-2);
+    background: var(--panel);
+    padding: .55rem;
+  }
+
+  #editor .atl-bank .cuaderno-home-text-heading {
+    align-items: flex-start;
+  }
+
+  #editor .atl-bank .cuaderno-home-text-heading-info strong {
+    color: var(--accent);
+    font: 700 1.25rem/1.2 var(--text-font);
+  }
+
+  #editor .atl-bank .cuaderno-bank-row-tags {
+    padding-inline: .65rem;
+    margin-block: .35rem .15rem;
+  }
+
+  .atl-bank-tag-chip, .atl-tag-option.grammar-chip,
+  .cuaderno-bank-current .grammar-chip, .atl-reader-tags .grammar-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .28rem .6rem;
+    border-radius: 999px;
+    min-height: 32px;
+    font: 650 .82rem/1.2 var(--ui-font);
+    white-space: normal;
+  }
+
+  .atl-bank-tag-chip { cursor: pointer; }
+  .atl-bank-tag-chip:hover, .atl-bank-tag-chip[aria-pressed="true"] {
+    outline: 1px solid currentColor;
+    outline-offset: 1px;
+  }
+
+  :is(.atl-bank, .cuaderno-bank-tag-editor, .atl-bank-reader) .grammar-chip[data-group="custom"] {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .atl-bank-tag-chip[data-group="custom"]::before,
+  .atl-reader-tags .grammar-chip[data-group="custom"]::before {
+    content: '';
+    width: .5em;
+    height: .5em;
+    flex: none;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .atl-tag-group > .atl-tag-option { margin: .25rem .25rem .25rem 0; }
+
+  .atl-create-tag {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .4rem;
+    align-items: center;
+    padding: .65rem;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    background: var(--panel);
+  }
+  .atl-create-tag > :is(strong, p) { grid-column: 1 / -1; }
+  .atl-create-tag > p { margin: 0; }
+  .atl-create-tag input {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: .45rem .65rem;
+    color: var(--ink);
+    background: var(--paper);
+  }
+}
+
+@media screen and (max-width: 550px) {
+  #editor .atl-bank .cuaderno-home-text-heading { flex-wrap: wrap; }
+  .atl-bank-card-actions { margin-inline: .65rem; }
+  .atl-create-tag { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media screen {
+  #editor .atl-bank .cuaderno-home-bank {
+    display: grid;
+    gap: .7rem;
+  }
+
+  .atl-bank-refinements {
+    display: grid;
+    align-items: start;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: .55rem;
+  }
+
+  .atl-bank-tag-shortcuts:empty { display: none; }
+  .atl-bank-results-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .55rem;
+  }
+
+  #editor .atl-bank .atl-bank-results-header > :is(.cuaderno-bank-result-count, .cuaderno-bank-bulk),
+  #editor .atl-bank .atl-bank-refinements > *,
+  #editor .atl-bank > .cuaderno-home-bank > * {
+    margin-block: 0;
+  }
+
+  #editor .atl-bank .cuaderno-bank-result-count { align-self: center; }
+  #editor .atl-bank .cuaderno-bank-bulk:not([open]) { width: auto; }
+}
+
+@media screen {
+  #editor .edition-menu-notebook {
+    display: grid;
+    gap: .6rem;
+    background: transparent;
+    padding: 0;
+    border: 0;
+  }
+
+  #editor .edition-menu-notebook > .card { margin: 0; }
+
+  #editor .atl-organize-list {
+    display: grid;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+
+  #editor .atl-organize-list > .atl-organize-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: .45rem .8rem;
+    padding: .65rem .15rem;
+    border: 0;
+    border-top: 1px solid var(--rule-2);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .atl-organize-info {
+    display: grid;
+    flex: 1 1 10rem;
+    min-width: 0;
+    gap: .2rem;
+  }
+
+  .atl-organize-open {
+    justify-self: start;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    text-align: start;
+    overflow-wrap: anywhere;
+    font: 700 1.05rem/1.25 var(--text-font);
+  }
+
+  .atl-organize-open:hover { text-decoration: underline; }
+  .atl-organize-row.is-current .atl-organize-open { text-decoration: underline; text-underline-offset: .18em; }
+
+  .atl-organize-controls, .atl-organize-order {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .35rem;
+  }
+
+  .atl-organize-position {
+    min-height: 32px;
+    padding: .25rem .4rem;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    color: var(--ink);
+    background: var(--paper);
+  }
+
+  .atl-organize-order button { min-width: 32px; }
+  .atl-organize-remove:hover { border-color: #a2324e; text-decoration: underline; }
+
+  .atl-organize-section > summary {
+    cursor: pointer;
+    color: var(--accent);
+    font-weight: 650;
+  }
+
+  .atl-organize-section-body { margin-top: .6rem; }
+}
+
+/* Examinator usa 600 px de edición en la vista de dos columnas. */
+@media screen and (min-width: 1101px) {
+  body[data-has-editor="true"] { --cuaderno-menu-width: 600px; }
+}
+
+@media screen and (max-width: 1100px) {
+  body[data-has-editor="true"] main#main { display: block; }
+  body[data-has-editor="true"] #editor {
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-right: 0;
+  }
+
+  body[data-has-editor="true"] #editor .edition-mobile-switch {
+    position: sticky;
+    top: 0;
+    z-index: 13;
+    display: flex !important;
+    gap: 8px;
+    padding: 4px 8px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  #editor .edition-mobile-switch > button { flex: 1 1 0; }
+  #editor .edition-mobile-switch ~ .edition-layout .edition-preview-stack {
+    position: static;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 10px;
+  }
+
+  #editor .edition-mobile-switch ~ .edition-layout { display: flex !important; flex-direction: column; }
+  #editor .edition-layout:has(> .edition-settings:not(.edition-mobile-hidden)) .edition-preview-stack {
+    order: -1;
+    padding: 0;
+    background: transparent;
+  }
+  #editor .edition-layout:has(> .edition-settings:not(.edition-mobile-hidden)) .edition-preview-stack > .edition-preview,
+  #editor .edition-layout > .edition-settings.edition-mobile-hidden,
+  #editor:has(.edition-settings.edition-mobile-hidden) > .cuaderno-editor-overview,
+  #editor:has(.edition-settings.edition-mobile-hidden) .atl-edition-toolbar {
+    display: none !important;
+  }
+}
+
+@media screen {
+  #editor .cuaderno-editor-overview {
+    display: grid;
+    gap: .55rem;
+    padding: .7rem .8rem;
+  }
+
+  #editor .cuaderno-editor-overview .cuaderno-context-top {
+    padding: 0;
+    border: 0;
+    align-items: center;
+  }
+
+  #editor .cuaderno-editor-overview .cuaderno-context-current {
+    margin: 0;
+    color: var(--accent);
+    font: 700 1.2rem/1.2 var(--text-font);
+    overflow-wrap: anywhere;
+  }
+
+  #editor .cuaderno-editor-overview .cuaderno-context-tools {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: .45rem;
+    align-items: end;
+    padding: 0;
+    border: 0;
+  }
+
+  #editor .cuaderno-editor-overview .atl-notebook-backups { white-space: nowrap; }
+
+  #editor .cuaderno-editor-overview .cuaderno-context-add {
+    margin: 0;
+    padding: .55rem 0 0;
+    border-top: 1px solid var(--rule-2);
+  }
+
+  .cuaderno-context-backup-buttons {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .45rem;
+  }
+}
+
+@media screen and (max-width: 400px) {
+  #editor .cuaderno-editor-overview .cuaderno-context-tools {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+  #editor .cuaderno-editor-overview .cuaderno-context-switch { width: 100%; }
+}

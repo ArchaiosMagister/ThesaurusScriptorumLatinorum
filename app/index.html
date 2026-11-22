@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#1d5466">
+  <title>Thesaurus Scriptorum Latinorum</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./modulos/cuaderno-integrado/examinator-cuadernos/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./navigation.js"></script>
+</head>
+<body>
+  <header>
+    <h1 lang="la">Thesaurus Scriptorum Latinorum</h1>
+    <nav aria-label="Secciones" role="tablist">
+      <button type="button" role="tab" id="tab-banco" aria-selected="true" aria-controls="panel-cuaderno" data-section="banco">Banco de textos</button>
+      <button type="button" role="tab" id="tab-cuadernos" aria-selected="false" tabindex="-1" aria-controls="panel-cuaderno" data-section="cuadernos">Cuadernos</button>
+      <button type="button" role="tab" id="tab-examinator" aria-selected="false" tabindex="-1" aria-controls="panel-examinator" data-section="examinator">Examinator</button>
+    </nav>
+    <div class="app-actions">
+      <label class="app-theme" for="app-theme">Tema
+        <select id="app-theme">
+          <option value="light">Claro</option>
+          <option value="dark">Oscuro</option>
+          <option value="oled">OLED</option>
+        </select>
+      </label>
+      <button type="button" id="app-academic">Listas académicas</button>
+      <button type="button" id="app-update">Actualizar</button>
+      <button type="button" id="app-backup">Copias de seguridad</button>
+      <button type="button" id="app-offline">Preparar sin conexión</button>
+      <button type="button" id="app-install">Instalar</button>
+      <span id="app-status" role="status" aria-live="polite" hidden></span>
+    </div>
+  </header>
+  <main>
+    <section id="panel-cuaderno" role="tabpanel" aria-labelledby="tab-banco" data-src="./modulos/cuaderno-integrado/examinator-cuadernos/atl-repertorios.html"></section>
+    <section id="panel-examinator" role="tabpanel" aria-labelledby="tab-examinator" data-src="./modulos/examinator/index.html" hidden></section>
+  </main>
+  <dialog id="backup-dialog" aria-labelledby="backup-title">
+    <h2 id="backup-title">Copias de seguridad</h2>
+    <p>Para sincronizar manualmente, descarga una copia integral y ábrela en el otro dispositivo. Verás una comparación antes de aplicar cambios.</p>
+    <button type="button" id="backup-export">Descargar copia integral</button>
+    <label for="backup-file">Elegir copia para recuperar</label>
+    <input id="backup-file" type="file" accept=".json,application/json">
+    <p id="backup-preview" role="status" aria-live="polite"></p>
+    <button type="button" id="backup-restore" disabled>Recuperar copia</button>
+    <form method="dialog"><button>Cerrar</button></form>
+  </dialog>
+  <noscript>Activa JavaScript para abrir el banco de textos y los editores.</noscript>
+</body>
+</html>
