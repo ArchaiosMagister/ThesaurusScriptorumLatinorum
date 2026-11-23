@@ -1164,8 +1164,13 @@ test('Cuadernos reúne preguntas y vocabulario en la misma columna', async ({ pa
   await expect(left.locator('.edition-question-index, .edition-question-fold, .edition-option-advanced')).toHaveCount(0);
   await expect(left.getByRole('button', { name: 'Generar pregunta 4', exact: true })).toBeVisible();
   const toolbar = notebook.locator('.atl-edition-toolbar');
-  expect(await toolbar.evaluate(el => !el.closest('.edition-layout') &&
-    el.getBoundingClientRect().top < el.parentElement.querySelector('.edition-layout').getBoundingClientRect().top)).toBe(true);
+  await expect.poll(() => toolbar.evaluate(el => {
+    // paint() reemplaza el elemento completo: el nodo puede estar desligado durante evaluate().
+    const container = el.parentElement;
+    const layout = container?.querySelector(':scope > .edition-layout');
+    return Boolean(container && layout && !el.closest('.edition-layout') &&
+      el.getBoundingClientRect().top < layout.getBoundingClientRect().top);
+  })).toBe(true);
   for (const label of ['Editar texto', 'Organizar cuaderno']) {
     await expect(toolbar.getByRole('button', { name: label, exact: true })).toBeVisible();
   }
@@ -1642,6 +1647,39 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       };
     })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true });
     expect(uploads).toBe(1);
+    // Una baja en un dispositivo ya sincronizado debe propagarse sin reaparecer
+    // ni eliminar un examen completo guardado únicamente en el otro dispositivo.
+    await tablet.evaluate(async () => {
+      const db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open('atl-v1:exam-archive', 1);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      const tx = db.transaction('exams', 'readwrite');
+      tx.objectStore('exams').delete('exam-id');
+      await new Promise((resolve, reject) => {
+        tx.oncomplete = resolve;
+        tx.onabort = () => reject(tx.error);
+      });
+      db.close();
+    });
+    await tablet.locator('header').getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await expect(tablet.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(remote.data.usages).toEqual([]);
+    expect(uploads).toBe(2);
+    const fullExamReload = page.waitForEvent('load');
+    await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await fullExamReload;
+    await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(remote.data.usages).toEqual([]);
+    expect(await page.evaluate(async () => {
+      const { readSyncData } = await import('./backup-store.js');
+      const { savedExam } = await import('./modulos/shared/text-usage.js');
+      return {
+        sharedUses: (await readSyncData()).data.usages.length,
+        originalExam: (await savedExam('exam-id'))?.texto
+      };
+    })).toEqual({ sharedUses: 0, originalExam: 'Gallia est omnis divisa.' });
     await tablet.close();
 
     const reopened = await destination.newPage();

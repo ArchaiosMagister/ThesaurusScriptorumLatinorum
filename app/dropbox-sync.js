@@ -1,5 +1,5 @@
-import { applySyncData, isEmptySyncEditor, maxBackupSize, readSyncData, syncFingerprint, validateSyncData } from './backup-store.js';
-import { mergeUsages, selectEditor } from './dropbox-plan.js';
+import { applySyncData, isEmptySyncEditor, maxBackupSize, readSyncData, syncFingerprint, syncTargetRows, validateSyncData } from './backup-store.js';
+import { isRecoverableSync, mergeUsages, selectEditor } from './dropbox-plan.js';
 
 const key = 'atl-v1:dropbox';
 const file = '/thesaurus-sync-v1.json';
@@ -159,12 +159,42 @@ async function publish(session, data, revision, hash) {
 }
 
 async function synchronize(session, prepareReload, report) {
-  const checkpointKey = 'checkpoint:' + session.appKey + ':' + session.account;
+  const scope = session.appKey + ':' + session.account;
+  const checkpointKey = 'checkpoint:' + scope;
+  const pendingKey = 'checkpoint-pending:' + scope;
   const checkpoint = read(localStorage, checkpointKey);
   const remote = await readRemote(session);
   if (!remote && checkpoint) throw new Error('El archivo de sincronización ya no está en Dropbox. Recupéralo desde Dropbox antes de continuar.');
   await prepareReload();
   const local = await readSyncData();
+  const names = Object.keys(local.rows);
+  const fingerprints = async rows => Object.fromEntries(await Promise.all(
+    names.map(async name => [name, await syncFingerprint(rows[name])])));
+  async function saveCheckpoint(data) {
+    save(localStorage, checkpointKey, {
+      editor: await syncFingerprint(data.editor),
+      usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
+    });
+  }
+  // Recupera una aplicación interrumpida entre transacciones de IndexedDB.
+  // Rechaza cambios ajenos y no sobrescribe una revisión nueva de Dropbox.
+  const pending = read(localStorage, pendingKey);
+  if (pending) {
+    if (!remote || pending.hash !== remote.hash)
+      throw new Error('Dropbox cambió mientras había una sincronización pendiente. Conserva una copia local y revisa ambas versiones.');
+    const current = await fingerprints(local.rows);
+    const target = syncTargetRows(remote.data, local.rows);
+    if (!isRecoverableSync(current, pending.before ?? {}, pending.after ?? {}) ||
+        !isRecoverableSync(await fingerprints(target), pending.after ?? {}, pending.after ?? {}))
+      throw new Error('Se detectaron cambios durante una sincronización interrumpida. Conserva los datos locales y revisa ambas copias.');
+    await applySyncData(remote.data, local.rows);
+    await saveCheckpoint(remote.data);
+    remove(localStorage, pendingKey);
+    report('Sincronización con Dropbox completada.');
+    save(sessionStorage, 'completed', true);
+    location.reload();
+    return;
+  }
   const editorHash = await syncFingerprint(local.data.editor);
   let data = local.data;
   if (remote) {
@@ -183,12 +213,14 @@ async function synchronize(session, prepareReload, report) {
   if (hash !== remote?.hash) await publish(session, data, remote?.revision, hash);
   if (localChanges) {
     await prepareReload();
+    const after = syncTargetRows(data, local.rows);
+    save(localStorage, pendingKey, {
+      hash, before: await fingerprints(local.rows), after: await fingerprints(after)
+    });
     await applySyncData(data, local.rows);
   }
-  save(localStorage, checkpointKey, {
-    editor: await syncFingerprint(data.editor),
-    usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
-  });
+  await saveCheckpoint(data);
+  remove(localStorage, pendingKey);
   report('Sincronización con Dropbox completada.');
   if (localChanges) {
     save(sessionStorage, 'completed', true);
