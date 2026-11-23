@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bankTagVisible, buildCurriculum, matchesSelectividad } from '../scripts/bank-curriculum.js';
+import { bankTagVisible, buildCurriculum, matchesInfinitive, matchesSelectividad } from '../scripts/bank-curriculum.js';
 
 function row(index, level, ...tags) {
   return { text: { id: String(index), title: 'Pasaje ' + index }, level, tags };
@@ -34,4 +34,14 @@ test('conserva las etiquetas específicas y cruza año y comunidad', () => {
   assert.equal(matchesSelectividad(text, '2024', 'Andalucía', false), false);
   assert.equal(matchesSelectividad({}, '', '', true), false);
   assert.equal(matchesSelectividad({}, '', '', false), true);
+});
+
+test('retira las categorías pedidas y con tiempo y voz exige una sola forma compatible', () => {
+  for (const id of ['gram.interrogativa.indirecta', 'gram.gerundio', 'gram.gerundivo'])
+    assert.equal(bankTagVisible(id), false);
+  assert.equal(matchesInfinitive(['gram.inf.presente.pasivo'], 'presente', 'pasivo'), true);
+  assert.equal(matchesInfinitive(['gram.inf.presente.activo', 'gram.inf.perfecto.pasivo'], 'presente', 'pasivo'), false);
+  assert.equal(matchesInfinitive(['gram.inf.presente', 'gram.inf.pasivo'], 'presente', 'pasivo'), false);
+  assert.equal(matchesInfinitive(['gram.inf.futuro.deponente'], '', 'deponente'), true);
+  assert.equal(matchesInfinitive(['gram.infinitivo'], '', ''), false);
 });

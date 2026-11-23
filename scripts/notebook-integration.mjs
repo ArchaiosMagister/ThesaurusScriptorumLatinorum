@@ -7,10 +7,10 @@ export function integrateNotebook(source) {
     source = source.replace(original, () => replacement);
   };
 
-  source = "import { bankTagVisible, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
+  source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
-  source = "import { appendDuplicateCards, createBankFilters, openBankReader } from './atl-bank-catalog.js';\n" + source;
+  source = "import { appendDuplicateCards, createBankFilters, createInfinitiveAssignment, openBankReader } from './atl-bank-catalog.js';\n" + source;
   source = "import { contextualBankAnalysis, rulesVersion } from './atl-bank-context.js';\n" + source;
   source = "import { analyzeBankText, bankAnalysisIndex, bankReviewKey, carryBankReview, readBankReview, visibleBankAnalysis } from './atl-bank-review.js';\n" + source;
   source = "import { vocabularyEditor } from './atl-bank-vocabulary.js';\n" + source;
@@ -374,7 +374,7 @@ window.addEventListener('atl-view', () => {
   replace('    bank.append(bankToolbar);', '    bank.append(bankToolbar, filters.panel);');
   replace("        viewSelect.value = 'all';\n        populate();", "        difficultySelect.value = '';\n        filters.reset();\n        populate();");
   replace('    function currentResults() {', `    function currentResults() {
-        const { work, reference, origin, usage, mode, tags, exam, examYear, examCommunity } = filters.read();
+        const { work, reference, origin, usage, mode, tags, exam, examYear, examCommunity, infTime, infVoice } = filters.read();
         const referenceNeedle = foldLatin(reference);`);
   replace("            const author = t.source.author?.trim() ?? '';", `            const author = t.source.author?.trim() ?? '';
             if (difficultySelect.value && String(difficultyFor(t).level) !== difficultySelect.value) return false;
@@ -385,7 +385,8 @@ window.addEventListener('atl-view', () => {
             if (usage && usedSourceIds.has(t.id) !== (usage === 'used')) return false;
             if (tags.length) {
                 const effectiveTags = [...t.tagIds, ...automaticFor(t.id), ...pendingFor(t.id)];
-                const matches = id => matchesGrammarFilters(effectiveTags, [id], catalogue);
+                const matches = id => id === infinitiveId ? matchesInfinitive(effectiveTags, infTime, infVoice) :
+                    matchesGrammarFilters(effectiveTags, [id], catalogue);
                 if (!(mode === 'any' ? tags.some(matches) : tags.every(matches))) return false;
             }`);
   replace("            if (sortSelect.value === 'work-asc')\n                return workOrder || authorOrder || titleOrder || compare(a.id, b.id);",
@@ -425,6 +426,7 @@ window.addEventListener('atl-view', () => {
             const assessment = difficultyFor(text);
             const difficulty = el('span', 'atl-card-difficulty', assessment.level ? assessment.level + '/5' : '–');
             difficulty.dataset.manual = String(assessment.manual);
+            difficulty.dataset.level = assessment.level ?? '';
             difficulty.setAttribute('aria-label', 'Dificultad ' + difficultyText(assessment.level) +
                 (assessment.manual ? ' · Docente' : ' · Estimada'));
             difficulty.title = difficulty.getAttribute('aria-label');
@@ -449,17 +451,17 @@ window.addEventListener('atl-view', () => {
   const end = source.indexOf(inlineEnd, start);
   if (start < 0 || end < 0) throw new Error('Revisar las tarjetas del banco.');
   source = source.slice(0, start) + `            const chips = el('div', 'grammar-chips cuaderno-bank-row-tags');
-            const chosenTags = text.tagIds.filter(bankTagVisible).sort((a, b) => Number(b.startsWith('custom.')) - Number(a.startsWith('custom.')));
+            const chosenTags = text.tagIds.filter(bankTagAssignable).sort((a, b) => Number(b.startsWith('custom.')) - Number(a.startsWith('custom.')));
             for (const id of chosenTags.slice(0, 2)) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip', item.label));
             }
-            for (const id of pendingFor(text.id).filter(bankTagVisible).slice(0, 1)) {
+            for (const id of pendingFor(text.id).filter(bankTagAssignable).slice(0, 1)) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip atl-pending-tag', 'Pendiente: ' + item.label));
             }
-            const automatic = automaticFor(text.id).filter(bankTagVisible);
-            const reviewCount = analysisIndex.get(text.id)?.pending.filter(bankTagVisible).length ?? 0;
+            const automatic = automaticFor(text.id).filter(bankTagAssignable);
+            const reviewCount = analysisIndex.get(text.id)?.pending.filter(bankTagAssignable).length ?? 0;
             for (const id of automatic.slice(0, Math.max(0, 2 - chosenTags.length))) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip', item.label + ' · Automática'));

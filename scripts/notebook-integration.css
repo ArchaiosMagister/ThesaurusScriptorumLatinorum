@@ -796,7 +796,6 @@
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
-  .atl-card-difficulty[data-manual="true"] { background: var(--accent-soft); color: var(--accent); }
   .atl-reader-difficulty { font-size: .86rem; color: var(--ink-2); }
   .atl-difficulty-editor .muted { font-size: .82rem; font-weight: 400; }
 
@@ -875,4 +874,24 @@
   #editor .atl-organize-list .atl-curriculum-period { list-style: none; padding-block: .45rem .15rem; }
   .atl-curriculum-period h5 { color: var(--accent); margin: 0; }
   .atl-reader-exam { color: var(--accent); font-size: .86rem; }
+}
+
+@media screen {
+  .atl-card-difficulty[data-level="1"] { color: #144732; background: #d2efdd; border-color: #72ad89; }
+  .atl-card-difficulty[data-level="2"] { color: #344815; background: #e4efc8; border-color: #9caf59; }
+  .atl-card-difficulty[data-level="3"] { color: #574105; background: #f9edb9; border-color: #c8a953; }
+  .atl-card-difficulty[data-level="4"] { color: #6a3311; background: #f9dcc1; border-color: #ce9569; }
+  .atl-card-difficulty[data-level="5"] { color: #722326; background: #f8d6d6; border-color: #c77f81; }
+  .atl-card-difficulty[data-manual="true"] { border-style: dashed; }
+  .atl-infinitive-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    align-items: center;
+    border: 0;
+    padding: 0;
+    margin: .3rem 0;
+  }
+  .atl-infinitive-filters[hidden] { display: none; }
+  .atl-infinitive-filters select { min-height: 36px; }
 }

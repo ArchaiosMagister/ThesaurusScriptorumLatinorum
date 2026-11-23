@@ -1,4 +1,4 @@
-import { bankTagVisible } from './atl-bank-curriculum.js';
+import { bankTagAssignable, bankTagVisible, infinitiveId, infinitiveTenses, infinitiveVoices, isInfinitiveTag } from './atl-bank-curriculum.js';
 import { communitySelect } from './atl-bank-planner.js';
 import { GRAMMAR_GROUP_IDS, matchesGrammarTag } from '../core/grammar-tags.js';
 import { foldLatin } from '../core/library.js';
@@ -7,6 +7,23 @@ import { sourceVocabulary } from './atl-bank-vocabulary.js';
 
 function element(tag, options = {}) {
   return Object.assign(document.createElement(tag), options);
+}
+
+export function createInfinitiveAssignment(setTag) {
+  const group = element('fieldset', { className: 'atl-infinitive-filters' });
+  group.append(element('legend', { textContent: 'Infinitivo' }));
+  const select = (label, values) => {
+    const control = element('select');
+    control.setAttribute('aria-label', label);
+    control.append(...values.map(value => new Option(value, value)));
+    return control;
+  };
+  const tense = select('Tiempo del infinitivo', infinitiveTenses);
+  const voice = select('Voz del infinitivo', infinitiveVoices);
+  const add = element('button', { type: 'button', className: 'hbtn', textContent: 'Añadir infinitivo' });
+  add.addEventListener('click', () => setTag('gram.inf.' + tense.value + '.' + voice.value, true));
+  group.append(tense, voice, add);
+  return group;
 }
 
 export function createBankFilters(texts, catalogue, state, onChange) {
@@ -63,7 +80,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   list.setAttribute('aria-label', 'Etiquetas gramaticales');
   const selections = new Map();
   const compareLabels = (a, b) => compare(a.label, b.label);
-  for (const tag of catalogue.filter(tag => bankTagVisible(tag.id)).sort(compareLabels)) {
+  for (const tag of catalogue.filter(tag => bankTagVisible(tag.id) && !isInfinitiveTag(tag.id)).sort(compareLabels)) {
     const check = element('input', { type: 'checkbox', value: tag.id, checked: state.tags.includes(tag.id) });
     const row = element('label', { className: 'atl-tag-option' });
     row.append(check, tag.label);
@@ -72,11 +89,33 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     check.addEventListener('change', onChange);
     list.append(row);
   }
+  const infinitive = element('input', { type: 'checkbox', checked: state.tags.includes(infinitiveId) });
+  const infinitiveLabel = element('label', { className: 'atl-tag-option' });
+  infinitiveLabel.append(infinitive, ' Infinitivo');
+  const facet = (label, values, value) => {
+    const control = element('select');
+    control.setAttribute('aria-label', label);
+    control.append(new Option('Cualquiera', ''), ...values.map(item => new Option(item, item)));
+    control.value = value ?? '';
+    control.addEventListener('change', onChange);
+    return control;
+  };
+  const infTime = facet('Tiempo del infinitivo', infinitiveTenses, state.infTime);
+  const infVoice = facet('Voz del infinitivo', infinitiveVoices, state.infVoice);
+  const infGroup = element('fieldset', { className: 'atl-infinitive-filters' });
+  infGroup.append(infinitiveLabel, infTime, infVoice);
+  function updateInfinitive() {
+    infTime.disabled = infVoice.disabled = !infinitive.checked;
+    if (!infinitive.checked) infTime.value = infVoice.value = '';
+  }
+  infinitive.addEventListener('change', () => { updateInfinitive(); onChange(); });
+  updateInfinitive();
   const noTags = element('p', { className: 'muted small', textContent: 'No hay etiquetas con esa búsqueda.', hidden: true });
   list.append(noTags);
   const findTags = () => {
     const query = foldLatin(tagQuery.value.trim());
-    let found = false;
+    infGroup.hidden = !foldLatin('infinitivo tiempo voz ' + infinitiveTenses.join(' ') + ' ' + infinitiveVoices.join(' ')).includes(query);
+    let found = !infGroup.hidden;
     for (const { row, terms } of selections.values()) {
       row.hidden = !terms.includes(query);
       found ||= !row.hidden;
@@ -86,10 +125,11 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   tagQuery.addEventListener('input', findTags);
   const toolbar = element('div', { className: 'atl-bank-tag-controls' });
   toolbar.append(tagQuery, modeLabel, pendingLabel);
-  panel.append(toolbar, list);
+  panel.append(toolbar, infGroup, list);
   function read() {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
-    return { work: work.value, reference: reference.value, origin: origin.value,
+    if (infinitive.checked) tags.push(infinitiveId);
+    return { infTime: infTime.value, infVoice: infVoice.value, work: work.value, reference: reference.value, origin: origin.value,
       usage: usage.value, exam: exam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
   }
   function reset() {
@@ -102,17 +142,38 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     examCommunity.value = '';
     mode.value = 'all';
     pending.checked = false;
+    infinitive.checked = false;
+    updateInfinitive();
     tagQuery.value = '';
     findTags();
     for (const { check } of selections.values()) check.checked = false;
   }
   function toggleTag(id) {
+    if (isInfinitiveTag(id)) {
+      const [, , first, second] = id.split('.');
+      const tense = infinitiveTenses.includes(first) ? first : '';
+      const voice = second || (infinitiveVoices.includes(first) ? first : '');
+      infinitive.checked = id === infinitiveId ? !infinitive.checked :
+        !isActive(id);
+      infTime.value = tense;
+      infVoice.value = voice;
+      updateInfinitive();
+      onChange();
+      return;
+    }
     const control = selections.get(id)?.check;
     if (!control) return;
     control.checked = !control.checked;
     onChange();
   }
-  return { panel, work, reference, origin, usage, examLabel, examYear, examCommunity, read, reset, toggleTag };
+  function isActive(id) {
+    if (!isInfinitiveTag(id)) return selections.get(id)?.check.checked ?? false;
+    const [, , first, second] = id.split('.');
+    const tense = infinitiveTenses.includes(first) ? first : '';
+    const voice = second || (infinitiveVoices.includes(first) ? first : '');
+    return infinitive.checked && infTime.value === tense && infVoice.value === voice;
+  }
+  return { panel, work, reference, origin, usage, examLabel, examYear, examCommunity, read, reset, toggleTag, isActive };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {
@@ -262,15 +323,15 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     latin.textContent = text.latin;
     tags.replaceChildren();
     for (const id of text.tagIds) {
-      if (!labels.has(id) || !bankTagVisible(id)) continue;
+      if (!labels.has(id) || !bankTagAssignable(id)) continue;
       const chip = element('span', { className: 'grammar-chip', textContent: labels.get(id) });
       chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
       tags.append(chip);
     }
     for (const id of automaticFor(text.id)) {
-      if (labels.has(id) && bankTagVisible(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
+      if (labels.has(id) && bankTagAssignable(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
     }
-    const proposals = (pendingTags?.get(text.id) ?? []).filter(bankTagVisible).map(id => labels.get(id)).filter(Boolean);
+    const proposals = (pendingTags?.get(text.id) ?? []).filter(bankTagAssignable).map(id => labels.get(id)).filter(Boolean);
     pending.textContent = proposals.length ? 'Propuestas pendientes: ' + proposals.join(' · ') : '';
     pending.hidden = !proposals.length;
     notes.textContent = text.notes ?? '';
