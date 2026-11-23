@@ -22,7 +22,10 @@ const [cuaderno, examinator] = await assertVendoredSources(root, pins);
 const notebookDist = join(cuaderno, 'dist');
 await rm(notebookDist, { recursive: true, force: true });
 const locked = await stat(join(cuaderno, 'package-lock.json')).then(() => true, () => false);
-run(npm, [locked ? 'ci' : 'install', '--ignore-scripts', '--no-audit', '--no-fund'], cuaderno);
+run(npm, [
+  ...(locked ? ['ci'] : ['install', '--package-lock=false']),
+  '--ignore-scripts', '--no-audit', '--no-fund',
+], cuaderno);
 run(npm, ['run', 'build'], cuaderno);
 
 await rm(staging, { recursive: true, force: true });

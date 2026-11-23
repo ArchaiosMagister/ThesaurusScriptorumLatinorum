@@ -20,12 +20,12 @@ Para abrir la aplicación usa `node scripts/serve.mjs` y entra en <http://127.0.
 
 El archivo `upstream.json` documenta los commits de origen; `vendor/manifest.json` registra las huellas SHA-256 de todos sus archivos. **La compilación sólo utiliza copias incorporadas** en `vendor/cuaderno` y `vendor/examinator` y comprueba su integridad antes de construir. No necesita acceso ni permisos sobre CuadernoTextosLatinos o examinator2. Conserva sus plantillas, motores, estilos, fuentes y formatos de intercambio. El adaptador modifica las copias generadas para asignar nombres de almacenamiento propios e integrar las vistas. El clásico y el cuaderno usan los repositorios de datos del mismo módulo. Examinator conserva su almacenamiento de exámenes independiente.
 
-- [CuadernoTextosLatinos y revisiones del corpus](https://github.com/ArchaiosMagister/CuadernoTextosLatinos/blob/fe722985b482c442fd94b854796b4d092bdebfed/docs/FUENTES-CORPUS.md)
-- [Fuentes y licencias de recursos de Examinator](https://github.com/ArchaiosMagister/examinator2/blob/7fecd1c2c52d2c4d67d997393615d69643e7a28d/FUENTES.md)
+- [CuadernoTextosLatinos y revisiones del corpus](vendor/cuaderno/docs/FUENTES-CORPUS.md)
+- [Fuentes y licencias de recursos de Examinator](vendor/examinator/FUENTES.md)
 
-Sólo para actualizar deliberadamente un motor: cambia el commit de `upstream.json` y ejecuta `npm run vendor` antes de retirarlo. Comprueba los cambios de almacenamiento, revisa el manifiesto incorporado y ejecuta las pruebas. No se actualiza automáticamente desde otro repositorio.
+Los datos de Collatinus y los textos incluidos de César y Eutropio se leen de `vendor/examinator/js`. Las 25 vidas de Cornelio Nepote se compilan desde `vendor/cuaderno/library-sources/nepote`, que conserva los XML TEI de Perseus y su atribución. Las demás obras del catálogo de Perseus se consultan al seleccionarlas.
 
-**Mantenimiento tras retirar los repositorios antiguos:** edita directamente los ficheros de `vendor/cuaderno` o `vendor/examinator` y ejecuta `npm run vendor:seal` para renovar exclusivamente las huellas locales. Esta operación funciona sin repositorios externos; después ejecuta `npm test`, `npm run build` y `npm run test:webkit` y revisa los cambios antes de fusionar. Nunca uses `npm run vendor` en ese caso porque restaura las versiones históricas fijadas.
+Para mantener los motores, edita los ficheros de `vendor/cuaderno` o `vendor/examinator` y ejecuta `npm run vendor:seal` para actualizar sus huellas. Comprueba los cambios con `npm test`, `npm run build` y `npm run test:webkit`. El comando histórico `npm run vendor` reemplaza las instantáneas completas y eliminaría los cambios locales. Resérvalo para recuperar las fuentes históricas en una copia de trabajo aparte.
 
 ## Alcance de la rama
 

@@ -1,35 +1,31 @@
 /**
  * Genera una biblioteca estática sin depender de ningún servicio en ejecución.
- * Todas las descargas se realizan EN LA COMPILACIÓN, no al abrir la web.
+ * La compilación usa las fuentes incorporadas en Thesaurus.
  *
  * César y Eutropio: misma fuente incorporada en Examinator2 del docente.
  * Nepote: textos TEI de Perseus (Halm/Fleckeisen, 1886).
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { DOMParser } from '@xmldom/xmldom';
 
 const EXAMINATOR_COMMIT = '4ca31b4b2852f6b3ac0dc28c3f6ff3f2ad15d4a8';
 const PERSEUS_COMMIT = '192fef80a2fd785a389e6584ca2315fd1f80a94e';
-const RAW_EXAMINATOR = 'https://raw.githubusercontent.com/ArchaiosMagister/examinator2/' + EXAMINATOR_COMMIT + '/';
+const examinatorData = new URL('../../examinator/js/', import.meta.url);
+const nepoteSources = new URL('../library-sources/nepote/', import.meta.url);
 const RAW_PERSEUS = 'https://raw.githubusercontent.com/PerseusDL/canonical-latinLit/' + PERSEUS_COMMIT + '/';
 const REPO_SOURCE = 'https://github.com/ArchaiosMagister/examinator2/blob/' + EXAMINATOR_COMMIT + '/FUENTES.md';
 
-async function download(url) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(45_000) });
-  if (!response.ok) throw new Error('No se pudo descargar la fuente editorial (' + response.status + '): ' + url);
-  return response.text();
-}
 const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 const idOf = (urn) => urn.replace(/[^a-zA-Z0-9._-]/g, '_');
 
 async function examinadorIncludes() {
-  const source = await download(RAW_EXAMINATOR + 'js/incluidos.js');
+  const source = await readFile(new URL('incluidos.js', examinatorData), 'utf8');
   const context = { EXDATA: {}, window: {} };
   context.window.EXDATA = context.EXDATA;
   vm.runInNewContext(source, context, { timeout: 12000, filename: 'Examinator2-incluidos.js' });
   // Eutropio forma parte de datos.js del Examinator2 del docente.
-  const originalData = await download(RAW_EXAMINATOR + 'js/datos.js');
+  const originalData = await readFile(new URL('datos.js', examinatorData), 'utf8');
   // Exactamente los archivos que alimentan el Collatinus de Examinator2,
   // empaquetados en un directorio que no modifica la copia original.
   await mkdir('dist/examinator-cuadernos/collatinus',{recursive:true});
@@ -148,20 +144,12 @@ function parseLife(xml, number) {
 }
 
 async function nepote() {
-  const queue = Array.from({ length: 25 }, (_, i) => i + 1);
-  const texts = [];
-  const worker = async () => {
-    while (queue.length) {
-      const n = queue.shift();
-      if (!n) break;
-      const code = 'abo' + String(n).padStart(3, '0');
-      const url = RAW_PERSEUS + 'data/phi0588/' + code + '/phi0588.' + code + '.perseus-lat2.xml';
-      const xml = await download(url);
-      texts.push(parseLife(xml, n));
-    }
-  };
-  await Promise.all([worker(),worker(),worker(),worker()]);
-  return texts.sort((a,b) => a.urn.localeCompare(b.urn));
+  return Promise.all(latinLives.map(async (_, index) => {
+    const number = index + 1;
+    const code = 'abo' + String(number).padStart(3, '0');
+    const xml = await readFile(new URL(code + '.xml', nepoteSources), 'utf8');
+    return parseLife(xml, number);
+  }));
 }
 
 const {selected:included,remote:examinatorRemote,baseUrl:examinatorBase} = await examinadorIncludes();

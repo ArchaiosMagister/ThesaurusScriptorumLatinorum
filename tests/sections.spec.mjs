@@ -1466,19 +1466,22 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
   await expect(card).toContainText('Zorvalix');
   const add = card.getByRole('button', { name: 'Subrayar para análisis morfológico' });
   await expect(add).toBeVisible();
-  if (priorMorph.length >= 4) {
-    const select = card.getByRole('combobox', { name: 'Palabra subrayada que se sustituirá' });
-    await expect(select).toBeVisible();
-    await expect(add).toBeDisabled();
-    await select.selectOption({ index: 1 });
-    await expect(add).toBeEnabled();
-  }
+  expect(priorMorph).toHaveLength(4);
+  const select = card.getByRole('combobox', { name: 'Palabra subrayada que se sustituirá' });
+  await expect(select).toBeVisible();
+  await expect(add).toBeDisabled();
+  const [removedId] = await select.selectOption({ index: 1 });
+  await expect(add).toBeEnabled();
   await add.click();
   await expect.poll(async () => (await snapshot()).edition.placements[0].text.markup
     .some(mark => mark.kind === 'morph-underline' && mark.startUtf16 === targetStart && mark.exact === 'Zorvalix')).toBe(true);
   const after = (await snapshot()).edition.placements[0];
   expect(after.questions.filter(question => question.kind !== 'morphology')).toEqual(otherQuestions);
-  expect(after.questions.find(question => question.kind === 'morphology').words.length).toBeLessThanOrEqual(4);
+  const updatedMorph = after.questions.find(question => question.kind === 'morphology').words;
+  expect(updatedMorph).toHaveLength(4);
+  const newWord = updatedMorph[priorMorph.findIndex(word => word.id === removedId)];
+  expect(newWord.surface).toBe('Zorvalix');
+  expect(updatedMorph.filter(word => word.id !== newWord.id)).toEqual(priorMorph.filter(word => word.id !== removedId));
   const configTab = notebook.locator('.edition-mobile-switch').getByRole('button', { name: 'Configurar' });
   if (await configTab.isVisible()) await configTab.click();
   await expect(notebook.locator('.edition-academic-morph-row').filter({ hasText: 'Zorvalix' })).toBeVisible();

@@ -113,8 +113,112 @@
         "sha256": "081babdf479e01c8a1e68daaa62d79c37ba098c1b98057c4d71b555b0ad96d8c"
       },
       {
+        "path": "library-sources/nepote/abo001.xml",
+        "sha256": "120df97e857f1c62ea6a2cd7c1248986081d297f8232c6ac0ea5f889dd14aa8b"
+      },
+      {
+        "path": "library-sources/nepote/abo002.xml",
+        "sha256": "c5e6cc2f5c1009ecae8bf592aa1759ac87d49eab1fb4f603fbb9930459fad9a1"
+      },
+      {
+        "path": "library-sources/nepote/abo003.xml",
+        "sha256": "d474937a2b609557caed4e777507f2cb6ebe1f7b70f47331c9ae17ddb06c0d81"
+      },
+      {
+        "path": "library-sources/nepote/abo004.xml",
+        "sha256": "49847b4a8025f8f151b36bce36725eb2d7800e5cec436fe7147edc20f1b40e54"
+      },
+      {
+        "path": "library-sources/nepote/abo005.xml",
+        "sha256": "ba87b11b42bdd575c201e6355b5e0ab00171aa8d2fbbaa1233174658fd1ef852"
+      },
+      {
+        "path": "library-sources/nepote/abo006.xml",
+        "sha256": "a7ce0929a47f8df9830d0a41f7040a3e75c1902336386f2c25941906f84da019"
+      },
+      {
+        "path": "library-sources/nepote/abo007.xml",
+        "sha256": "7e5f86f48a5a938caae9837df7f1eecec6c53b012ed9a2e251e4620e854f8526"
+      },
+      {
+        "path": "library-sources/nepote/abo008.xml",
+        "sha256": "1db13490da1e75cff7d3dc0abe1539b769ace9f8c56688e10017b2919f888dde"
+      },
+      {
+        "path": "library-sources/nepote/abo009.xml",
+        "sha256": "9b917b23497cd6f8011d33d8e05f2c72e40a4376c72c197f17324dcc7302f673"
+      },
+      {
+        "path": "library-sources/nepote/abo010.xml",
+        "sha256": "26331c73aee8c7c4acaf7249cb941f656c999029eae312c579740ed5dd8021db"
+      },
+      {
+        "path": "library-sources/nepote/abo011.xml",
+        "sha256": "767d44bbb2aaaa45050baa5207ef228fd2c39c57f3a3e895ec84156c0cff782c"
+      },
+      {
+        "path": "library-sources/nepote/abo012.xml",
+        "sha256": "1b4b97609a6374101bc884c73b147d5841b2830c7411b1dd5182ce5056a0974b"
+      },
+      {
+        "path": "library-sources/nepote/abo013.xml",
+        "sha256": "948294e7931ff94c44d2f37431b045c8899927c2dbd412a4decef231d07cb838"
+      },
+      {
+        "path": "library-sources/nepote/abo014.xml",
+        "sha256": "5b234603786b3840fc6c9492d9b3d12cb8d00c81ba7b60901c11f4e59a98f6b1"
+      },
+      {
+        "path": "library-sources/nepote/abo015.xml",
+        "sha256": "9f7af971601eed4d4aa7edacf1334dcb0b9a2504be9e1f171fec0226d3eac9e8"
+      },
+      {
+        "path": "library-sources/nepote/abo016.xml",
+        "sha256": "e603b8aed8e4939cbba58c2d7fa428be6d0da9852b2c42ed1b01809f2d259467"
+      },
+      {
+        "path": "library-sources/nepote/abo017.xml",
+        "sha256": "5ff7e10509c5ec527931edc88816276a743812edb96351ced9e8038beec39404"
+      },
+      {
+        "path": "library-sources/nepote/abo018.xml",
+        "sha256": "c6a30bbd30141d14abc365dbef659c63145f123ab9d47c5b90b6a3c86d02b51f"
+      },
+      {
+        "path": "library-sources/nepote/abo019.xml",
+        "sha256": "7787ece891369491b5d5327fb4d4b1a890c428d19f431b2a33fd960ed551b3f9"
+      },
+      {
+        "path": "library-sources/nepote/abo020.xml",
+        "sha256": "12eeb376219037c36e4c7de959728167ec110b027490ec631b7c10e2cf753d13"
+      },
+      {
+        "path": "library-sources/nepote/abo021.xml",
+        "sha256": "b66dd3e44b89407241524a91d73bd17f98e62d793b38a51c8d616abe06f9e974"
+      },
+      {
+        "path": "library-sources/nepote/abo022.xml",
+        "sha256": "e7110d4443e3ce83407442314fec6fc9f06e50f8708e0829eb9eac213e21563e"
+      },
+      {
+        "path": "library-sources/nepote/abo023.xml",
+        "sha256": "99a4946a352930a13b8f0f5b5bc8095401cc5da7df8e8be9b74df0f931ecb9db"
+      },
+      {
+        "path": "library-sources/nepote/abo024.xml",
+        "sha256": "4ecbf3d7a71a615163f3d2f7fe23adea0f34144caa759abb664ff46903293084"
+      },
+      {
+        "path": "library-sources/nepote/abo025.xml",
+        "sha256": "698787033deae37807a264e030a40e7ddb52bd425acba8edfc4c80ba2593c114"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "f4e13d4382048400ebb99a4e50babf20f20fb722a28c8ba557e833228fb60461"
+      },
+      {
         "path": "package.json",
-        "sha256": "02a3a91a55dc30a932553372580c82d68b310376d3ed5866a18bcab8331a5811"
+        "sha256": "0c9260ecabeaab46172b3710f58f29859fdf54269b2ac94c9531534f58aa00a1"
       },
       {
         "path": "playwright.config.mjs",
@@ -198,7 +302,7 @@
       },
       {
         "path": "scripts/build-library.mjs",
-        "sha256": "eff5afe4243326e0d2195a58dfccf0bd55aaee0ff054f8abc255a90087c48e2c"
+        "sha256": "3a46009997af06459b2d0a201fa25eede855149a8c458463dea78559371773fe"
       },
       {
         "path": "scripts/build-pwa-icons.mjs",
