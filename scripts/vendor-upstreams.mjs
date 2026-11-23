@@ -13,6 +13,7 @@ async function inventory(directory, base = directory) {
   for (const entry of (await readdir(directory, { withFileTypes: true })).sort((a, b) =>
     a.name.localeCompare(b.name, 'en'))) {
     const path = join(directory, entry.name);
+    if (entry.isDirectory() && ['.git', 'node_modules', 'dist', '.test-dist'].includes(entry.name)) continue;
     if (entry.isDirectory()) result.push(...await inventory(path, base));
     else if (entry.isFile()) {
       const content = await readFile(path);
