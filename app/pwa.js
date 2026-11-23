@@ -22,7 +22,7 @@ export async function startApplicationWorker() {
 export async function prepareOffline() {
   if (!registration) throw new Error('El modo sin conexión no está disponible en este navegador.');
   const worker = registration.active ?? (await navigator.serviceWorker.ready).active;
-  await new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     const channel = new MessageChannel();
     const timeout = setTimeout(() => finish(new Error('La descarga sigue en curso. Comprueba de nuevo al terminar.')), 120000);
     function finish(error, summary) {
