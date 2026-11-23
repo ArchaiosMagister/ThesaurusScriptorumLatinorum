@@ -1,10 +1,10 @@
-# Administrator Textorum Latinorum
+# Thesaurus Scriptorum Latinorum
 
 Aplicación docente con tres secciones. **Banco de textos** reúne el catálogo y las acciones de CuadernoTextosLatinos para pegar un pasaje, importar Word, consultar la biblioteca latina y auditar duplicados. **Cuadernos** abre el editor de cuadernos, donde se pueden seleccionar fuentes al preparar un documento. Ambas pestañas comparten un motor y el mismo banco. **Examinator** abre el editor de exámenes en su propio motor.
 
 ## Compilar y probar
 
-Se necesitan Git, Node.js 22 o superior, npm e Internet para obtener los repositorios, las dependencias y las fuentes del corpus.
+Se necesitan Node.js 22 o superior y npm. Las fuentes de los dos motores están incorporadas en `vendor/`: la compilación normal no clona los repositorios antiguos. npm necesita acceso al registro de paquetes si las dependencias no están en la caché.
 
 ```sh
 npm install
@@ -14,16 +14,16 @@ npx playwright install webkit
 npm run test:webkit
 ```
 
-Para abrir la aplicación usa `node scripts/serve.mjs` y entra en <http://127.0.0.1:8123/AdministratorTextorumLatinorum/>. La compilación se genera en `dist/` y usa rutas relativas compatibles con el subdirectorio de GitHub Pages. El flujo de validación compila y prueba el código. El flujo de publicación genera `dist/` y lo despliega en GitHub Pages al actualizar `main`.
+Para abrir la aplicación usa `node scripts/serve.mjs` y entra en <http://127.0.0.1:8123/ThesaurusScriptorumLatinorum/>. La compilación se genera en `dist/` y usa rutas relativas compatibles con el subdirectorio de GitHub Pages. El flujo de validación compila y prueba el código. El flujo de publicación genera `dist/` y lo despliega en GitHub Pages al actualizar `main`.
 
 ## Motores y procedencia
 
-El archivo `upstream.json` fija el commit de cada repositorio. La compilación toma el código original en esas revisiones. Conserva sus plantillas, motores, estilos, fuentes y formatos de intercambio. El adaptador modifica las copias generadas para asignar nombres de almacenamiento propios e integrar las vistas. El clásico y el cuaderno usan los repositorios de datos del mismo módulo. Examinator conserva su almacenamiento de exámenes independiente.
+El archivo `upstream.json` documenta los commits de origen; `vendor/manifest.json` registra las huellas SHA-256 de todos sus archivos. **La compilación sólo utiliza copias incorporadas** en `vendor/cuaderno` y `vendor/examinator` y comprueba su integridad antes de construir. No necesita acceso ni permisos sobre CuadernoTextosLatinos o examinator2. Conserva sus plantillas, motores, estilos, fuentes y formatos de intercambio. El adaptador modifica las copias generadas para asignar nombres de almacenamiento propios e integrar las vistas. El clásico y el cuaderno usan los repositorios de datos del mismo módulo. Examinator conserva su almacenamiento de exámenes independiente.
 
 - [CuadernoTextosLatinos y revisiones del corpus](https://github.com/ArchaiosMagister/CuadernoTextosLatinos/blob/fe722985b482c442fd94b854796b4d092bdebfed/docs/FUENTES-CORPUS.md)
 - [Fuentes y licencias de recursos de Examinator](https://github.com/ArchaiosMagister/examinator2/blob/7fecd1c2c52d2c4d67d997393615d69643e7a28d/FUENTES.md)
 
-Al actualizar un motor, cambia su revisión en `upstream.json`, revisa las claves de almacenamiento y ejecuta la compilación y las pruebas de los originales y de la aplicación integrada.
+Sólo para actualizar deliberadamente un motor: cambia el commit de `upstream.json` y ejecuta `npm run vendor` antes de retirarlo. Comprueba los cambios de almacenamiento, revisa el manifiesto incorporado y ejecuta las pruebas. No se actualiza automáticamente desde otro repositorio.
 
 ## Alcance de la rama
 
