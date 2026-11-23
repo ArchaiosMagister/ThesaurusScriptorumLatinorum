@@ -1012,12 +1012,14 @@ test('Cuadernos regenera términos de léxico conservando los demás', async ({ 
     expect(terms).toEqual([...terms].sort(alphabetical.compare));
   }
 
-  for (const [name, minimum] of [[/Evolución fonética/i, 4], [/Prefijos/i, 4], [/Latinismos/i, 4]]) {
+  for (const [name, minimum, previewIndex] of [[/Evolución fonética/i, 4, 1], [/Prefijos/i, 4, 2], [/Latinismos/i, 4, 3]]) {
     const option = notebook.locator('.edition-option').filter({ has: notebook.locator('.edition-option-head strong').filter({ hasText: name }) });
     const inputs = option.locator('.edition-option-rows input');
     await expect(inputs).toHaveCount(4);
     await checkLexicalVariation(option.locator('.edition-slot-regenerate').first(),
       () => inputs.evaluateAll(rows => rows.map(input => input.value)), minimum);
+    const sortedTerms = await docRows.nth(previewIndex).locator('em').allTextContents();
+    expect(sortedTerms).toEqual([...sortedTerms].sort(alphabetical.compare));
   }
 });
 
@@ -1031,6 +1033,10 @@ test('Examinator regenera términos de las cuatro opciones de léxico conservand
   for (const [kind, action, minimum] of [['prev', 'prevOne', 3], ['evol', 'evolOne', 4], ['pref', 'prefOne', 4], ['latin', 'latOne', 4]]) {
     await checkLexicalVariation(exam.locator(`[data-act="${action}"][data-k="0"]`),
       () => exam.locator(`[data-q="${kind}"]`).evaluateAll(rows => rows.map(input => input.value)), minimum);
+    const alphabetic = await exam.locator('html').evaluate(() => window.M.Exam.q4(window.M.S)
+      .slice(1).map(row => row.filter(part => part.i).map(part => part.t)));
+    const collator = new Intl.Collator('es', { sensitivity: 'base' });
+    for (const words of alphabetic) expect(words).toEqual([...words].sort(collator.compare));
   }
 });
 
