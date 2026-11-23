@@ -89,6 +89,26 @@ export async function vendorPinnedSources(root = projectRoot) {
   console.log('Motores y recursos integrados en vendor/ y verificados sin depender de sus repositorios.');
 }
 
+/**
+ * Permite mantener los motores ya incorporados aunque sus antiguos repositorios
+ * se hayan archivado o eliminado. Solo actualiza huellas locales, nunca consulta la red.
+ */
+export async function sealVendoredSources(root = projectRoot) {
+  const pins = JSON.parse(await readFile(join(root, 'upstream.json'), 'utf8'));
+  const vendor = join(root, 'vendor');
+  const manifest = { format: 1 };
+  for (const name of modules) {
+    const files = await inventory(join(vendor, name));
+    if (!files.length) throw new Error('Motor local ausente: ' + name);
+    manifest[name] = { ...pins[name], files };
+  }
+  const { writeFile } = await import('node:fs/promises');
+  await writeFile(join(vendor, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+  await assertVendoredSources(root, pins);
+  console.log('Huellas locales renovadas. Se puede compilar sin consultar los repositorios antiguos.');
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  await vendorPinnedSources();
+  if (process.argv.includes('--seal-local')) await sealVendoredSources();
+  else await vendorPinnedSources();
 }
