@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const path = '/AdministratorTextorumLatinorum/';
+const path = '/ThesaurusScriptorumLatinorum/';
 
 test('arrancan los tres módulos reales y se conserva el editor al cambiar de pestaña', async ({ page }) => {
   const errors = [];
@@ -230,7 +230,7 @@ test('Examinator importa una copia del texto y mantiene el acceso a Perseus', as
   await page.getByRole('tab', { name: 'Examinator' }).click();
   await expect(exam.locator('[data-k="texto"]')).toHaveValue('Secunda lux orta est.');
   await expect.poll(() => exam.locator('html').evaluate(() =>
-    navigator.serviceWorker.controller?.scriptURL.endsWith('/AdministratorTextorumLatinorum/sw.js'))).toBe(true);
+    navigator.serviceWorker.controller?.scriptURL.endsWith('/ThesaurusScriptorumLatinorum/sw.js'))).toBe(true);
   await page.context().setOffline(true);
   try {
     await exam.getByRole('button', { name: 'Banco de textos…' }).click();
