@@ -1,4 +1,4 @@
-import { buildCurriculum, communities, curriculumTags, periods } from './atl-bank-curriculum.js';
+import { buildCurriculum, communities, curriculumTags, infinitiveId, isInfinitiveTag, isRetiredTag, periods } from './atl-bank-curriculum.js';
 import { assessBankDifficulty, difficultyText } from './atl-bank-difficulty.js';
 
 function node(tag, text) {
@@ -123,10 +123,10 @@ export function showBankPlanner({ read, match, create, modal }) {
         const ids = [...new Set([...text.tagIds, ...(automatic.get(text.id) ?? [])])];
         const tags = new Set();
         for (const id of ids) {
-          if (!aliases.has(id)) aliases.set(id, choices.filter(tag => match(id, tag.id, catalogue)).map(tag => tag.id));
+          if (!aliases.has(id)) aliases.set(id, choices.filter(tag => tag.id === infinitiveId ? isInfinitiveTag(id) : match(id, tag.id, catalogue)).map(tag => tag.id));
           for (const tag of aliases.get(id)) tags.add(tag);
         }
-        return { text, tags: [...tags], placementTags: ids, level: assessBankDifficulty(text, automatic.get(text.id)).level };
+        return { text, tags: [...tags], placementTags: ids.filter(id => !isRetiredTag(id)), level: assessBankDifficulty(text, automatic.get(text.id)).level };
       });
       const represented = new Set(rows.flatMap(row => row.tags));
       const requested = choices.filter(tag => !presentOnly.checked || represented.has(tag.id));

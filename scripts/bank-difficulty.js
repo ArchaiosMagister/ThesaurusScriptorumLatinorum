@@ -4,7 +4,7 @@ const structureFamilies = [
   /^gram\.(?:infinitivo|inf\.(?:perfecto|futuro)\.(?:activo|pasivo|deponente))$/u,
   /^gram\.(?:participio|ablativo\.absoluto)$/u,
   /^gram\.relativo(?:\.enlace)?$/u,
-  /^gram\.(?:subjuntivo|verbo\.[^.]+\.subjuntivo\.[^.]+|ut\.(?:completiva|final|consecutiva)|ne\.(?:final|completiva)|cum\.historico|condicional|interrogativa\.indirecta)$/u
+  /^gram\.(?:subjuntivo|verbo\.[^.]+\.subjuntivo\.[^.]+|ut\.(?:completiva|final|consecutiva)|ne\.(?:final|completiva)|cum\.historico|condicional)$/u
 ];
 
 const measured = new WeakMap();
@@ -28,11 +28,8 @@ export function assessBankDifficulty(text, automatic = []) {
   const { words, longest } = measure(text);
   const tags = [...(text.tagIds ?? []), ...automatic];
   const structures = structureFamilies.filter(family => tags.some(id => family.test(id))).length;
-  const scores = [
-    Number(words >= 35) + Number(words >= 85),
-    Number(longest >= 18) + Number(longest >= 32),
-    Math.min(2, structures)
-  ];
+  const lengthBonus = Number(words >= 100 && (longest >= 18 || structures > 0));
+  const scores = [lengthBonus, Number(longest >= 18) + Number(longest >= 32), Math.min(2, structures)];
   const estimate = words ? Math.min(5, 1 + scores.reduce((total, score) => total + score, 0)) : null;
   return { level: text.difficulty ?? estimate, manual: text.difficulty !== undefined, estimate, words, longest, structures };
 }

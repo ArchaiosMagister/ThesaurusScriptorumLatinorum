@@ -12,15 +12,34 @@ export const communities = [
   'País Vasco', 'Región de Murcia'
 ];
 
+const retiredTags = new Set(['gram.interrogativa.indirecta', 'gram.gerundio', 'gram.gerundivo']);
+export const isRetiredTag = id => retiredTags.has(id);
+
 const hiddenTags = new Set([
   'gram.oracion', 'gram.formas', 'gram.pronombres', 'gram.funciones', 'gram.verbo',
   'gram.part.forma', 'gram.inf.forma', 'gram.pron.demostrativo', 'gram.cum.preposicion',
   'gram.cum.conjuncion', 'gram.ut'
 ]);
 
-export const bankTagVisible = id => !hiddenTags.has(id) && !id.startsWith('gram.verbo.');
-export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' && bankTagVisible(tag.id) &&
-  !/^gram\.inf\.(?:presente|perfecto|futuro)\./u.test(tag.id));
+export const bankTagVisible = id => !isRetiredTag(id) && !hiddenTags.has(id) && !id.startsWith('gram.verbo.');
+export const infinitiveId = 'gram.inf.forma';
+export const infinitiveTenses = ['presente', 'perfecto', 'futuro'];
+export const infinitiveVoices = ['activo', 'pasivo', 'deponente'];
+const infinitiveForm = /^gram\.inf\.(presente|perfecto|futuro)(?:\.(activo|pasivo|deponente))?$/u;
+const infinitiveVoice = /^gram\.inf\.(activo|pasivo|deponente)$/u;
+export const isInfinitiveTag = id => id === infinitiveId || infinitiveForm.test(id) || infinitiveVoice.test(id);
+export const bankTagAssignable = id => bankTagVisible(id) && (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
+export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' &&
+  (tag.id === infinitiveId || (bankTagVisible(tag.id) && !isInfinitiveTag(tag.id))));
+
+export function matchesInfinitive(ids, tense, voice) {
+  if (!tense && !voice) return ids.some(isInfinitiveTag);
+  return ids.some(id => {
+    const form = infinitiveForm.exec(id);
+    if (form) return (!tense || form[1] === tense) && (!voice || form[2] === voice);
+    return !tense && infinitiveVoice.exec(id)?.[1] === voice;
+  });
+}
 
 export function matchesSelectividad(text, year, community, only) {
   if (!only && !year && !community) return true;

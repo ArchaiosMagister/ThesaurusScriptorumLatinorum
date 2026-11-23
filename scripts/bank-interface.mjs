@@ -3,10 +3,15 @@ export function modernizeBank(source) {
     if (source.split(before).length !== 2) throw Error('Revisar la interfaz del banco: ' + before);
     source = source.replace(before, () => after);
   };
-  replace("        if (!selected.size) {", "        if (![...selected].some(bankTagVisible)) {");
-  replace("        for (const id of selected) {", "        for (const id of [...selected].filter(bankTagVisible)) {");
+  replace("        if (!selected.size) {", "        if (![...selected].some(bankTagAssignable)) {");
+  replace("        for (const id of selected) {", "        for (const id of [...selected].filter(bankTagAssignable)) {");
+  replace("    manual.append(search);", "    manual.append(createInfinitiveAssignment(setTag), search);");
+  replace("            const chip = el('span', 'grammar-chip', nameOf(id));", `            const chip = isInfinitiveTag(id)
+                ? button(nameOf(id) + ' ×', () => setTag(id, false), 'grammar-chip')
+                : el('span', 'grammar-chip', nameOf(id));
+            if (isInfinitiveTag(id)) chip.setAttribute('aria-label', 'Quitar «' + nameOf(id) + '»');`);
   replace("                for (const tag of all) {",
-    "                for (const tag of all.filter(item => bankTagVisible(item.id) || item.id === acceptedTag)) {");
+    "                for (const tag of all.filter(item => bankTagAssignable(item.id) || item.id === acceptedTag)) {");
   replace("    const manual = el('details', 'cuaderno-bank-manual');",
     `    const custom = el('form', 'atl-create-tag');
     const name = el('input');
@@ -43,7 +48,7 @@ export function modernizeBank(source) {
   replace("    for (const tag of all) {\n        const label = el('label', 'cuaderno-bank-tag-option'), check = el('input');",
     "    function appendTagOption(tag, target) {\n        const label = el('label', 'cuaderno-bank-tag-option'), check = el('input');");
   replace("        list.append(label);\n    }\n    search.addEventListener('input', () => {",
-    "        target.append(label);\n    }\n    for (const tag of all.filter(item => bankTagVisible(item.id))) appendTagOption(tag, list);\n    search.addEventListener('input', () => {");
+    "        target.append(label);\n    }\n    for (const tag of all.filter(item => bankTagAssignable(item.id) && !isInfinitiveTag(item.id))) appendTagOption(tag, list);\n    search.addEventListener('input', () => {");
   replace("                        const next = attachGrammarTags(saved.corpus, text.id, [...selected], allGrammarTags(corpus));",
     `                        const latest = allGrammarTags(saved.corpus, allGrammarTags(corpus));
                         const ids = [...selected].map(id => {
@@ -89,7 +94,7 @@ export function modernizeBank(source) {
     shortcuts.setAttribute('aria-label', 'Etiquetas usadas en el banco');
     const counts = new Map();
     for (const text of corpus.texts) for (const id of text.tagIds) counts.set(id, (counts.get(id) ?? 0) + 1);
-    const frequent = catalogue.filter(tag => counts.has(tag.id) && bankTagVisible(tag.id)).sort((a, b) =>
+    const frequent = catalogue.filter(tag => counts.has(tag.id) && bankTagVisible(tag.id) && !isInfinitiveTag(tag.id)).sort((a, b) =>
         Number(b.kind === 'custom') - Number(a.kind === 'custom') ||
         counts.get(b.id) - counts.get(a.id) || bankCollator.compare(a.label, b.label)).slice(0, 5);
     const quickTags = new Map();
@@ -128,7 +133,7 @@ export function modernizeBank(source) {
                     const chip = button(item.label, () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');
                     chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
                     chip.setAttribute('aria-label', 'Filtrar por etiqueta «' + item.label + '»');
-                    chip.setAttribute('aria-pressed', String(bankState.tags.includes(id)));
+                    chip.setAttribute('aria-pressed', String(filters.isActive(id)));
                     chips.append(chip);
                 }`);
   replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
@@ -137,9 +142,10 @@ export function modernizeBank(source) {
         for (const id of criteria.tags) {
             const item = catalogue.find(tag => tag.id === id);
             if (!item) continue;
-            const chip = button(item.label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');
+            const label = id === infinitiveId ? ['Infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
+            const chip = button(label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');
             chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
-            chip.setAttribute('aria-label', 'Quitar filtro «' + item.label + '»');
+            chip.setAttribute('aria-label', 'Quitar filtro «' + label + '»');
             filterChips.append(chip);
         }
         const isFiltered = Boolean(search.value.trim()`);

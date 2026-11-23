@@ -309,6 +309,42 @@ test('el Banco muestra, filtra y ordena la dificultad; la valoración docente se
   await expect(cards).toHaveCount(0);
 });
 
+test('agrupa los infinitivos y aplica tiempo y voz sobre la misma forma', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const edit = title => bank.getByRole('button', { name: 'Etiquetar «' + title + '»', exact: true }).click();
+  const modal = frame.locator('.modal').last();
+  async function assign(tense, voice) {
+    await modal.getByRole('combobox', { name: 'Tiempo del infinitivo' }).selectOption(tense);
+    await modal.getByRole('combobox', { name: 'Voz del infinitivo' }).selectOption(voice);
+    await modal.getByRole('button', { name: 'Añadir infinitivo' }).click();
+  }
+  await edit('Uno');
+  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await assign('presente', 'activo');
+  await assign('perfecto', 'pasivo');
+  await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
+  await expect(modal).toBeHidden();
+  await edit('Dos');
+  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await assign('presente', 'pasivo');
+  await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  await expect(bank.getByRole('checkbox', { name: 'Infinitivo', exact: true })).toHaveCount(1);
+  await expect(bank.getByRole('checkbox', { name: /Infinitivo de presente/ })).toHaveCount(0);
+  for (const label of ['Gerundio', 'Gerundivo', 'Interrogativa indirecta']) {
+    await expect(bank.getByRole('checkbox', { name: label, exact: true })).toHaveCount(0);
+  }
+  await bank.getByRole('checkbox', { name: 'Infinitivo', exact: true }).check();
+  await bank.getByRole('combobox', { name: 'Tiempo del infinitivo' }).selectOption('presente');
+  await bank.getByRole('combobox', { name: 'Voz del infinitivo' }).selectOption('pasivo');
+  const results = bank.locator('.atl-bank-card');
+  await expect(results).toHaveCount(1);
+  await expect(results.first()).toHaveText(/^Dos/);
+  await expect(results.first().locator('.atl-card-difficulty')).toHaveAttribute('data-level', /^[1-5]$/);
+});
+
 test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramaticales específicas', async ({ page }) => {
   await page.goto(path);
   const frame = await seedBank(page);
@@ -359,7 +395,7 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
       const id = 'plan.' + i;
       corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est.', author: 'César',
         reference: String(i), work: 'Bellum Gallicum', difficulty: 1 + Math.floor(i / 10) }, id, '2026-11-22T09:00:00.000Z');
-      corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.gerundivo' : 'gram.ablativo.absoluto']);
+      corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.subjuntivo' : 'gram.ablativo.absoluto']);
     }
     await repository.save(corpus, before.revision);
   });
@@ -386,7 +422,7 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
   expect(teaching).toEqual([...teaching].sort((a, b) => a - b));
   expect(edition.placements.slice(45).map(level)).toEqual([1, 2, 3, 4, 5]);
   expect(edition.placements.flatMap(item => item.grammaticalTagIds)).toEqual(
-    expect.arrayContaining(['gram.gerundivo', 'gram.ablativo.absoluto'])
+    expect.arrayContaining(['gram.subjuntivo', 'gram.ablativo.absoluto'])
   );
   const word = await frame.locator('html').evaluate(async (_, edition) => {
     const { createNotebookDocx } = await import('../export/notebook-documents.js');
