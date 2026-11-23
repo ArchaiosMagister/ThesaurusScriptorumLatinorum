@@ -8,7 +8,8 @@ export function integrateNotebook(source) {
   };
 
   source = "import { appendBankGroups, appendDuplicateCards, createBankFilters, openBankReader } from './atl-bank-catalog.js';\n" + source;
-  source = "import { bankReviewKey, carryBankReview, pendingBankTags, readBankReview } from './atl-bank-review.js';\n" + source;
+  source = "import { contextualBankAnalysis, rulesVersion } from './atl-bank-context.js';\n" + source;
+  source = "import { analyzeBankText, bankAnalysisIndex, bankReviewKey, carryBankReview, readBankReview, visibleBankAnalysis } from './atl-bank-review.js';\n" + source;
   source = "import { vocabularyEditor } from './atl-bank-vocabulary.js';\n" + source;
   source = "import { findTextUses, loadUsageIndex, recordedSourceIds, usageList } from '../../shared/text-usage.js';\n" + source;
   source = "import { notebookTexts } from '../core/editor-operations.js';\n" + source;
@@ -42,6 +43,35 @@ export function integrateNotebook(source) {
 const bankState = { query: '', author: 'all', sort: 'author-asc', view: 'all', work: '', reference: '', origin: '', usage: '', mode: 'all', tags: [], grammarOpen: false, includePending: false };
 let refreshBankProposals = () => {};
 let refreshBankUses = () => {};
+let bankAnalysisQueue = [];
+let bankAnalysisRunning = false;
+
+function scheduleBankAnalysis(texts, onResult) {
+    bankAnalysisQueue = texts.map(text => ({ text, onResult }));
+    if (bankAnalysisRunning) return;
+    bankAnalysisRunning = true;
+    setTimeout(async () => {
+        try {
+            while (bankAnalysisQueue.length) {
+                const { text, onResult } = bankAnalysisQueue.shift();
+                const isCurrent = () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin);
+                if (!isCurrent()) continue;
+                try {
+                    const saved = await analyzeBankText(text, analyzeLatin,
+                        (latin, tokens) => contextualBankAnalysis(latin, tokens, proposeCollatinusGrammar), isCurrent);
+                    if (saved && isCurrent()) onResult(text, saved);
+                } catch (error) {
+                    console.warn('Análisis del Banco', error);
+                    break;
+                }
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        } finally {
+            bankAnalysisRunning = false;
+        }
+    }, 0);
+}
+
 
 async function showTextUses(text) {
     const matches = findTextUses(await loadUsageIndex(), text);
@@ -229,12 +259,38 @@ window.addEventListener('atl-view', () => {
   replace("    bankToolbar.append(bankField('Buscar', search, 'cuaderno-bank-search'), bankField('Autor', authorSelect, ''), bankField('Ordenar por', sortSelect, ''), bankField('Ver', viewSelect, ''));", `    const catalogue = allGrammarTags(corpus);
     const filters = createBankFilters(corpus.texts, catalogue, bankState, populate);
     refreshBankUses = () => { if (bank.isConnected && bankState.usage) populate(); };
-    let pendingIndex, pendingRequest;
-    refreshBankProposals = () => {
-        pendingIndex = pendingRequest = undefined;
-        if (bank.isConnected && bankState.includePending) populate();
+    const analysisIndex = new Map();
+    const pendingIndex = new Map();
+    const automaticFor = id => analysisIndex.get(id)?.automatic ?? [];
+    const pendingFor = id => bankState.includePending ? pendingIndex.get(id) ?? [] : [];
+    const setAnalysis = (id, result) => {
+        analysisIndex.set(id, result);
+        pendingIndex.set(id, result.pending);
     };
-    const pendingFor = id => bankState.includePending ? pendingIndex?.get(id) ?? [] : [];
+    let refreshTimer;
+    const refreshResults = () => {
+        if (refreshTimer) return;
+        refreshTimer = setTimeout(() => {
+            refreshTimer = undefined;
+            if (bank.isConnected) populate();
+        }, 100);
+    };
+    const loadAnalysis = async () => {
+        const saved = await bankAnalysisIndex(corpus.texts, catalogue, isRejectedProposal);
+        if (!bank.isConnected) return;
+        for (const [id, result] of saved) setAnalysis(id, result);
+        populate();
+        scheduleBankAnalysis(corpus.texts, (text, review) => {
+            if (!bank.isConnected) return;
+            const next = visibleBankAnalysis(text, review, catalogue, isRejectedProposal);
+            const previous = analysisIndex.get(text.id);
+            setAnalysis(text.id, next);
+            if (JSON.stringify(previous) !== JSON.stringify(next) && (previous || next.automatic.length || next.pending.length))
+                refreshResults();
+        });
+    };
+    refreshBankProposals = () => void loadAnalysis().catch(error => console.warn('Etiquetas del Banco', error));
+    setTimeout(refreshBankProposals, 0);
     search.value = bankState.query;
     if (Array.from(authorSelect.options).some(option => option.value === bankState.author)) authorSelect.value = bankState.author;
     sortSelect.value = bankState.sort;
@@ -254,7 +310,7 @@ window.addEventListener('atl-view', () => {
             if (origin && (t.origin?.kind ?? 'unknown') !== origin) return false;
             if (usage && usedSourceIds.has(t.id) !== (usage === 'used')) return false;
             if (tags.length) {
-                const effectiveTags = [...t.tagIds, ...pendingFor(t.id)];
+                const effectiveTags = [...t.tagIds, ...automaticFor(t.id), ...pendingFor(t.id)];
                 const matches = id => matchesGrammarFilters(effectiveTags, [id], catalogue);
                 if (!(mode === 'any' ? tags.some(matches) : tags.every(matches))) return false;
             }`);
@@ -270,25 +326,6 @@ window.addEventListener('atl-view', () => {
             bankResultCount.textContent = usesUnavailable ? 'No se pudo consultar el historial de usos.' : 'Consultando los usos registrados…';
             selectedButton.disabled = true;
             resetBankFilters.disabled = false;
-            return;
-        }
-        if (criteria.includePending && !pendingIndex) {
-            bankResultCount.textContent = 'Consultando las propuestas pendientes…';
-            selectedButton.disabled = true;
-            resetBankFilters.disabled = false;
-            if (!pendingRequest) {
-                const request = pendingBankTags(corpus.texts, catalogue, isRejectedProposal);
-                pendingRequest = request;
-                const resume = index => {
-                    if (pendingRequest !== request || !bank.isConnected) return;
-                    pendingIndex = index;
-                    populate();
-                };
-                request.then(resume, () => {
-                    resume(new Map());
-                    M.toast('No se pudieron consultar las propuestas pendientes.');
-                });
-            }
             return;
         }
         selectedButton.disabled = false;`);
@@ -307,7 +344,7 @@ window.addEventListener('atl-view', () => {
             read.addEventListener('click', () => openBankReader({
                 texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),
                 edit: openBankTextEditor, tag: tagBankText, remove: removeBankText, usage: showTextUses,
-                pendingTags: bankState.includePending ? pendingIndex : undefined,
+                pendingTags: bankState.includePending ? pendingIndex : undefined, automaticFor,
                 isProtected: item => protectedIds.has(item.id),
                 onClose: () => read.focus({ preventScroll: true }),
                 onError: error => M.toast(String(error), 7000)
@@ -327,6 +364,14 @@ window.addEventListener('atl-view', () => {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip atl-pending-tag', 'Pendiente: ' + item.label));
             }
+            const automatic = automaticFor(text.id);
+            const reviewCount = analysisIndex.get(text.id)?.pending.length ?? 0;
+            for (const id of automatic.slice(0, Math.max(0, 6 - text.tagIds.length))) {
+                const item = catalogue.find(tag => tag.id === id);
+                if (item) chips.append(el('span', 'grammar-chip', item.label + ' · Automática'));
+            }
+            if (automatic.length || reviewCount || text.tagIds.length) chips.append(el('span', 'small muted',
+                automatic.length + ' automáticas · ' + text.tagIds.length + ' confirmadas · ' + reviewCount + ' pendientes'));
             const usage = el('span', 'small muted', 'Usado en documentos');
             if (text.origin?.kind === 'library') chips.append(el('span', 'small muted', 'Biblioteca latina'));
             usage.dataset.atlSourceUse = text.id;
@@ -339,7 +384,7 @@ window.addEventListener('atl-view', () => {
                 if (group.classList.contains('cuaderno-bank-all')) appendBankGroups(items, shown, sortSelect.value, appendTextRows);
                 else appendTextRows(items, shown);`);
   replace('    const idsFor = (id) => sourceTags.get(id) ?? [];',
-    '    const idsFor = (id) => [...(sourceTags.get(id) ?? []), ...pendingFor(id)];');
+    '    const idsFor = (id) => [...(sourceTags.get(id) ?? []), ...automaticFor(id), ...pendingFor(id)];');
   replace("    passage.append(el('summary', '', 'Texto latino'), el('p', '', text.latin));",
     "    const fullPassage = el('p', '', text.latin);\n    passage.append(el('summary', '', 'Texto latino'), fullPassage);");
   replace("            row.append(proposalContext(text.latin, proposal));", `            row.append(proposalContext(text.latin, proposal));
@@ -360,16 +405,48 @@ window.addEventListener('atl-view', () => {
   const reviewLoadEnd = source.indexOf('            const tokens = await analyzeLatin(text.latin);', reviewLoad);
   if (reviewLoad < 0 || reviewLoadEnd < 0) throw new Error('Revisar la carga de propuestas de Collatinus.');
   source = source.slice(0, reviewLoad) + '            await reviewReady;\n' + source.slice(reviewLoadEnd);
-  replace('            pending = proposeCollatinusGrammar(text.latin, tokens);', `            pending = proposeCollatinusGrammar(text.latin, tokens);
-            if (reviewKey) {
-                try {
-                    const saved = readBankReview(reviewKey, text.latin);
-                    localStorage.setItem(reviewKey, JSON.stringify({ ...saved, pending }));
-                    refreshBankProposals();
-                } catch {
-                    M.toast('Las propuestas se pueden revisar ahora. El navegador no pudo conservarlas.');
+  replace('            const tokens = await analyzeLatin(text.latin);\n            pending = proposeCollatinusGrammar(text.latin, tokens);', `            const saved = await analyzeBankText(text, analyzeLatin,
+                (latin, tokens) => contextualBankAnalysis(latin, tokens, proposeCollatinusGrammar),
+                () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin));
+            if (!saved) return;
+            pending = saved.pending;
+            refreshBankProposals();`);
+  replace("            status.textContent = pending.length + ' propuestas obtenidas; ninguna se añade automáticamente.';",
+    "            status.textContent = 'Análisis completado.';");
+  replace("    review.append(passage, analyze, status, result);", `    const complete = el('details', 'cuaderno-bank-evidence');
+    complete.append(el('summary', '', 'Análisis morfológico completo'));
+    let completeRequested = false;
+    complete.addEventListener('toggle', async () => {
+        if (!complete.open || completeRequested) return;
+        completeRequested = true;
+        const list = el('div');
+        complete.append(list);
+        list.textContent = 'Consultando Collatinus…';
+        try {
+            const tokens = await analyzeLatin(text.latin);
+            if (!complete.isConnected) return;
+            list.replaceChildren();
+            for (const token of tokens) {
+                const word = el('details');
+                const chosen = token.cands?.find(candidate => candidate.lid === token.sel?.lid &&
+                    candidate.morphos.includes(token.sel.morpho));
+                word.append(el('summary', '', token.w + (chosen ? ' · ' + chosen.lemma + ' · ' +
+                    (token.sel.morpho || chosen.im) : '')));
+                for (const candidate of token.cands ?? []) {
+                    for (const morph of candidate.morphos) {
+                        if (candidate === chosen && morph === token.sel.morpho) continue;
+                        word.append(el('p', 'small', candidate.lemma + ' · ' + (morph || candidate.im)));
+                    }
                 }
-            }`);
+                list.append(word);
+            }
+        } catch (error) {
+            list.textContent = 'Collatinus no está disponible para este pasaje.';
+            completeRequested = false;
+            complete.addEventListener('toggle', () => list.remove(), { once: true });
+        }
+    });
+    review.append(passage, analyze, status, result, complete);`);
   replace("    M.modal('Etiquetas de «' + text.title + '»', panel, [{ label: 'Cancelar' },", `    const reviewReady = bankReviewKey(text).then(key => {
         reviewKey = key;
         const saved = readBankReview(key, text.latin);
@@ -377,13 +454,28 @@ window.addEventListener('atl-view', () => {
         for (const [proposal, tag] of saved.corrected) if (selected.has(tag)) corrected.set(proposal, tag);
         pending = saved.pending;
         if (pending.length) renderProposals();
+        return saved;
     }).catch(() => { /* El etiquetado manual sigue disponible. */ });
+    void reviewReady.then(async saved => {
+        if (saved?.version === rulesVersion || !panel.isConnected) return;
+        const current = await analyzeBankText(text, analyzeLatin,
+            (latin, tokens) => contextualBankAnalysis(latin, tokens, proposeCollatinusGrammar),
+            () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin));
+        if (current && panel.isConnected) {
+            pending = current.pending;
+            renderProposals();
+        }
+    }).catch(() => { status.textContent = 'No se pudo completar el análisis del pasaje.'; });
     M.modal('Etiquetas de «' + text.title + '»', panel, [{ label: 'Cancelar' },`);
   replace("{ label: 'Guardar etiquetas', primary: true, onclick: async () => {",
     "{ label: 'Guardar etiquetas', primary: true, onclick: async () => {\n                await reviewReady;");
   replace('JSON.stringify({ rejected: [...rejected], corrected: [...corrected] })',
-    'JSON.stringify({ rejected: [...rejected], corrected: [...corrected], pending })');
+    'JSON.stringify({ ...readBankReview(reviewKey, text.latin), rejected: [...rejected], corrected: [...corrected] })');
   replace('const discarded = isRejectedProposal(proposal, rejected, all), accepted = selected.has(acceptedTag);',
     'const discarded = isRejectedProposal(proposal, rejected, all), accepted = corrected.has(key) && selected.has(acceptedTag);');
+  replace("const label = discarded ? 'Descartada' : accepted ? 'Confirmada' : 'Pendiente';",
+    "const label = discarded ? 'Descartada' : accepted ? 'Confirmada' : proposal.state === 'automatic' ? 'Automática' : 'Pendiente';");
+  replace("row.dataset.state = discarded ? 'dismissed' : accepted ? 'confirmed' : 'pending';",
+    "row.dataset.state = discarded ? 'dismissed' : accepted ? 'confirmed' : proposal.state ?? 'pending';");
   return source;
 }

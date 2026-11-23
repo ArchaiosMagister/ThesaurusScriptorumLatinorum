@@ -706,6 +706,13 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.reload();
     const notebook = page.frameLocator('#panel-cuaderno iframe');
     await expect(notebook.getByRole('button', { name: 'Importar Word al banco' })).toBeVisible();
+    await notebook.getByRole('button', { name: 'Pegar en el banco' }).click();
+    const paste = notebook.locator('.modal').last();
+    await paste.getByRole('textbox', { name: 'Título' }).fill('Análisis sin red');
+    await paste.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
+    await paste.getByRole('button', { name: 'Guardar en el banco' }).click();
+    await expect(notebook.getByText('Pronombres y determinantes · Automática', { exact: true })).toBeVisible();
+
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     await expect(notebook.getByRole('heading', { name: 'Mis cuadernos', exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Examinator' }).click();
@@ -846,7 +853,6 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const review = frame.locator('.modal').last();
   const candidate = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Pendiente' }).first();
-  await review.getByRole('button', { name: 'Analizar con Collatinus' }).click();
   await expect(candidate).toBeVisible({ timeout: 45000 });
   await review.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await page.reload();
@@ -886,6 +892,45 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   const confirmed = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Confirmada' }).first();
   await confirmed.locator(':scope > summary').click();
   await expect(review.locator('.cuaderno-review-passage mark')).toHaveText('Amatus est');
+});
+
+test('el Banco etiqueta la concordancia sin intervención y respeta su descarte al editar', async ({ page }) => {
+  await page.goto(path);
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  const card = bank.getByRole('button', { name: /^Concordancia de prueba / });
+  await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+  await modal.getByRole('textbox', { name: 'Título' }).fill('Concordancia de prueba');
+  await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
+  await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  const automatic = bank.getByText('Pronombres y determinantes · Automática', { exact: true });
+  await expect(automatic).toBeVisible();
+  await bank.locator('.atl-grammar-filters > summary').click();
+  const pronouns = bank.getByRole('checkbox', { name: 'Pronombres y determinantes', exact: true, includeHidden: true });
+  await pronouns.evaluate(node => {
+    for (let group = node.closest('details'); group; group = group.parentElement.closest('details')) group.open = true;
+  });
+  await pronouns.check();
+  await expect(card).toBeVisible();
+  await pronouns.uncheck();
+  await card.click();
+  await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
+  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Pronombres y determinantes · Automática' });
+  await expect(agreement).toBeVisible();
+  await expect(modal.locator('.grammar-proposal-card').filter({ hasText: /Subjuntivo · (Pendiente|Automática)/ })).toHaveCount(0);
+  await agreement.locator(':scope > summary').click();
+  await agreement.getByRole('button', { name: 'Descartar', exact: true }).click();
+  await modal.getByRole('button', { name: 'Guardar etiquetas', exact: true }).click();
+  await expect(automatic).toHaveCount(0);
+  await card.click();
+  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+  await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Postea. Suas copias.');
+  await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(card).toBeVisible();
+  await card.click();
+  await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
+  await expect(modal.getByText('Suas copias · Pronombres y determinantes · Descartada', { exact: true })).toBeVisible();
 });
 
 test('una ficha editorial recuperada admite notas y vocabulario reutilizables', async ({ page }) => {

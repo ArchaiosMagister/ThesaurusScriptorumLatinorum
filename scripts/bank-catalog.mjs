@@ -208,7 +208,7 @@ export function appendDuplicateCards(target, pairs, sources, { kindLabel, source
   }
 }
 
-export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, isProtected, onClose, onError }) {
+export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, automaticFor = () => [], isProtected, onClose, onError }) {
   let index = texts.findIndex(text => text.id === selected.id);
   if (index < 0) return;
   const content = element('div', { className: 'atl-bank-reader' });
@@ -272,6 +272,9 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
       const chip = element('span', { className: 'grammar-chip', textContent: labels.get(id) });
       chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
       tags.append(chip);
+    }
+    for (const id of automaticFor(text.id)) {
+      if (labels.has(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
     }
     const proposals = (pendingTags?.get(text.id) ?? []).map(id => labels.get(id)).filter(Boolean);
     pending.textContent = proposals.length ? 'Propuestas pendientes: ' + proposals.join(' · ') : '';
