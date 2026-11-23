@@ -1,5 +1,6 @@
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { cp, mkdir, readFile, rename, rm, stat } from 'node:fs/promises';
+import { assertVendoredSources } from './vendor-upstreams.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prepareLibrary } from './library-integration.mjs';
@@ -9,7 +10,6 @@ import { buildRootWorker } from './root-pwa.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const pins = JSON.parse(await readFile(join(root, 'upstream.json'), 'utf8'));
-const sources = join(root, '.upstream');
 const output = join(root, 'dist');
 const staging = join(root, 'dist-build');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
@@ -18,38 +18,7 @@ function run(tool, args, cwd) {
   execFileSync(tool, args, { cwd, stdio: 'inherit' });
 }
 
-function gitText(directory, ...args) {
-  return execFileSync('git', args, { cwd: directory, encoding: 'utf8' }).trim();
-}
-
-async function checkout(name) {
-  const { repository, commit } = pins[name];
-  const directory = join(sources, name);
-  const present = await stat(join(directory, '.git')).then(() => true, () => false);
-  if (!present) {
-    await mkdir(directory, { recursive: true });
-    run('git', ['init'], directory);
-  }
-  const head = spawnSync('git', ['rev-parse', '--verify', '--quiet', 'HEAD'], {
-    cwd: directory, encoding: 'utf8'
-  });
-  if (head.error) throw head.error;
-  if (head.status !== 0 && head.status !== 1) throw new Error('No se pudo leer HEAD en ' + directory);
-  const actual = head.stdout.trim();
-  if (actual === commit && !gitText(directory, 'status', '--porcelain', '--untracked-files=no')) {
-    return directory;
-  }
-  if (actual && gitText(directory, 'status', '--porcelain', '--untracked-files=no')) {
-    throw new Error('La copia de origen tiene cambios locales: ' + directory);
-  }
-  run('git', ['fetch', '--no-tags', '--depth=1', 'https://github.com/' + repository + '.git', commit], directory);
-  run('git', ['checkout', '--detach', commit], directory);
-  if (gitText(directory, 'rev-parse', 'HEAD') !== commit) throw new Error('Revisión inesperada de ' + name);
-  return directory;
-}
-
-await mkdir(sources, { recursive: true });
-const [cuaderno, examinator] = await Promise.all([checkout('cuaderno'), checkout('examinator')]);
+const [cuaderno, examinator] = await assertVendoredSources(root, pins);
 const notebookDist = join(cuaderno, 'dist');
 await rm(notebookDist, { recursive: true, force: true });
 const locked = await stat(join(cuaderno, 'package-lock.json')).then(() => true, () => false);
