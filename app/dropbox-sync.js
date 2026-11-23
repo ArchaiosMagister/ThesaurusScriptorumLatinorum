@@ -205,6 +205,7 @@ export async function setupDropbox(prepareReload, setStatus) {
   const connection = document.getElementById('dropbox-connection');
   const connectButton = document.getElementById('dropbox-connect');
   const syncButton = document.getElementById('dropbox-sync');
+  const quickSync = document.getElementById('app-dropbox-sync');
   const disconnect = document.getElementById('dropbox-disconnect');
   const appKey = document.getElementById('dropbox-app-key');
   const message = document.getElementById('dropbox-status');
@@ -217,7 +218,9 @@ export async function setupDropbox(prepareReload, setStatus) {
     setup.hidden = connectButton.hidden = connected;
     syncButton.hidden = disconnect.hidden = !connected;
     connectButton.disabled = syncButton.disabled = disconnect.disabled = appKey.disabled = busy;
-    back.disabled = busy;
+    back.disabled = quickSync.disabled = busy;
+    if (connected) quickSync.removeAttribute('aria-haspopup');
+    else quickSync.setAttribute('aria-haspopup', 'dialog');
   }
   async function run(work) {
     if (busy) return;
@@ -228,11 +231,12 @@ export async function setupDropbox(prepareReload, setStatus) {
     finally { busy = false; paint(); }
   }
   appKey.value = read(localStorage, 'appKey') ?? '';
-  open.addEventListener('click', () => {
-    backupDialog.close();
+  function openDialog() {
+    if (backupDialog.open) backupDialog.close();
     paint();
     dialog.showModal();
-  });
+  }
+  open.addEventListener('click', openDialog);
   back.addEventListener('click', () => {
     dialog.close();
     backupDialog.showModal();
@@ -251,14 +255,21 @@ export async function setupDropbox(prepareReload, setStatus) {
     paint();
     report('Sesión de Dropbox cerrada en este navegador.');
   });
-  syncButton.addEventListener('click', () => void run(async () => {
-    const current = read(localStorage, 'connection');
-    if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
-    report('Comparando los datos con Dropbox…');
-    const work = () => synchronize(current, prepareReload, report);
-    if (navigator.locks) await navigator.locks.request(key, work);
-    else await work();
-  }));
+  function syncNow() {
+    void run(async () => {
+      const current = read(localStorage, 'connection');
+      if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
+      report('Comparando los datos con Dropbox…');
+      const work = () => synchronize(current, prepareReload, report);
+      if (navigator.locks) await navigator.locks.request(key, work);
+      else await work();
+    });
+  }
+  syncButton.addEventListener('click', syncNow);
+  quickSync.addEventListener('click', () => {
+    if (read(localStorage, 'connection')) syncNow();
+    else openDialog();
+  });
   addEventListener('storage', event => {
     if (event.key === key + ':connection' || event.key === null) paint();
   });

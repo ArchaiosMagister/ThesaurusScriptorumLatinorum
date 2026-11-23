@@ -4,7 +4,7 @@ const path = '/ThesaurusScriptorumLatinorum/';
 
 test('la cabecera deja espacio para Safari y reparte los controles sin desbordar', async ({ page }) => {
   await page.goto(path);
-  for (const [width, actionColumns] of [[360, 2], [820, 6], [1440, 6]]) {
+  for (const [width, actionColumns] of [[360, 3], [820, 7], [1440, 7]]) {
     await page.setViewportSize({ width, height: 900 });
     const layout = await page.locator('header').evaluate(header => {
       const measure = selector => [...header.querySelectorAll(selector)].map(control => {
@@ -1591,16 +1591,17 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       });
     }
     async function link(view) {
-      await view.getByRole('button', { name: 'Copias de seguridad' }).click();
-      await view.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
+      const shortcut = view.locator('header').getByRole('button', { name: 'Sincronizar ahora' });
+      await expect(shortcut.locator('svg')).toBeVisible();
+      await shortcut.click();
       await expect(view.locator('#dropbox-connection')).toHaveText('Sin vincular');
-      await expect(view.getByRole('button', { name: 'Sincronizar ahora' })).toBeHidden();
+      await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toBeHidden();
       await view.getByLabel('Clave pública de la aplicación de Dropbox').fill('claveprueba');
       await view.getByRole('button', { name: 'Vincular Dropbox' }).click();
       await expect(view.locator('#dropbox-status')).toContainText('Dropbox vinculado');
       await expect(view.locator('#dropbox-connection')).toHaveText('Vinculado');
       await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
-      await expect(view.getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
+      await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
     await page.goto(path);
     const editable = await seedBank(page);
@@ -1614,7 +1615,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       localStorage.setItem('atl-v1:examinator.current', JSON.stringify({ texto: 'Borrador excluido' }));
     });
     await link(page);
-    await page.getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(page.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([['exam-id', { id: 'exam-id', title: 'Examen del banco', snapshot: { texto: 'Gallia est omnis divisa.' } }]]);
     expect(JSON.stringify(remote)).not.toContain('Borrador excluido');
@@ -1623,7 +1624,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     await tablet.goto(new URL(path, page.url()).href);
     await link(tablet);
     const reloaded = tablet.waitForEvent('load');
-    await tablet.getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await tablet.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await reloaded;
     await expect(tablet.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     await expect(tablet.frameLocator('#panel-cuaderno iframe').getByText('4 textos distintos', { exact: true })).toBeVisible();
@@ -1645,12 +1646,14 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
 
     const reopened = await destination.newPage();
     await reopened.goto(new URL(path, page.url()).href);
+    const shortcut = reopened.locator('header').getByRole('button', { name: 'Sincronizar ahora' });
+    await shortcut.click();
+    await expect(reopened.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    await expect(reopened.locator('#dropbox-dialog')).toBeHidden();
+    expect(renewals).toBe(1);
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Vinculado');
-    await reopened.getByRole('button', { name: 'Sincronizar ahora' }).click();
-    await expect(reopened.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
-    expect(renewals).toBe(1);
     await reopened.getByRole('button', { name: 'Cerrar sesión de Dropbox' }).click();
     await reopened.reload();
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
