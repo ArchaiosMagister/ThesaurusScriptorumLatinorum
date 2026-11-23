@@ -36,7 +36,7 @@ test('el HTML conserva sus scripts y omite el manifiesto propio dentro del edito
 
 import { integrateLatinReadingCard, integrateReadingCardPreview } from '../scripts/reading-card-integration.mjs';
 import { varyPreverbSelection, varyPreverbControls } from '../scripts/preverb-regeneration.mjs';
-import { assertVendoredSources } from '../scripts/vendor-upstreams.mjs';
+import { assertVendoredSources, sealVendoredSources } from '../scripts/vendor-upstreams.mjs';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -104,6 +104,8 @@ test('la compilación autónoma detecta una modificación de sus motores incorpo
     assert.equal((await assertVendoredSources(root)).length, 2);
     await writeFile(join(root, 'vendor', 'examinator', 'source.js'), 'alterado');
     await assert.rejects(() => assertVendoredSources(root), /incompleta o modificada/);
+    await sealVendoredSources(root);
+    assert.equal((await assertVendoredSources(root)).length, 2);
   } finally {
     await rm(root, { recursive: true, force: true });
   }
