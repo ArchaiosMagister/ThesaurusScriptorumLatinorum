@@ -27,12 +27,14 @@ async function analyze(latin) {
 const find = (rows, fragment, id) => rows.find(row => row.fragment === fragment && row.tagId === 'gram.' + id);
 
 test('concordancia posesiva y exclusión del subjuntivo homógrafo', async () => {
-  const rows = await analyze('Suas copias.');
-  const agreement = find(rows, 'Suas copias', 'pronombres');
-  assert.equal(agreement?.state, 'automatic');
-  assert.match(agreement.evidence.join(' '), /acusativo femenino plural/);
-  assert.ok(agreement.alternatives.some(reading => reading.includes('subjuntivo')));
-  assert.ok(!rows.some(row => row.tagId.includes('subjuntivo')));
+  for (const fragment of ['suas copias', 'Suas copias']) {
+    const rows = await analyze(fragment + '.');
+    const agreement = find(rows, fragment, 'pronombres');
+    assert.equal(agreement?.state, 'automatic');
+    assert.match(agreement.evidence.join(' '), /acusativo femenino plural/);
+    assert.ok(agreement.alternatives.some(reading => reading.includes('subjuntivo')));
+    assert.ok(!rows.some(row => row.tagId.includes('subjuntivo')));
+  }
 });
 
 test('cum preposicional y conjuntivo, quod ambiguo y venit temporalmente ambiguo', async () => {

@@ -43,17 +43,18 @@ export function integrateNotebook(source) {
 const bankState = { query: '', author: 'all', sort: 'author-asc', view: 'all', work: '', reference: '', origin: '', usage: '', mode: 'all', tags: [], grammarOpen: false, includePending: false };
 let refreshBankProposals = () => {};
 let refreshBankUses = () => {};
-let bankAnalysisQueue = [];
+const bankAnalysisQueue = new Map();
 let bankAnalysisRunning = false;
 
-function scheduleBankAnalysis(texts, onResult) {
-    bankAnalysisQueue = texts.map(text => ({ text, onResult }));
+function scheduleBankAnalysis(texts, onResult = () => {}) {
+    for (const text of texts) bankAnalysisQueue.set(text.id, { text, onResult });
     if (bankAnalysisRunning) return;
     bankAnalysisRunning = true;
     setTimeout(async () => {
         try {
-            while (bankAnalysisQueue.length) {
-                const { text, onResult } = bankAnalysisQueue.shift();
+            while (bankAnalysisQueue.size) {
+                const [id, { text, onResult }] = bankAnalysisQueue.entries().next().value;
+                bankAnalysisQueue.delete(id);
                 const isCurrent = () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin);
                 if (!isCurrent()) continue;
                 try {
@@ -132,6 +133,12 @@ function syncBankView() {
 window.addEventListener('atl-view', () => {
     if (document.getElementById('editor').dataset.atlReady) syncBankView();
 });`);
+  replace('    [corpus, notebooks] = await Promise.all([loadCombinedCorpus(), workspace.listEditions()]);', `    const previous = corpus;
+    [corpus, notebooks] = await Promise.all([loadCombinedCorpus(), workspace.listEditions()]);
+    if (previous) {
+        const latinById = new Map(previous.texts.map(text => [text.id, text.latin]));
+        scheduleBankAnalysis(corpus.texts.filter(text => latinById.get(text.id) !== text.latin));
+    }`);
   replace('    left.replaceChildren();', `    left.replaceChildren();
     left.dataset.atlReady = 'true';
     bankView = undefined;

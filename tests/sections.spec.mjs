@@ -400,6 +400,12 @@ test('un Word importado desde Cuadernos se guarda en el banco con sus marcas', a
   await expect(frame.locator('.word-review')).toBeHidden();
   const { edition } = await notebookSnapshot(frame, 'Cuaderno Word');
   expect(edition.placements[0].source.sourceId).toMatch(/^doc\./);
+  await expect.poll(() => frame.locator('html').evaluate((_, id) => {
+    const prefix = 'atl-v1:cuaderno-banco-review-v1:' + id + ':';
+    return Object.keys(localStorage).some(key => key.startsWith(prefix) &&
+      Number.isInteger(JSON.parse(localStorage.getItem(key)).version));
+  }, edition.placements[0].source.sourceId)).toBe(true);
+
   expect(edition.placements[0].text.markup.map(mark => mark.exact)).toContain('tractum est');
   expect(edition.placements[0].vocabulary).toEqual(expect.arrayContaining([
     expect.objectContaining({ headword: 'Ægyptus, −ī', meaning: 'Egipto', origin: 'manual', included: true, locked: true })
