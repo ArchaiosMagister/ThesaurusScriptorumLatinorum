@@ -25,6 +25,8 @@ El archivo `upstream.json` documenta los commits de origen; `vendor/manifest.jso
 
 Sólo para actualizar deliberadamente un motor: cambia el commit de `upstream.json` y ejecuta `npm run vendor` antes de retirarlo. Comprueba los cambios de almacenamiento, revisa el manifiesto incorporado y ejecuta las pruebas. No se actualiza automáticamente desde otro repositorio.
 
+**Mantenimiento tras retirar los repositorios antiguos:** edita directamente los ficheros de `vendor/cuaderno` o `vendor/examinator` y ejecuta `npm run vendor:seal` para renovar exclusivamente las huellas locales. Esta operación funciona sin repositorios externos; después ejecuta `npm test`, `npm run build` y `npm run test:webkit` y revisa los cambios antes de fusionar. Nunca uses `npm run vendor` en ese caso porque restaura las versiones históricas fijadas.
+
 ## Alcance de la rama
 
 El Banco de textos combina la búsqueda con filtros por autor, obra y etiquetas gramaticales confirmadas. En **Etiquetas gramaticales**, **Incluir propuestas pendientes de Collatinus** amplía la búsqueda a los análisis de la versión actual del pasaje. Las propuestas se marcan como pendientes y se confirman o descartan en **Etiquetar**. El lector recorre los resultados filtrados y ordenados. Examinator puede copiar un pasaje del banco y conserva su acceso a Perseus. La cabecera general ofrece la actualización de la aplicación.
