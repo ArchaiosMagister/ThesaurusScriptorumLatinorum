@@ -606,6 +606,29 @@ test('el historial local distingue coincidencias anteriores y permite volver a a
   ]);
 });
 
+test('Examinator no descarga el motor PDF hasta su primera utilización', async ({ page }) => {
+  const fetched = [];
+  page.on('request', request => {
+    if (request.url().includes('/lib/html2pdf.bundle.min.js')) fetched.push(request.url());
+  });
+  await page.goto(path);
+  await expect(page.locator('#panel-examinator iframe')).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Examinator' }).click();
+  const exam = page.frameLocator('#panel-examinator iframe');
+  await expect.poll(() => exam.locator('html').evaluate(() =>
+    Boolean(window.M?.S) && typeof window.atlLoadPdfExporter === 'function')).toBe(true);
+  expect(fetched).toHaveLength(0);
+  const state = await exam.locator('html').evaluate(async () => {
+    await Promise.all([window.atlLoadPdfExporter(), window.atlLoadPdfExporter()]);
+    return { type: typeof window.html2pdf,
+      scripts: document.querySelectorAll('script[src*="html2pdf.bundle.min.js"]').length };
+  });
+  expect(state).toEqual({ type: 'function', scripts: 1 });
+  expect(fetched).toHaveLength(1);
+  await exam.locator('html').evaluate(() => window.atlLoadPdfExporter());
+  expect(fetched).toHaveLength(1);
+});
+
 test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', async ({ page }) => {
   const { createServer } = await import('node:http');
   const { once } = await import('node:events');
@@ -657,6 +680,10 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.getByRole('tab', { name: 'Examinator' }).click();
     const exam = page.frameLocator('#panel-examinator iframe');
     await expect(exam.getByRole('button', { name: 'Banco de textos…' })).toBeVisible();
+    expect(await exam.locator('html').evaluate(async () => {
+      await window.atlLoadPdfExporter();
+      return typeof window.html2pdf;
+    })).toBe('function');
     await exam.getByRole('button', { name: 'Banco de textos…' }).click();
     await expect(exam.getByRole('searchbox', { name: 'Buscar en el banco de textos' })).toBeVisible();
     await exam.locator('.modal').getByRole('button', { name: 'Cerrar', exact: true }).last().click();
