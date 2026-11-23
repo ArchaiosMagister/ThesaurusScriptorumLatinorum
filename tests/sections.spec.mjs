@@ -1437,7 +1437,10 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
   const priorMorph = before.questions.find(question => question.kind === 'morphology').words;
   const otherQuestions = before.questions.filter(question => question.kind !== 'morphology');
   const targetStart = latin.lastIndexOf('Zorvalix');
+  const previewTab = notebook.locator('.edition-mobile-switch').getByRole('button', { name: 'Vista previa' });
+  if (await previewTab.isVisible()) await previewTab.click();
   const paragraph = notebook.locator('.edition-paper .edition-latin').first();
+  await expect(paragraph).toBeVisible();
   await paragraph.scrollIntoViewIfNeeded();
   const point = await paragraph.evaluate((element, start) => {
     const end = start + 'Zorvalix'.length;
@@ -1452,10 +1455,12 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
     if (!first || !last) throw Error('No se encontró la aparición exacta');
     const range = document.createRange();
     range.setStart(first, left); range.setEnd(last, right);
-    const word = range.getBoundingClientRect(), box = element.getBoundingClientRect();
-    return { x: word.left + word.width / 2 - box.left, y: word.top + word.height / 2 - box.top };
+    const word = range.getBoundingClientRect();
+    return { x: word.left + word.width / 2, y: word.top + word.height / 2 };
   }, targetStart);
-  await paragraph.click({ position: point });
+  const frameBox = await page.locator('#panel-cuaderno iframe').boundingBox();
+  expect(frameBox).not.toBeNull();
+  await page.mouse.click(frameBox.x + point.x, frameBox.y + point.y);
   const card = notebook.locator('.edition-lexical-card');
   await expect(card).toBeVisible();
   await expect(card).toContainText('Zorvalix');
