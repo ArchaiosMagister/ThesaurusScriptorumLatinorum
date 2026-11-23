@@ -1531,3 +1531,100 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
   if (await configTab.isVisible()) await configTab.click();
   await expect(notebook.locator('.edition-academic-morph-row').filter({ hasText: 'Zorvalix' })).toBeVisible();
 });
+
+test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compartir el examen completo', async ({ page, browser }) => {
+  let remote;
+  let uploads = 0;
+  const destination = await browser.newContext({ serviceWorkers: 'block' });
+  try {
+    for (const context of [page.context(), destination]) {
+      await context.route('https://www.dropbox.com/oauth2/authorize?*', async route => {
+        const request = new URL(route.request().url());
+        expect(request.searchParams.get('code_challenge_method')).toBe('S256');
+        const back = new URL(request.searchParams.get('redirect_uri'));
+        back.searchParams.set('code', 'codigo-de-prueba');
+        back.searchParams.set('state', request.searchParams.get('state'));
+        await route.fulfill({
+          contentType: 'text/html',
+          body: '<script>location.replace(' + JSON.stringify(back.href) + ')</script>'
+        });
+      });
+      await context.exposeBinding('testDropbox', (_, { url, headers, body }) => {
+        if (url.endsWith('/oauth2/token')) {
+          const params = new URLSearchParams(body);
+          expect(params.get('code_verifier')).toMatch(/^[\w-]{43}$/);
+          return { status: 200, json: { access_token: 'prueba', account_id: 'cuenta-prueba', expires_in: 3600 } };
+        }
+        if (url.endsWith('/download')) {
+          return remote
+            ? { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'rev-' + uploads }) }, json: remote }
+            : { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
+        }
+        const args = JSON.parse(headers['dropbox-api-arg']);
+        expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
+        uploads++;
+        remote = JSON.parse(body);
+        return { status: 200, json: { rev: 'rev-' + uploads } };
+      });
+      await context.addInitScript(() => {
+        const original = window.fetch.bind(window);
+        window.fetch = async (url, options) => {
+          if (typeof url !== 'string' ||
+              !/^https:\/\/(?:api|content)\.dropboxapi\.com\//.test(url)) return original(url, options);
+          const result = await window.testDropbox({
+            url, headers: Object.fromEntries(new Headers(options.headers)),
+            body: options.body instanceof Blob ? await options.body.text() : options.body?.toString()
+          });
+          return new Response(JSON.stringify(result.json), { status: result.status, headers: result.headers });
+        };
+      });
+    }
+    async function link(view) {
+      await view.getByRole('button', { name: 'Copias de seguridad' }).click();
+      await view.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
+      await view.getByLabel('Clave pública de la aplicación de Dropbox').fill('claveprueba');
+      await view.getByRole('button', { name: 'Vincular Dropbox' }).click();
+      await expect(view.locator('#dropbox-status')).toContainText('Dropbox vinculado');
+    }
+    await page.goto(path);
+    const editable = await seedBank(page);
+    await page.getByRole('tab', { name: 'Cuadernos' }).click();
+    page.once('dialog', prompt => prompt.accept('Cuaderno para sincronizar'));
+    await editable.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
+    await expect(editable.getByText('Cuaderno para sincronizar', { exact: true }).first()).toBeVisible();
+    await page.evaluate(async () => {
+      const { recordExam } = await import('./modulos/shared/text-usage.js');
+      await recordExam('exam-id', 'Examen del banco', { texto: 'Gallia est omnis divisa.', tokens: ['dato excluido'] });
+      localStorage.setItem('atl-v1:examinator.current', JSON.stringify({ texto: 'Borrador excluido' }));
+    });
+    await link(page);
+    await page.getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await expect(page.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(remote.data.usages).toEqual([['exam-id', { id: 'exam-id', title: 'Examen del banco', snapshot: { texto: 'Gallia est omnis divisa.' } }]]);
+    expect(JSON.stringify(remote)).not.toContain('Borrador excluido');
+
+    const tablet = await destination.newPage();
+    await tablet.goto(new URL(path, page.url()).href);
+    await link(tablet);
+    const reloaded = tablet.waitForEvent('load');
+    await tablet.getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await reloaded;
+    await expect(tablet.frameLocator('#panel-cuaderno iframe').getByText('4 textos distintos', { exact: true })).toBeVisible();
+    expect(await tablet.evaluate(async () => {
+      const { loadUsageIndex, savedExam } = await import('./modulos/shared/text-usage.js');
+      const index = await loadUsageIndex();
+      const { readSyncData } = await import('./backup-store.js');
+      const { data } = await readSyncData();
+      const editor = data.editor['atl-v1:cuaderno-textos-latinos-workspace'];
+      return {
+        canOpenExam: Boolean(await savedExam('exam-id')),
+        hasExamUse: index.some(entry => entry.document.id === 'exam-id' && entry.document.usageOnly),
+        hasNotebook: editor.editions.some(([, row]) => row.edition.title === 'Cuaderno para sincronizar'),
+        hasTags: editor.corpus[0][1].corpus.texts.some(text => text.tagIds.includes('gram.ablativo.absoluto'))
+      };
+    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true });
+    expect(uploads).toBe(1);
+  } finally {
+    await destination.close();
+  }
+});

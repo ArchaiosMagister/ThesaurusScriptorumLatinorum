@@ -42,11 +42,23 @@
   <dialog id="backup-dialog" aria-labelledby="backup-title">
     <h2 id="backup-title">Copias de seguridad</h2>
     <p>Para sincronizar manualmente, descarga una copia integral y ábrela en el otro dispositivo. Verás una comparación antes de aplicar cambios.</p>
+    <button type="button" id="app-dropbox">Sincronizar con Dropbox</button>
     <button type="button" id="backup-export">Descargar copia integral</button>
     <label for="backup-file">Elegir copia para recuperar</label>
     <input id="backup-file" type="file" accept=".json,application/json">
     <p id="backup-preview" role="status" aria-live="polite"></p>
     <button type="button" id="backup-restore" disabled>Recuperar copia</button>
+    <form method="dialog"><button>Cerrar</button></form>
+  </dialog>
+  <dialog id="dropbox-dialog" aria-labelledby="dropbox-title">
+    <h2 id="dropbox-title">Sincronizar con Dropbox</h2>
+    <p>Sincroniza el banco con sus etiquetas, los cuadernos y el registro de textos usados en exámenes.</p>
+    <label for="dropbox-app-key">Clave pública de la aplicación de Dropbox</label>
+    <input type="text" id="dropbox-app-key" spellcheck="false" autocomplete="off">
+    <button type="button" id="dropbox-connect">Vincular Dropbox</button>
+    <button type="button" id="dropbox-sync" disabled>Sincronizar ahora</button>
+    <button type="button" id="dropbox-disconnect" disabled>Cerrar sesión de Dropbox</button>
+    <p id="dropbox-status" role="status" aria-live="polite"></p>
     <form method="dialog"><button>Cerrar</button></form>
   </dialog>
   <noscript>Activa JavaScript para abrir el banco de textos y los editores.</noscript>

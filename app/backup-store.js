@@ -96,6 +96,7 @@ function validateData(data) {
         if (store === 'exams') {
           if (typeof row.title !== 'string') throw new Error('Título de examen inválido.');
           desktopExam(row.snapshot);
+          if (row.usage !== undefined) desktopExam(row.usage);
         }
       }
     }
@@ -355,6 +356,81 @@ export async function restoreBackup(payload, preview) {
     const reverted = await Promise.allSettled(committed.map(([name, stores]) => applyRows(name, stores, true)));
     for (const [key, value] of preferences) if (localStorage.getItem(key) === value) localStorage.removeItem(key);
     if (reverted.some(result => result.status === 'rejected')) throw new Error('La reversión no se pudo verificar. Conserva la copia de seguridad.');
+    throw error;
+  }
+}
+
+const archiveName = 'atl-v1:exam-archive';
+const syncNames = [corpusName, workspaceName, archiveName];
+
+function examUsage(row) {
+  const { texto, atlBankSource, literatura } = row.usage ?? row.snapshot;
+  return {
+    texto,
+    ...(typeof atlBankSource?.id === 'string' && { atlBankSource: {
+      id: atlBankSource.id,
+      ...(typeof atlBankSource.updatedAt === 'string' && { updatedAt: atlBankSource.updatedAt })
+    } }),
+    ...(typeof literatura?.texto === 'string' && { literatura: { texto: literatura.texto } })
+  };
+}
+
+function scopedSync(rows) {
+  return {
+    editor: Object.fromEntries(syncNames.slice(0, 2).map(name => [name, rows[name]])),
+    usages: rows[archiveName].exams.map(([id, row]) => [id, { id, title: row.title, snapshot: examUsage(row) }])
+  };
+}
+
+export async function readSyncData() {
+  const rows = Object.fromEntries(await Promise.all(syncNames.map(async name => [name, await readDatabase(name)])));
+  return { data: scopedSync(rows), rows };
+}
+
+export function validateSyncData(data) {
+  if (!data?.editor || !Array.isArray(data.usages) ||
+      Object.keys(data.editor).length !== 2 || syncNames.slice(0, 2).some(name =>
+        !data.editor[name] || Object.keys(data.editor[name]).length !== Object.keys(schemas[name]).length ||
+        Object.keys(schemas[name]).some(store => !Object.hasOwn(data.editor[name], store)))) {
+    throw new Error('El archivo de Dropbox no contiene un espacio de Thesaurus válido.');
+  }
+  const rows = { ...data.editor, [archiveName]: { exams: data.usages } };
+  validateData({ databases: rows, preferences: {} });
+  // Reconstruye los registros de uso con los únicos campos admitidos.
+  return scopedSync(rows);
+}
+
+export function isEmptySyncEditor(editor) {
+  return syncNames.slice(0, 2).every(name => {
+    const stores = editor[name];
+    return !stores.editions?.length && !stores.history?.length && stores.corpus.every(([, { corpus }]) =>
+      !corpus.texts.length && !corpus.tags.length && !corpus.notebooks.length);
+  });
+}
+
+export const syncFingerprint = fingerprint;
+
+export async function applySyncData(data, before) {
+  data = validateSyncData(data);
+  const exams = new Map(before[archiveName].exams);
+  const after = { ...data.editor, [archiveName]: { exams: data.usages.map(([id, row]) => {
+    const local = exams.get(id);
+    if (local && !local.usageOnly) {
+      return [id, { ...local, title: row.title, usage: row.snapshot }];
+    }
+    return [id, { ...row, usageOnly: true }];
+  }) } };
+  const committed = [];
+  try {
+    for (const name of syncNames) {
+      // Comprueba toda revisión local en la misma transacción que aplica el cambio.
+      await replaceDatabase(name, before[name], after[name]);
+      committed.push(name);
+    }
+  } catch (error) {
+    const reverted = await Promise.allSettled(committed.reverse().map(name => replaceDatabase(name, after[name], before[name])));
+    if (reverted.some(result => result.status === 'rejected'))
+      throw new Error('Otra pestaña modificó los datos durante la sincronización. Revisa el estado local antes de repetirla.');
     throw error;
   }
 }

@@ -1,3 +1,4 @@
+import { setupDropbox } from './dropbox-sync.js';
 import { setupBackup } from './backup-ui.js';
 import { installApplication, prepareOffline, startApplicationWorker, updateApplication } from './pwa.js';
 
@@ -186,3 +187,5 @@ try {
 openSection(location.hash.slice(1));
 if (workerWarning) setStatus(workerWarning);
 setupBackup(prepareReload, setStatus);
+
+void setupDropbox(prepareReload, setStatus).catch(error => setStatus(error.message));
