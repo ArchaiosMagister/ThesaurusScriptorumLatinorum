@@ -4,7 +4,7 @@ const path = '/ThesaurusScriptorumLatinorum/';
 
 test('la cabecera deja espacio para Safari y reparte los controles sin desbordar', async ({ page }) => {
   await page.goto(path);
-  for (const [width, actionColumns] of [[360, 2], [820, 3], [1440, 6]]) {
+  for (const [width, actionColumns] of [[360, 2], [820, 6], [1440, 6]]) {
     await page.setViewportSize({ width, height: 900 });
     const layout = await page.locator('header').evaluate(header => {
       const measure = selector => [...header.querySelectorAll(selector)].map(control => {
@@ -19,16 +19,32 @@ test('la cabecera deja espacio para Safari y reparte los controles sin desbordar
     });
     expect(layout.top).toBeGreaterThanOrEqual(60);
     expect(new Set(layout.tabs.map(tab => tab.top)).size).toBe(1);
+    for (const [index, tab] of layout.tabs.slice(1).entries()) {
+      expect(tab.left - layout.tabs[index].right).toBeGreaterThanOrEqual(10);
+    }
     expect(new Set(layout.actions.map(action => action.left)).size).toBe(actionColumns);
     for (const group of [layout.tabs, layout.actions]) {
       for (const control of group) {
-        expect(control.height).toBeGreaterThanOrEqual(44);
+        expect(control.height).toBeGreaterThanOrEqual(34);
+        expect(control.height).toBeLessThan(44);
         expect(control.left).toBeGreaterThanOrEqual(0);
         expect(control.right).toBeLessThanOrEqual(width);
         expect(Math.abs(control.width - group[0].width)).toBeLessThan(1);
       }
     }
   }
+  const tabs = page.getByRole('tablist').getByRole('tab');
+  const selectedColors = new Set();
+  await tabs.last().click();
+  for (const tab of await tabs.all()) {
+    const restingColor = await tab.evaluate(button => getComputedStyle(button).backgroundColor);
+    await tab.click();
+    await expect(tab).toHaveAttribute('aria-selected', 'true');
+    const activeColor = await tab.evaluate(button => getComputedStyle(button).backgroundColor);
+    expect(activeColor).not.toBe(restingColor);
+    selectedColors.add(activeColor);
+  }
+  expect(selectedColors.size).toBe(3);
 });
 
 test('arrancan los tres módulos reales y se conserva el editor al cambiar de pestaña', async ({ page }) => {
