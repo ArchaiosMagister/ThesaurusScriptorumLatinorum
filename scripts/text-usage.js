@@ -33,7 +33,8 @@ export function recordExam(id, title, snapshot) {
 }
 
 export async function savedExam(id) {
-  return (await examArchive('readonly', store => store.get(id)))?.snapshot;
+  const record = await examArchive('readonly', store => store.get(id));
+  return record?.usageOnly ? undefined : record?.snapshot;
 }
 
 export async function loadUsageIndex() {
@@ -61,11 +62,13 @@ export async function loadUsageIndex() {
       push({ type: 'histórico', id: book.id, title: book.title }, text?.latin, text?.id, index + 1, null, text?.updatedAt);
     }
   }
-  for (const { id, title, snapshot } of exams) {
-    push({ type: 'examen', id, title }, snapshot.texto, snapshot.atlBankSource?.id, null, null,
+  for (const { id, title, snapshot: saved, usage, usageOnly } of exams) {
+    const snapshot = usage ?? saved;
+    const document = { type: 'examen', id, title, usageOnly };
+    push(document, snapshot.texto, snapshot.atlBankSource?.id, null, null,
       snapshot.atlBankSource?.updatedAt);
     if (snapshot.literatura?.texto) {
-      push({ type: 'examen', id, title }, snapshot.literatura.texto, null, 'Literatura', null);
+      push(document, snapshot.literatura.texto, null, 'Literatura', null);
     }
   }
   return entries;
@@ -113,6 +116,10 @@ export function usageList(matches, onOpen) {
     const label = match.kind + ' · ' + doc.type + ' «' + doc.title + '»' + version +
       (typeof position === 'number' ? ' · texto ' + position : position ? ' · ' + position : '');
     row.append(label);
+    if (doc.usageOnly) {
+      list.append(row);
+      continue;
+    }
     const button = document.createElement('button');
     button.className = 'tbtn';
     button.type = 'button';

@@ -15,7 +15,7 @@ async function list(root, prefix) {
 export async function buildRootWorker(root) {
   const files = await list(root, 'modulos/');
   const shell = ['./', './index.html', './manifest.webmanifest', './navigation.js', './styles.css', './pwa.js',
-    './backup-ui.js', './backup-store.js'];
+    './backup-ui.js', './backup-store.js', './dropbox-sync.js', './dropbox-plan.js'];
   const template = await readFile(new URL('./root-worker.js', import.meta.url), 'utf8');
   const hash = createHash('sha256').update(template);
   for (const path of [...shell.slice(1), ...files]) hash.update(path).update(await readFile(join(root, path)));
