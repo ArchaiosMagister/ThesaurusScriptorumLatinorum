@@ -1544,7 +1544,10 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
         const back = new URL(request.searchParams.get('redirect_uri'));
         back.searchParams.set('code', 'codigo-de-prueba');
         back.searchParams.set('state', request.searchParams.get('state'));
-        await route.fulfill({ status: 302, headers: { location: back.href } });
+        await route.fulfill({
+          contentType: 'text/html',
+          body: '<script>location.replace(' + JSON.stringify(back.href) + ')</script>'
+        });
       });
       await context.route('https://api.dropboxapi.com/oauth2/token', async route => {
         const params = new URLSearchParams(route.request().postData());
