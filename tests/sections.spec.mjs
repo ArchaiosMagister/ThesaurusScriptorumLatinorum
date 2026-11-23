@@ -606,6 +606,37 @@ test('el historial local distingue coincidencias anteriores y permite volver a a
   ]);
 });
 
+test('Examinator carga JSZip bajo demanda, exporta Word válido y evita descargas duplicadas', async ({ page }) => {
+  const requests = [];
+  page.on('request', request => {
+    if (request.url().endsWith('/lib/jszip.min.js')) requests.push(request.url());
+  });
+  await page.goto(path + '#examinator');
+  const exam = page.frameLocator('#panel-examinator iframe');
+  await expect.poll(() => exam.locator('html').evaluate(() =>
+    typeof window.M?.Exam?.docx === 'function' && typeof window.atlLoadWordExporter === 'function')).toBe(true);
+  expect(requests).toHaveLength(0);
+  const valid = await exam.locator('html').evaluate(async () => {
+    // Una sola descarga aunque dos exportaciones pidan la biblioteca a la vez.
+    await Promise.all([window.atlLoadWordExporter(), window.atlLoadWordExporter()]);
+    window.M.S.titulo = 'Documento Word comprobado';
+    const encoded = await window.M.Exam.docx(window.M.S);
+    const zip = await window.JSZip.loadAsync(encoded, { base64: true });
+    const document = zip.file('word/document.xml');
+    return {
+      document: Boolean(document && (await document.async('string')).includes('Documento Word comprobado')),
+      footer: Boolean(zip.file('word/footer1.xml')),
+      scripts: document && window.document.querySelectorAll('script[src*="jszip.min.js"]').length
+    };
+  });
+  expect(valid).toEqual({ document: true, footer: true, scripts: 1 });
+  expect(requests).toHaveLength(1);
+  const download = page.waitForEvent('download');
+  await clickExamToolbar(exam, '#btnDocx');
+  expect((await download).suggestedFilename()).toMatch(/\.docx$/);
+  expect(requests).toHaveLength(1);
+});
+
 test('Examinator no descarga el motor PDF hasta su primera utilización', async ({ page }) => {
   const fetched = [];
   page.on('request', request => {
@@ -682,8 +713,11 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await expect(exam.getByRole('button', { name: 'Banco de textos…' })).toBeVisible();
     expect(await exam.locator('html').evaluate(async () => {
       await window.atlLoadPdfExporter();
-      return typeof window.html2pdf;
-    })).toBe('function');
+      const encoded = await window.M.Exam.docx({ ...window.M.S, titulo: 'Word sin conexión' });
+      const zip = await window.JSZip.loadAsync(encoded, { base64: true });
+      const word = await zip.file('word/document.xml').async('string');
+      return { pdf: typeof window.html2pdf, word: word.includes('Word sin conexión') };
+    })).toEqual({ pdf: 'function', word: true });
     await exam.getByRole('button', { name: 'Banco de textos…' }).click();
     await expect(exam.getByRole('searchbox', { name: 'Buscar en el banco de textos' })).toBeVisible();
     await exam.locator('.modal').getByRole('button', { name: 'Cerrar', exact: true }).last().click();
