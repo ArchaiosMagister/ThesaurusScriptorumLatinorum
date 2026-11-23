@@ -1417,3 +1417,62 @@ test('las copias de Cuadernos abren un diálogo sin mover el botón', async ({ p
   await modal.getByRole('button', { name: 'Cerrar', exact: true }).click();
   await expect(trigger).toBeFocused();
 });
+
+
+test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y actualiza morfología sin cambiar otras preguntas', async ({ page }) => {
+  const latin = lexicalPassage + ' Zorvalix Zorvalix.';
+  await page.goto(path);
+  await page.getByRole('tab', { name: 'Cuadernos' }).click();
+  const notebook = page.frameLocator('#panel-cuaderno iframe');
+  page.once('dialog', dialog => dialog.accept('Subrayado desde Collatinus'));
+  await notebook.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
+  await notebook.getByRole('button', { name: 'Pegar texto', exact: true }).click();
+  const paste = notebook.locator('.original-paste');
+  await paste.getByRole('textbox', { name: 'Texto latino' }).fill(latin);
+  await paste.getByRole('button', { name: 'Añadir al cuaderno' }).click();
+  await expect(paste).toBeHidden();
+  const snapshot = () => notebookSnapshot(notebook, 'Subrayado desde Collatinus');
+  await expect.poll(async () => Boolean((await snapshot())?.edition?.placements?.length)).toBe(true);
+  const before = (await snapshot()).edition.placements[0];
+  const priorMorph = before.questions.find(question => question.kind === 'morphology').words;
+  const otherQuestions = before.questions.filter(question => question.kind !== 'morphology');
+  const targetStart = latin.lastIndexOf('Zorvalix');
+  const paragraph = notebook.locator('.edition-paper .edition-latin').first();
+  await paragraph.scrollIntoViewIfNeeded();
+  const point = await paragraph.evaluate((element, start) => {
+    const end = start + 'Zorvalix'.length;
+    const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let text, offset = 0, first = null, last = null, left = 0, right = 0;
+    while ((text = walk.nextNode())) {
+      const limit = offset + text.textContent.length;
+      if (first === null && start >= offset && start < limit) { first = text; left = start - offset; }
+      if (end > offset && end <= limit) { last = text; right = end - offset; break; }
+      offset = limit;
+    }
+    if (!first || !last) throw Error('No se encontró la aparición exacta');
+    const range = document.createRange();
+    range.setStart(first, left); range.setEnd(last, right);
+    const word = range.getBoundingClientRect(), box = element.getBoundingClientRect();
+    return { x: word.left + word.width / 2 - box.left, y: word.top + word.height / 2 - box.top };
+  }, targetStart);
+  await paragraph.click({ position: point });
+  const card = notebook.locator('.edition-lexical-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Zorvalix');
+  const add = card.getByRole('button', { name: 'Subrayar para análisis morfológico' });
+  await expect(add).toBeVisible();
+  if (priorMorph.length >= 4) {
+    const select = card.getByRole('combobox', { name: 'Palabra subrayada que se sustituirá' });
+    await expect(select).toBeVisible();
+    await expect(add).toBeDisabled();
+    await select.selectOption({ index: 1 });
+    await expect(add).toBeEnabled();
+  }
+  await add.click();
+  await expect.poll(async () => (await snapshot()).edition.placements[0].text.markup
+    .some(mark => mark.kind === 'morph-underline' && mark.startUtf16 === targetStart && mark.exact === 'Zorvalix')).toBe(true);
+  const after = (await snapshot()).edition.placements[0];
+  expect(after.questions.filter(question => question.kind !== 'morphology')).toEqual(otherQuestions);
+  expect(after.questions.find(question => question.kind === 'morphology').words.length).toBeLessThanOrEqual(4);
+  await expect(notebook.locator('.edition-academic-morph-row').filter({ hasText: 'Zorvalix' })).toBeVisible();
+});
