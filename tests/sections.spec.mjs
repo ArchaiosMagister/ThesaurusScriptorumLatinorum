@@ -400,6 +400,12 @@ test('un Word importado desde Cuadernos se guarda en el banco con sus marcas', a
   await expect(frame.locator('.word-review')).toBeHidden();
   const { edition } = await notebookSnapshot(frame, 'Cuaderno Word');
   expect(edition.placements[0].source.sourceId).toMatch(/^doc\./);
+  await expect.poll(() => frame.locator('html').evaluate((_, id) => {
+    const prefix = 'atl-v1:cuaderno-banco-review-v1:' + id + ':';
+    return Object.keys(localStorage).some(key => key.startsWith(prefix) &&
+      Number.isInteger(JSON.parse(localStorage.getItem(key)).version));
+  }, edition.placements[0].source.sourceId)).toBe(true);
+
   expect(edition.placements[0].text.markup.map(mark => mark.exact)).toContain('tractum est');
   expect(edition.placements[0].vocabulary).toEqual(expect.arrayContaining([
     expect.objectContaining({ headword: 'Ægyptus, −ī', meaning: 'Egipto', origin: 'manual', included: true, locked: true })
@@ -706,6 +712,13 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.reload();
     const notebook = page.frameLocator('#panel-cuaderno iframe');
     await expect(notebook.getByRole('button', { name: 'Importar Word al banco' })).toBeVisible();
+    await notebook.getByRole('button', { name: 'Pegar en el banco' }).click();
+    const paste = notebook.locator('.modal').last();
+    await paste.getByRole('textbox', { name: 'Título' }).fill('Análisis sin red');
+    await paste.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
+    await paste.getByRole('button', { name: 'Guardar en el banco' }).click();
+    await expect(notebook.getByText('Pronombres y determinantes · Automática', { exact: true })).toBeVisible();
+
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     await expect(notebook.getByRole('heading', { name: 'Mis cuadernos', exact: true })).toBeVisible();
     await page.getByRole('tab', { name: 'Examinator' }).click();
@@ -846,7 +859,6 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const review = frame.locator('.modal').last();
   const candidate = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Pendiente' }).first();
-  await review.getByRole('button', { name: 'Analizar con Collatinus' }).click();
   await expect(candidate).toBeVisible({ timeout: 45000 });
   await review.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await page.reload();
@@ -886,6 +898,46 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   const confirmed = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Confirmada' }).first();
   await confirmed.locator(':scope > summary').click();
   await expect(review.locator('.cuaderno-review-passage mark')).toHaveText('Amatus est');
+});
+
+test('el Banco etiqueta la concordancia sin intervención y respeta su descarte al editar', async ({ page }) => {
+  await page.goto(path);
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  const card = bank.getByRole('button', { name: /^Concordancia de prueba / });
+  await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+  await modal.getByRole('textbox', { name: 'Título' }).fill('Concordancia de prueba');
+  await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
+  await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  const automatic = bank.getByText('Pronombres y determinantes · Automática', { exact: true });
+  await expect(automatic).toBeVisible();
+  await bank.locator('.atl-grammar-filters > summary').click();
+  const pronouns = bank.getByRole('checkbox', { name: 'Pronombres y determinantes', exact: true, includeHidden: true });
+  await pronouns.evaluate(node => {
+    for (let group = node.closest('details'); group; group = group.parentElement.closest('details')) group.open = true;
+  });
+  await pronouns.check();
+  await expect(card).toBeVisible();
+  await pronouns.uncheck();
+  await card.click();
+  await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
+  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Pronombres y determinantes · Automática' });
+  await modal.getByText('Etiquetas automáticas', { exact: true }).click();
+  await expect(agreement).toBeVisible();
+  await expect(modal.locator('.grammar-proposal-card').filter({ hasText: /Subjuntivo · (Pendiente|Automática)/ })).toHaveCount(0);
+  await agreement.locator(':scope > summary').click();
+  await agreement.getByRole('button', { name: 'Descartar', exact: true }).click();
+  await modal.getByRole('button', { name: 'Guardar etiquetas', exact: true }).click();
+  await expect(automatic).toHaveCount(0);
+  await card.click();
+  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+  await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Postea. Suas copias.');
+  await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(card).toBeVisible();
+  await card.click();
+  await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
+  await expect(modal.getByText('Suas copias · Pronombres y determinantes · Descartada', { exact: true })).toBeVisible();
 });
 
 test('una ficha editorial recuperada admite notas y vocabulario reutilizables', async ({ page }) => {
@@ -1578,7 +1630,9 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
     if (!first || !last) throw Error('No se encontró la aparición exacta');
     const range = document.createRange();
     range.setStart(first, left); range.setEnd(last, right);
-    const word = range.getBoundingClientRect();
+    // El rectángulo envolvente puede quedar entre líneas si el texto se parte.
+    const word = Array.from(range.getClientRects()).sort((a, b) => b.width - a.width)[0];
+    if (!word?.width) throw Error('La aparición no tiene un rectángulo visible');
     return { x: word.left + word.width / 2, y: word.top + word.height / 2 };
   }, targetStart);
   const frameBox = await page.locator('#panel-cuaderno iframe').boundingBox();
@@ -1691,12 +1745,19 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const { recordExam } = await import('./modulos/shared/text-usage.js');
       await recordExam('exam-id', 'Examen del banco', { texto: 'Gallia est omnis divisa.', tokens: ['dato excluido'] });
       localStorage.setItem('atl-v1:examinator.current', JSON.stringify({ texto: 'Borrador excluido' }));
+      const key = 'atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64);
+      const rejected = ['0:4:gram.subjuntivo'];
+      const pending = [{ start: 0, end: 4, tagId: 'gram.subjuntivo', evidence: ['Análisis local'], alternatives: [] }];
+      localStorage.setItem(key, JSON.stringify({ rejected, pending, corrected: [], version: 1 }));
+
     });
     await link(page);
     await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(page.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([['exam-id', { id: 'exam-id', title: 'Examen del banco', snapshot: { texto: 'Gallia est omnis divisa.' } }]]);
     expect(JSON.stringify(remote)).not.toContain('Borrador excluido');
+    expect(JSON.stringify(remote)).not.toContain('Análisis local');
+    expect(remote.data.bankReviews[0][1].rejected).toEqual(['0:4:gram.subjuntivo']);
 
     const tablet = await destination.newPage();
     await tablet.goto(new URL(path, page.url()).href);
@@ -1712,13 +1773,15 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const { readSyncData } = await import('./backup-store.js');
       const { data } = await readSyncData();
       const editor = data.editor['atl-v1:cuaderno-textos-latinos-workspace'];
+      const review = JSON.parse(localStorage.getItem('atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64)));
       return {
+        rejected: review.rejected,
         canOpenExam: Boolean(await savedExam('exam-id')),
         hasExamUse: index.some(entry => entry.document.id === 'exam-id' && entry.document.usageOnly),
         hasNotebook: editor.editions.some(([, row]) => row.edition.title === 'Cuaderno para sincronizar'),
         hasTags: editor.corpus[0][1].corpus.texts.some(text => text.tagIds.includes('gram.ablativo.absoluto'))
       };
-    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true });
+    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true, rejected: ['0:4:gram.subjuntivo'] });
     expect(uploads).toBe(1);
     // Una baja en un dispositivo ya sincronizado debe propagarse sin reaparecer
     // ni eliminar un examen completo guardado únicamente en el otro dispositivo.

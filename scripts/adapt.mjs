@@ -7,7 +7,7 @@ import { organizeNotebookEditor, completeNotebookVocabulary } from './notebook-e
 import { varyPreverbControls, varyPreverbSelection } from './preverb-regeneration.mjs';
 import { groupLibraryAuthors, integrateNotebookLibrary, libraryStyles } from './library-integration.mjs';
 import { integrateMorphologyControls, integrateMorphologyEdition, integrateManualNotebookUnderline } from './notebook-morphology.mjs';
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { integrateNotebook } from './notebook-integration.mjs';
@@ -133,6 +133,14 @@ export function lexicalValuesForDocument(option) {
     const bankVocabulary = await readFile(new URL('./bank-vocabulary.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'ui', 'atl-bank-catalog.js'), catalogue);
     await writeFile(join(directory, 'ui', 'atl-bank-review.js'), bankReview);
+    await cp(new URL('./bank-context.js', import.meta.url), join(directory, 'ui', 'atl-bank-context.js'));
+    const grammarTags = join(directory, 'core', 'grammar-tags.js');
+    const grammarSource = await readFile(grammarTags, 'utf8');
+    const catalogueStart = 'export const GRAMMAR_CATALOGUE = [';
+    if (!grammarSource.includes(catalogueStart)) throw new Error('Revisar el catálogo gramatical integrado.');
+    await writeFile(grammarTags, "import { contextualTags } from '../ui/atl-bank-context.js';\n" +
+      grammarSource.replace(catalogueStart, catalogueStart + '\n    ...contextualTags,'));
+
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
     const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
       .replaceAll('./pwa-controls.js', './atl-pwa.js').replace("./edition-app.js", "./atl-edition.js")

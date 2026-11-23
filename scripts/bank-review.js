@@ -1,4 +1,5 @@
 import { reanchorGrammarSpan } from '../core/edition-operations.js';
+import { rulesVersion } from './atl-bank-context.js';
 import { fingerprintForMark } from '../core/edition-validation.js';
 
 const prefix = 'atl-v1:cuaderno-banco-review-v1:';
@@ -23,29 +24,54 @@ export function readBankReview(key, latin, storage = localStorage) {
       typeof proposal.tagId === 'string' && Array.isArray(proposal.evidence) &&
       proposal.evidence.every(value => typeof value === 'string') && Array.isArray(proposal.alternatives) &&
       proposal.alternatives.every(value => typeof value === 'string')) : [];
-    return { rejected, corrected, pending };
+    return { rejected, corrected, pending, version: record?.version };
   } catch {
     return { rejected: [], corrected: [], pending: [] };
   }
 }
 
-export async function pendingBankTags(texts, catalogue, isRejected, storage = localStorage) {
-  const analyzed = new Set(Object.keys(storage).filter(key => key.startsWith(prefix) && /:[a-f0-9]{64}$/u.test(key))
-    .map(key => key.slice(prefix.length, -(64 + 1))));
+export function visibleBankAnalysis(text, review, catalogue, isRejected) {
+  if (review.version !== rulesVersion) return { automatic: [], pending: [] };
+  const recorded = new Set(review.corrected.map(([key]) => key));
+  const rejected = new Set(review.rejected);
   const allowed = new Set(catalogue.map(tag => tag.id));
-  const selected = texts.filter(text => analyzed.has(text.id));
-  const rows = await Promise.all(selected.map(async text => {
-    const review = readBankReview(await bankReviewKey(text), text.latin, storage);
-    const rejected = new Set(review.rejected);
-    const confirmed = new Set(text.tagIds);
-    const corrected = new Set(review.corrected.filter(([, tag]) => confirmed.has(tag)).map(([key]) => key));
-    const tags = new Set(review.pending.filter(proposal =>
-      allowed.has(proposal.tagId) && !confirmed.has(proposal.tagId) &&
-      !corrected.has(proposalKeyFor(proposal)) && !isRejected(proposal, rejected, catalogue))
-      .map(proposal => proposal.tagId));
-    return [text.id, [...tags]];
-  }));
+  const rows = review.pending.filter(proposal =>
+    allowed.has(proposal.tagId) && !text.tagIds.includes(proposal.tagId) &&
+    !recorded.has(proposalKeyFor(proposal)) && !isRejected(proposal, rejected, catalogue));
+  return {
+    automatic: [...new Set(rows.filter(row => row.state === 'automatic').map(row => row.tagId))],
+    pending: [...new Set(rows.filter(row => row.state !== 'automatic').map(row => row.tagId))]
+  };
+}
+
+export async function bankAnalysisIndex(texts, catalogue, isRejected) {
+  const stored = new Set(Object.keys(localStorage).filter(key => key.startsWith(prefix))
+    .map(key => key.slice(prefix.length, -65)));
+  const rows = await Promise.all(texts.filter(text => stored.has(text.id)).map(async text => [
+    text.id, visibleBankAnalysis(text, readBankReview(await bankReviewKey(text), text.latin), catalogue, isRejected)
+  ]));
   return new Map(rows);
+}
+
+export async function analyzeBankText(text, analyze, classify, isCurrent) {
+  const key = await bankReviewKey(text);
+  const old = readBankReview(key, text.latin);
+  if (old.version === rulesVersion) return old;
+  const tokens = await analyze(text.latin);
+  if (!isCurrent()) return;
+  const latest = readBankReview(key, text.latin);
+  if (latest.version === rulesVersion) return latest;
+  const pending = classify(text.latin, tokens);
+  // Preserve anchors for decisions even if the new rules yield no matching result.
+  const known = new Set(pending.map(proposalKeyFor));
+  const decisions = new Set([...latest.rejected, ...latest.corrected.map(([key]) => key)]);
+  for (const proposal of latest.pending) {
+    const key = proposalKeyFor(proposal);
+    if (decisions.has(key) && !known.has(key)) pending.push(proposal);
+  }
+  const result = { ...latest, pending, version: rulesVersion };
+  localStorage.setItem(key, JSON.stringify(result));
+  return result;
 }
 
 export async function carryBankReview(previous, next, storage = localStorage) {
@@ -59,12 +85,15 @@ export async function carryBankReview(previous, next, storage = localStorage) {
 
   // Reuse the notebook's conservative anchor rules. Unreviewed analysis belongs to the old text.
   const accepted = new Map(before.corrected);
+  const dismissed = new Set(before.rejected);
+  const rejected = [];
   const pending = [];
   const corrected = [];
   let reviewRequired = 0;
   for (const proposal of before.pending) {
     const tag = accepted.get(proposalKeyFor(proposal));
-    if (!tag || !next.tagIds.includes(tag)) continue;
+    const wasRejected = dismissed.has(proposalKeyFor(proposal));
+    if (!wasRejected && !tag) continue;
     const { start, end } = proposal;
     const anchor = reanchorGrammarSpan({
       startUtf16: start, endUtf16: end, exact: previous.latin.slice(start, end),
@@ -73,8 +102,9 @@ export async function carryBankReview(previous, next, storage = localStorage) {
     if (anchor.reviewRequired) { reviewRequired++; continue; }
     const moved = { ...proposal, start: anchor.startUtf16, end: anchor.endUtf16 };
     pending.push(moved);
-    corrected.push([proposalKeyFor(moved), tag]);
+    if (wasRejected) rejected.push(proposalKeyFor(moved));
+    if (tag) corrected.push([proposalKeyFor(moved), tag]);
   }
-  if (corrected.length) storage.setItem(key, JSON.stringify({ pending, corrected, rejected: [] }));
+  if (corrected.length || rejected.length) storage.setItem(key, JSON.stringify({ pending, corrected, rejected }));
   return reviewRequired;
 }

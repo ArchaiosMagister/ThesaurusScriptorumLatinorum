@@ -173,6 +173,7 @@ async function synchronize(session, prepareReload, report) {
   async function saveCheckpoint(data) {
     save(localStorage, checkpointKey, {
       editor: await syncFingerprint(data.editor),
+      bankReviews: await Promise.all((data.bankReviews ?? []).map(async ([id, row]) => [id, await syncFingerprint(row)])),
       usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
     });
   }
@@ -183,6 +184,11 @@ async function synchronize(session, prepareReload, report) {
     if (!remote || pending.hash !== remote.hash)
       throw new Error('Dropbox cambió mientras había una sincronización pendiente. Conserva una copia local y revisa ambas versiones.');
     const current = await fingerprints(local.rows);
+    if (pending.before && pending.after && !Object.hasOwn(pending.before, 'bankReviews') &&
+        !Object.hasOwn(pending.after, 'bankReviews')) {
+      const empty = await syncFingerprint([]);
+      pending.before.bankReviews = pending.after.bankReviews = empty;
+    }
     const target = syncTargetRows(remote.data, local.rows);
     if (!isRecoverableSync(current, pending.before ?? {}, pending.after ?? {}) ||
         !isRecoverableSync(await fingerprints(target), pending.after ?? {}, pending.after ?? {}))
@@ -201,9 +207,14 @@ async function synchronize(session, prepareReload, report) {
     const remoteEditorHash = await syncFingerprint(remote.data.editor);
     const action = selectEditor(editorHash, remoteEditorHash, checkpoint?.editor, isEmptySyncEditor(local.data.editor));
     const hashes = new Map();
-    await Promise.all([...local.data.usages, ...remote.data.usages].map(async ([, row]) =>
+    const localReviews = local.data.bankReviews ?? [];
+    const remoteReviews = remote.data.bankReviews ?? [];
+    await Promise.all([...local.data.usages, ...remote.data.usages, ...localReviews, ...remoteReviews].map(async ([, row]) =>
       hashes.set(row, await syncFingerprint(row))));
+    const bankReviews = mergeUsages(localReviews, remoteReviews, new Map(checkpoint?.bankReviews), row => hashes.get(row),
+      'La revisión gramatical de una ficha cambió en ambos dispositivos. Las dos versiones se han conservado.');
     data = {
+      ...(bankReviews.length && { bankReviews }),
       editor: action === 'download' ? remote.data.editor : local.data.editor,
       usages: mergeUsages(local.data.usages, remote.data.usages, new Map(checkpoint?.usages), row => hashes.get(row))
     };

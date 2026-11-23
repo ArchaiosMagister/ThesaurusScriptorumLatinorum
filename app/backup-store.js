@@ -318,6 +318,10 @@ async function installNewer(payload, baseline) {
       throw new Error('La verificación posterior detectó diferencias.');
     remember([...version.ancestors, version.contentHash]);
   } catch (error) {
+    for (const [key, original] of savedReviews) {
+      if (original === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, original);
+    }
     const reverted = await Promise.allSettled(committed.reverse().map(name =>
       replaceDatabase(name, payload.databases[name], local.databases[name])));
     for (const [key, before, after] of changed) if (localStorage.getItem(key) === after) {
@@ -383,9 +387,36 @@ function scopedSync(rows) {
   };
 }
 
+const bankReviewPattern = /^atl-v1:cuaderno-banco-review-v1:.+:[a-f0-9]{64}$/u;
+const decisionKey = proposal => [proposal.start, proposal.end, proposal.tagId].join(':');
+
+function bankDecisions(record) {
+  const rejected = [...new Set((record?.rejected ?? []).filter(key => typeof key === 'string'))].sort();
+  const corrected = (record?.corrected ?? []).filter(row =>
+    Array.isArray(row) && row.length === 2 && row.every(value => typeof value === 'string'))
+    .sort(([a], [b]) => a.localeCompare(b));
+  const keys = new Set([...rejected, ...corrected.map(([key]) => key)]);
+  const pending = (record?.pending ?? []).filter(row => row && keys.has(decisionKey(row)))
+    .map(({ start, end, tagId }) => ({ start, end, tagId, evidence: [], alternatives: [] }))
+    .sort((a, b) => decisionKey(a).localeCompare(decisionKey(b)));
+  return { rejected, corrected, pending };
+}
+
+function localBankDecisions() {
+  return Object.keys(localStorage).filter(key => bankReviewPattern.test(key)).sort().flatMap(key => {
+    try {
+      const decision = bankDecisions(JSON.parse(localStorage.getItem(key)));
+      return decision.rejected.length || decision.corrected.length ? [[key, decision]] : [];
+    } catch {
+      return [];
+    }
+  });
+}
+
 export async function readSyncData() {
   const rows = Object.fromEntries(await Promise.all(syncNames.map(async name => [name, await readDatabase(name)])));
-  return { data: scopedSync(rows), rows };
+  rows.bankReviews = localBankDecisions();
+  return { data: { ...scopedSync(rows), ...(rows.bankReviews.length && { bankReviews: rows.bankReviews }) }, rows };
 }
 
 export function validateSyncData(data) {
@@ -398,7 +429,13 @@ export function validateSyncData(data) {
   const rows = { ...data.editor, [archiveName]: { exams: data.usages } };
   validateData({ databases: rows, preferences: {} });
   // Reconstruye los registros de uso con los únicos campos admitidos.
-  return scopedSync(rows);
+  const reviews = data.bankReviews ?? [];
+  if (!Array.isArray(reviews) || new Set(reviews.map(row => row?.[0])).size !== reviews.length ||
+      reviews.some(row => !Array.isArray(row) || !bankReviewPattern.test(row[0]) ||
+        !Array.isArray(row[1]?.rejected) || !Array.isArray(row[1]?.corrected) || !Array.isArray(row[1]?.pending))) {
+    throw new Error('El historial de etiquetas de Dropbox no es válido.');
+  }
+  return { ...scopedSync(rows), ...(reviews.length && { bankReviews: reviews.map(([key, review]) => [key, bankDecisions(review)]) }) };
 }
 
 export function isEmptySyncEditor(editor) {
@@ -426,7 +463,7 @@ export function syncTargetRows(data, before) {
     if (!combined.has(id) && !local.usageOnly)
       combined.set(id, [id, { ...local, syncSuppressed: true }]);
   }
-  return { ...data.editor, [archiveName]: {
+  return { ...data.editor, bankReviews: data.bankReviews ?? [], [archiveName]: {
     exams: [...combined.values()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
   } };
 }
@@ -434,13 +471,32 @@ export function syncTargetRows(data, before) {
 export async function applySyncData(data, before) {
   const after = syncTargetRows(data, before);
   const committed = [];
+  const savedReviews = [];
   try {
     for (const name of syncNames) {
       // Comprueba toda revisión local en la misma transacción que aplica el cambio.
       await replaceDatabase(name, before[name], after[name]);
       committed.push(name);
     }
+    if (!equal(localBankDecisions(), before.bankReviews))
+      throw new Error('Las decisiones de etiquetas cambiaron durante la sincronización.');
+    const previous = new Map(before.bankReviews);
+    const next = new Map(after.bankReviews);
+    for (const key of new Set([...previous.keys(), ...next.keys()])) {
+      if (equal(previous.get(key), next.get(key))) continue;
+      const original = localStorage.getItem(key);
+      const cached = JSON.parse(original ?? '{}') ?? {};
+      const decision = next.get(key) ?? { rejected: [], corrected: [], pending: [] };
+      const known = new Set((cached.pending ?? []).map(decisionKey));
+      const pending = [...(cached.pending ?? []), ...decision.pending.filter(row => !known.has(decisionKey(row)))];
+      localStorage.setItem(key, JSON.stringify({ ...cached, ...decision, pending }));
+      savedReviews.push([key, original]);
+    }
   } catch (error) {
+    for (const [key, original] of savedReviews) {
+      if (original === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, original);
+    }
     const reverted = await Promise.allSettled(committed.reverse().map(name => replaceDatabase(name, after[name], before[name])));
     if (reverted.some(result => result.status === 'rejected'))
       throw new Error('Otra pestaña modificó los datos durante la sincronización. Revisa el estado local antes de repetirla.');
