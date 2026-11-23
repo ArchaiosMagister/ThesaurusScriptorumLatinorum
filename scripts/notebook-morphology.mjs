@@ -80,7 +80,7 @@ export function integrateManualNotebookUnderline(source) {
     .replace("import { validateEdition } from '../core/edition-validation.js';",
       "import { validateEdition, fingerprintForMark } from '../core/edition-validation.js';")
     .replace('    function renderTextSelect(p, area) {', `    function markSelectedWord(target, replaceId) {
-        void withSaved(async state => {
+        return withSaved(async state => {
             const p = state.edition.placements.find(item => item.id === target.placementId);
             const q = p?.questions.find(item => item.kind === 'morphology');
             if (!q || !safeToken(p.text.latin, target.start, target.end))
@@ -142,5 +142,6 @@ export function integrateManualNotebookUnderline(source) {
         });
         row.append(label);
         if (replaceWord) row.append(replaceWord);
-        row.append(add);`);
+        row.append(add);`)
+    .replace('    renderPaperSelect,savePaperSelection,', '    renderPaperSelect,savePaperSelection,markSelectedWord,');
 }
