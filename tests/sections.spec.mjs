@@ -1582,9 +1582,14 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     async function link(view) {
       await view.getByRole('button', { name: 'Copias de seguridad' }).click();
       await view.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
+      await expect(view.locator('#dropbox-connection')).toHaveText('Sin vincular');
+      await expect(view.getByRole('button', { name: 'Sincronizar ahora' })).toBeHidden();
       await view.getByLabel('Clave pública de la aplicación de Dropbox').fill('claveprueba');
       await view.getByRole('button', { name: 'Vincular Dropbox' }).click();
       await expect(view.locator('#dropbox-status')).toContainText('Dropbox vinculado');
+      await expect(view.locator('#dropbox-connection')).toHaveText('Vinculado');
+      await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
+      await expect(view.getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
     await page.goto(path);
     const editable = await seedBank(page);
@@ -1609,6 +1614,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     const reloaded = tablet.waitForEvent('load');
     await tablet.getByRole('button', { name: 'Sincronizar ahora' }).click();
     await reloaded;
+    await expect(tablet.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     await expect(tablet.frameLocator('#panel-cuaderno iframe').getByText('4 textos distintos', { exact: true })).toBeVisible();
     expect(await tablet.evaluate(async () => {
       const { loadUsageIndex, savedExam } = await import('./modulos/shared/text-usage.js');

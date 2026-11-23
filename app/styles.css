@@ -164,7 +164,93 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
   background: var(--panel);
   color: var(--ink);
 }
-:is(#backup-dialog, #dropbox-dialog) h2 { margin-top: 0; }
-:is(#backup-dialog, #dropbox-dialog) label, :is(#backup-dialog, #dropbox-dialog) form { display: block; margin-top: .75rem; }
+#backup-dialog h2 { margin-top: 0; }
+#backup-dialog label, #backup-dialog form { display: block; margin-top: .75rem; }
 :is(#backup-dialog, #dropbox-dialog)::backdrop { background: rgb(0 0 0 / 45%); }
 #backup-preview { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+#dropbox-dialog {
+  width: min(32rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: clamp(1rem, 4vw, 1.75rem);
+  border-radius: 1rem;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 25%);
+}
+.dropbox-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem 1rem;
+}
+.dropbox-heading h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 4vw, 1.4rem);
+  line-height: 1.25;
+}
+#dropbox-connection {
+  padding: .25rem .6rem;
+  border: 1px solid var(--rule);
+  border-radius: 2rem;
+  background: var(--paper);
+  font-size: .8rem;
+  font-weight: 650;
+}
+#dropbox-dialog[data-connected="true"] #dropbox-connection {
+  background: color-mix(in srgb, #0061ff 14%, var(--panel));
+  border-color: color-mix(in srgb, #0061ff 55%, var(--rule));
+}
+.dropbox-description { margin: .75rem 0 1.25rem; line-height: 1.5; }
+#dropbox-setup label { display: block; margin-bottom: .375rem; font-size: .875rem; font-weight: 600; }
+#dropbox-app-key {
+  width: 100%;
+  padding: .6rem .7rem;
+  border: 1px solid var(--rule);
+  border-radius: .5rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+.dropbox-actions, .dropbox-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+}
+.dropbox-actions { margin-top: 1rem; }
+.dropbox-footer {
+  justify-content: space-between;
+  border-top: 1px solid var(--rule);
+  margin-top: 1.25rem;
+  padding-top: .75rem;
+}
+.dropbox-primary, .dropbox-secondary {
+  border: 1px solid transparent;
+  border-radius: .5rem;
+  padding: .55rem .85rem;
+  min-height: 38px;
+  font: inherit;
+  font-size: .875rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+.dropbox-primary { background: #0061ff; color: #fff; }
+.dropbox-primary:hover:not(:disabled) { background: #004ed0; }
+.dropbox-primary:disabled { opacity: .68; cursor: wait; }
+.dropbox-secondary { background: transparent; color: var(--accent); }
+.dropbox-secondary:hover:not(:disabled) { background: var(--paper); border-color: var(--rule); }
+.dropbox-secondary:disabled { opacity: .6; cursor: wait; }
+:is(.dropbox-primary, .dropbox-secondary, #dropbox-app-key):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+#dropbox-status:not(:empty) {
+  margin: .875rem 0 0;
+  padding: .65rem .75rem;
+  border-inline-start: 3px solid #0061ff;
+  border-radius: .375rem;
+  background: var(--paper);
+  font-size: .875rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}

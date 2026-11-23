@@ -42,7 +42,7 @@
   <dialog id="backup-dialog" aria-labelledby="backup-title">
     <h2 id="backup-title">Copias de seguridad</h2>
     <p>Para sincronizar manualmente, descarga una copia integral y ábrela en el otro dispositivo. Verás una comparación antes de aplicar cambios.</p>
-    <button type="button" id="app-dropbox">Sincronizar con Dropbox</button>
+    <button type="button" id="app-dropbox" class="dropbox-primary" aria-haspopup="dialog">Sincronizar con Dropbox</button>
     <button type="button" id="backup-export">Descargar copia integral</button>
     <label for="backup-file">Elegir copia para recuperar</label>
     <input id="backup-file" type="file" accept=".json,application/json">
@@ -51,15 +51,25 @@
     <form method="dialog"><button>Cerrar</button></form>
   </dialog>
   <dialog id="dropbox-dialog" aria-labelledby="dropbox-title">
-    <h2 id="dropbox-title">Sincronizar con Dropbox</h2>
-    <p>Sincroniza el banco con sus etiquetas, los cuadernos y el registro de textos usados en exámenes.</p>
-    <label for="dropbox-app-key">Clave pública de la aplicación de Dropbox</label>
-    <input type="text" id="dropbox-app-key" spellcheck="false" autocomplete="off">
-    <button type="button" id="dropbox-connect">Vincular Dropbox</button>
-    <button type="button" id="dropbox-sync" disabled>Sincronizar ahora</button>
-    <button type="button" id="dropbox-disconnect" disabled>Cerrar sesión de Dropbox</button>
+    <div class="dropbox-heading">
+      <h2 id="dropbox-title">Sincronizar con Dropbox</h2>
+      <span id="dropbox-connection">Sin vincular</span>
+    </div>
+    <p class="dropbox-description">Comparte el banco con sus etiquetas, los cuadernos y el registro de textos usados en exámenes.</p>
+    <div id="dropbox-setup">
+      <label for="dropbox-app-key">Clave pública de la aplicación de Dropbox</label>
+      <input type="text" id="dropbox-app-key" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="dropbox-actions">
+      <button type="button" id="dropbox-connect" class="dropbox-primary">Vincular Dropbox</button>
+      <button type="button" id="dropbox-sync" class="dropbox-primary" hidden disabled>Sincronizar ahora</button>
+      <button type="button" id="dropbox-disconnect" class="dropbox-secondary" hidden disabled>Cerrar sesión de Dropbox</button>
+    </div>
     <p id="dropbox-status" role="status" aria-live="polite"></p>
-    <form method="dialog"><button>Cerrar</button></form>
+    <form method="dialog" class="dropbox-footer">
+      <button type="button" id="dropbox-back" class="dropbox-secondary">Copias de seguridad</button>
+      <button class="dropbox-secondary" autofocus>Cerrar</button>
+    </form>
   </dialog>
   <noscript>Activa JavaScript para abrir el banco de textos y los editores.</noscript>
 </body>
