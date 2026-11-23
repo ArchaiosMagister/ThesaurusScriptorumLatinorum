@@ -15,7 +15,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,6 +27,11 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
       - run: npm run build
+      # No publicar si falla la regresión integral (incluidos iPad y escritorio WebKit).
+      - run: npm test && npm run test:ipad-selection && node tests/collatinus-grammar-integration.mjs
+        working-directory: vendor/cuaderno
+      - run: npx playwright install --with-deps webkit
+      - run: npm run test:webkit
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

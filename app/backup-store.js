@@ -378,7 +378,8 @@ function examUsage(row) {
 function scopedSync(rows) {
   return {
     editor: Object.fromEntries(syncNames.slice(0, 2).map(name => [name, rows[name]])),
-    usages: rows[archiveName].exams.map(([id, row]) => [id, { id, title: row.title, snapshot: examUsage(row) }])
+    usages: rows[archiveName].exams.filter(([, row]) => !row.syncSuppressed)
+      .map(([id, row]) => [id, { id, title: row.title, snapshot: examUsage(row) }])
   };
 }
 
@@ -410,16 +411,28 @@ export function isEmptySyncEditor(editor) {
 
 export const syncFingerprint = fingerprint;
 
-export async function applySyncData(data, before) {
+export function syncTargetRows(data, before) {
   data = validateSyncData(data);
   const exams = new Map(before[archiveName].exams);
-  const after = { ...data.editor, [archiveName]: { exams: data.usages.map(([id, row]) => {
+  const combined = new Map(data.usages.map(([id, row]) => {
     const local = exams.get(id);
-    if (local && !local.usageOnly) {
-      return [id, { ...local, title: row.title, usage: row.snapshot }];
-    }
-    return [id, { ...row, usageOnly: true }];
-  }) } };
+    return [id, local && !local.usageOnly
+      ? [id, { ...local, title: row.title, usage: row.snapshot, syncSuppressed: false }]
+      : [id, { ...row, usageOnly: true }]];
+  }));
+  // Borrar una referencia compartida nunca debe borrar el examen completo de este dispositivo.
+  // Su contenido local se conserva, pero deja de publicarse hasta que el docente lo guarde de nuevo.
+  for (const [id, local] of exams) {
+    if (!combined.has(id) && !local.usageOnly)
+      combined.set(id, [id, { ...local, syncSuppressed: true }]);
+  }
+  return { ...data.editor, [archiveName]: {
+    exams: [...combined.values()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+  } };
+}
+
+export async function applySyncData(data, before) {
+  const after = syncTargetRows(data, before);
   const committed = [];
   try {
     for (const name of syncNames) {
