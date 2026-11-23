@@ -196,6 +196,17 @@ export function lexicalValuesForDocument(option) {
     await writeFile(shimPath, shim.replace(pdfCall, '        await window.atlLoadPdfExporter();\n' + pdfCall));
     await writeFile(join(directory, 'js', 'atl-pdf-loader.js'),
       await readFile(new URL('./lazy-pdf-loader.js', import.meta.url), 'utf8'));
+    // JSZip solo se necesita en el momento de exportar un DOCX, no al abrir
+    // el editor. Conservamos la biblioteca original en el paquete sin conexión.
+    const renderFileWord = join(directory, 'js', 'render.js');
+    const originalRender = await readFile(renderFileWord, 'utf8');
+    const wordEntry = '  E.docx = async function (S) {';
+    if (originalRender.split(wordEntry).length !== 2)
+      throw new Error('Revisar el punto de exportación Word de Examinator.');
+    await writeFile(renderFileWord, originalRender.replace(wordEntry,
+      wordEntry + '\n    await window.atlLoadWordExporter();'));
+    await writeFile(join(directory, 'js', 'atl-word-loader.js'),
+      await readFile(new URL('./lazy-word-loader.js', import.meta.url), 'utf8'));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-bank.js'), bankScript);
     const mainFile = join(directory, 'js', 'exam.js');
@@ -345,6 +356,7 @@ export function lexicalValuesForDocument(option) {
       html = html.replace('js/exam.js', 'js/atl-exam-editor.js').replace('js/start.js', 'js/atl-exam-start.js')
         .replace('<script src="js/pwa.js"></script>', '')
         .replace('<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>')
+        .replace('<script src="lib/jszip.min.js"></script>', '<script src="js/atl-word-loader.js"></script>')
         .replace('js/lists.js', 'js/atl-exam-lists.js')
         .replace('js/library.js', 'js/atl-exam-library.js')
         .replace('js/lexico-filtros.js', 'js/atl-exam-filters.js')
@@ -404,7 +416,7 @@ export function lexicalValuesForDocument(option) {
     const additions = ['./' + stylesheet, ...(module === 'examinator'
       ? [...examAssets, './js/atl-exam-editor.js', './js/atl-exam-start.js', './js/atl-exam-lists.js',
         './js/atl-exam-library.js', './js/atl-exam-filters.js', './js/atl-exam-propose.js',
-         './js/atl-pdf-loader.js'] : [])];
+         './js/atl-pdf-loader.js', './js/atl-word-loader.js'] : [])];
     additions.push(page === notebookPage ? '../../academic/teacher-bank.js' : '../academic/teacher-bank.js');
     if (module === 'cuaderno') additions.push(page === notebookPage
       ? '../../shared/personal-academic.js' : '../shared/personal-academic.js');
