@@ -1479,5 +1479,7 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
   const after = (await snapshot()).edition.placements[0];
   expect(after.questions.filter(question => question.kind !== 'morphology')).toEqual(otherQuestions);
   expect(after.questions.find(question => question.kind === 'morphology').words.length).toBeLessThanOrEqual(4);
+  const configTab = notebook.locator('.edition-mobile-switch').getByRole('button', { name: 'Configurar' });
+  if (await configTab.isVisible()) await configTab.click();
   await expect(notebook.locator('.edition-academic-morph-row').filter({ hasText: 'Zorvalix' })).toBeVisible();
 });
