@@ -52,7 +52,7 @@ test('los parches de Collatinus añaden una acción individual sin tocar la impo
   assert.match(output, /root, analyze, underline = null/);
   assert.match(output, /Ya hay cuatro palabras subrayadas/);
   assert.match(output, /marks\.filter\(item => !item\.locked\)/);
-  assert.match(output, /underline\.apply\(\{ placementId, start: hit\.start, end: hit\.end \}/);
+  assert.match(output, /underline\.apply\(\{ placementId, start: hit\.start, end: hit\.end, latin \}/);
   const preview = integrateReadingCardPreview('      disposeLatinReader=attachLatinReadingCards(target,options.onAnalyzeMorphology);');
   assert.match(preview, /state: placementId =>/);
   assert.match(preview, /academics\.markSelectedWord\(target, replaceId\)/);
