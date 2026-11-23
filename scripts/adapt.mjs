@@ -132,6 +132,7 @@ export function lexicalValuesForDocument(option) {
     const bankReview = await readFile(new URL('./bank-review.js', import.meta.url), 'utf8');
     const bankVocabulary = await readFile(new URL('./bank-vocabulary.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'ui', 'atl-bank-catalog.js'), catalogue);
+    await cp(new URL('./bank-difficulty.js', import.meta.url), join(directory, 'ui', 'atl-bank-difficulty.js'));
     await writeFile(join(directory, 'ui', 'atl-bank-review.js'), bankReview);
     await cp(new URL('./bank-context.js', import.meta.url), join(directory, 'ui', 'atl-bank-context.js'));
     const grammarTags = join(directory, 'core', 'grammar-tags.js');
@@ -430,7 +431,7 @@ export function lexicalValuesForDocument(option) {
       ? '../../shared/personal-academic.js' : '../shared/personal-academic.js');
     if (page === notebookPage) {
       additions.push('./atl-index.html', './atl-cuadernos.html', './atl-repertorios.html', '../ui/atl-repertorios.js', '../ui/atl-edition.js',
-        '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js',
+        '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js',
         '../ui/atl-bank-vocabulary.js', '../../shared/text-usage.js');
     }
     await writeFile(workerPath, worker.replace(marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ','));

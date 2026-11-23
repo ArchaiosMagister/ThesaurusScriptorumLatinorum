@@ -56,26 +56,31 @@ export function modernizeBank(source) {
   const to = source.indexOf('    const resetBankFilters', from);
   if (from < 0 || to < 0) throw Error('Revisar los filtros del banco.');
   source = source.slice(0, from) + `    bankToolbar.append(bankField('Buscar', search, 'cuaderno-bank-search'),
-        bankField('Ordenar por', sortSelect, ''), bankField('Ver', viewSelect, ''));
-    const moreFilters = el('details', 'atl-bank-more');
-    moreFilters.open = bankState.moreFilters === true;
-    moreFilters.addEventListener('toggle', () => { bankState.moreFilters = moreFilters.open; });
+        bankField('Dificultad', difficultySelect, ''), bankField('Ordenar por', sortSelect, ''));
+    const moreFilters = el('div', 'atl-bank-more');
+    moreFilters.id = 'atl-bank-more-filters';
+    moreFilters.hidden = !bankState.moreFilters;
+    const filterToggle = button('Más filtros', () => {
+        moreFilters.hidden = !moreFilters.hidden;
+        bankState.moreFilters = !moreFilters.hidden;
+        filterToggle.setAttribute('aria-expanded', String(bankState.moreFilters));
+    }, 'tbtn');
+    filterToggle.setAttribute('aria-controls', moreFilters.id);
+    filterToggle.setAttribute('aria-expanded', String(!moreFilters.hidden));
     const filterFields = el('div', 'atl-bank-more-fields');
     filterFields.append(bankField('Autor', authorSelect, ''), bankField('Obra', filters.work, ''),
         bankField('Referencia', filters.reference, ''), bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
-    moreFilters.append(el('summary', '', 'Autor, obra y otros filtros'), filterFields);
+    moreFilters.append(filterFields);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
     filterChips.setAttribute('aria-label', 'Etiquetas de filtro activas');
 ` + source.slice(to);
-  replace('    bank.append(bankToolbar, filters.panel);', `    const refinements = el('div', 'atl-bank-refinements');
-    refinements.append(filters.panel, moreFilters);
-    const shortcuts = el('div', 'grammar-chips atl-bank-tag-shortcuts');
+  replace('    bank.append(bankToolbar, filters.panel);', `    const shortcuts = el('div', 'grammar-chips atl-bank-tag-shortcuts');
     shortcuts.setAttribute('aria-label', 'Etiquetas usadas en el banco');
     const counts = new Map();
     for (const text of corpus.texts) for (const id of text.tagIds) counts.set(id, (counts.get(id) ?? 0) + 1);
     const frequent = catalogue.filter(tag => counts.has(tag.id)).sort((a, b) =>
         Number(b.kind === 'custom') - Number(a.kind === 'custom') ||
-        counts.get(b.id) - counts.get(a.id) || bankCollator.compare(a.label, b.label)).slice(0, 8);
+        counts.get(b.id) - counts.get(a.id) || bankCollator.compare(a.label, b.label)).slice(0, 5);
     const quickTags = new Map();
     for (const item of frequent) {
         const chip = button(item.label + ' · ' + counts.get(item.id), () => filters.toggleTag(item.id), 'grammar-chip atl-bank-tag-chip');
@@ -84,22 +89,30 @@ export function modernizeBank(source) {
         quickTags.set(item.id, chip);
         shortcuts.append(chip);
     }
-    bank.append(bankToolbar, refinements, shortcuts, filterChips);`);
+    moreFilters.append(shortcuts, filters.panel);
+    bank.append(bankToolbar);`);
   replace('    bank.append(bankResultCount);', `    const resultsHeader = el('div', 'atl-bank-results-header');
-    resultsHeader.append(bankResultCount);
-    bank.append(resultsHeader);`);
+    resultsHeader.append(filterToggle, bankResultCount);
+    bank.append(resultsHeader, moreFilters, filterChips);`);
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
-  replace("    const bulk = el('div', 'cuaderno-bank-bulk');", "    const bulk = el('details', 'cuaderno-bank-bulk');\n    const bulkHeading = el('summary', '', 'Gestionar selección');");
+  replace(`    bulk.append(el('p', 'small muted', 'Selecciona los resultados de la búsqueda o marca textos individuales. ' +
+        'Los cuadernos editoriales no se borrarán. Los textos de cuadernos históricos están protegidos.'));`, '');
+  replace("            selection.append(checkbox, el('span', '', 'Seleccionar'));", '            selection.append(checkbox);');
+
+  replace("    const bulk = el('div', 'cuaderno-bank-bulk');", `    const bulk = el('details', 'cuaderno-bank-bulk');
+    const bulkHeading = el('summary', '', 'Gestionar selección');
+    bulk.addEventListener('toggle', () => bank.classList.toggle('atl-selecting', bulk.open));`);
   replace('    bulk.append(selectedButton, deselect, removeSelected, selectionCount);', `    const bulkActions = el('div', 'atl-bank-action-group');
     bulkActions.append(selectedButton, deselect, removeSelected, selectionCount);
     bulk.append(bulkHeading, bulkActions);`);
   replace('        removeSelected.disabled = selectedForRemoval.size === 0;', `        bulkHeading.textContent = selectedForRemoval.size ? 'Gestionar selección · ' + selectedForRemoval.size : 'Gestionar selección';
         removeSelected.disabled = selectedForRemoval.size === 0;`);
-  replace('            rowSummary.append(selection);', `            const actions = el('div', 'atl-bank-card-actions');
+  replace('            rowSummary.append(selection);', `            const footer = el('div', 'atl-bank-card-footer');
+            const actions = el('div', 'atl-bank-card-actions');
             const tagAction = button('Etiquetar', () => tagBankText(text), 'tbtn sm');
             tagAction.setAttribute('aria-label', 'Etiquetar «' + text.title + '»');
             actions.append(tagAction, selection);
-            rowSummary.append(actions);`);
+            footer.append(actions);`);
   replace("                if (item) chips.append(el('span', 'grammar-chip', item.label));", `                if (item) {
                     const chip = button(item.label, () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');
                     chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
@@ -107,8 +120,7 @@ export function modernizeBank(source) {
                     chip.setAttribute('aria-pressed', String(bankState.tags.includes(id)));
                     chips.append(chip);
                 }`);
-  replace('            for (const id of pendingFor(text.id).slice(0, 6)) {', `            if (text.tagIds.length > 6) chips.append(el('span', 'small muted', '+' + (text.tagIds.length - 6) + ' etiquetas'));
-            for (const id of pendingFor(text.id).slice(0, 6)) {`);
+  replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
   replace('        const isFiltered = Boolean(search.value.trim()', `        filterChips.replaceChildren();
         for (const [id, chip] of quickTags) chip.setAttribute('aria-pressed', String(criteria.tags.includes(id)));
         for (const id of criteria.tags) {

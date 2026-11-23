@@ -1,4 +1,6 @@
 import { GRAMMAR_GROUP_IDS, matchesGrammarTag } from '../core/grammar-tags.js';
+import { foldLatin } from '../core/library.js';
+import { difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';
 import { sourceVocabulary } from './atl-bank-vocabulary.js';
 
 function element(tag, options = {}) {
@@ -29,8 +31,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   usage.value = state.usage;
   usage.addEventListener('change', onChange);
 
-  const panel = element('details', { className: 'atl-grammar-filters', open: state.grammarOpen });
-  const summary = element('summary');
+  const panel = element('section', { className: 'atl-grammar-filters' });
   const mode = element('select', { id: 'atl-grammar-match' });
   mode.append(new Option('Todas las etiquetas', 'all'), new Option('Alguna etiqueta', 'any'));
   mode.value = state.mode;
@@ -41,49 +42,38 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   pending.addEventListener('change', onChange);
   const pendingLabel = element('label', { className: 'atl-tag-option' });
   pendingLabel.append(pending, ' Incluir propuestas pendientes de Collatinus');
-  const selections = new Map();
-  const visited = new Set();
-
-  function groups(parent, container) {
-    for (const tag of catalogue.filter(item => item.parentId === parent && !visited.has(item.id))) {
-      visited.add(tag.id);
-      const check = element('input', { type: 'checkbox', value: tag.id, checked: state.tags.includes(tag.id) });
-      selections.set(tag.id, check);
-      check.addEventListener('change', onChange);
-      const label = element('label', { className: 'grammar-chip atl-tag-option' });
-      label.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(tag.id, group, catalogue)) ?? 'custom';
-      label.append(check, ' ', tag.label);
-      if (catalogue.some(item => item.parentId === tag.id)) {
-        const group = element('details', { className: 'atl-tag-group' });
-        const heading = element('summary', { textContent: tag.label });
-        group.append(heading, label);
-        groups(tag.id, group);
-        group.open = Boolean(group.querySelector(':checked'));
-        container.append(group);
-      } else {
-        container.append(label);
-      }
-    }
-  }
-
-  panel.append(summary, modeLabel, pendingLabel);
+  const tagQuery = element('input', { type: 'search', placeholder: 'Buscar etiquetas' });
+  tagQuery.setAttribute('aria-label', 'Buscar etiquetas gramaticales');
   const list = element('div', { className: 'atl-tag-groups' });
-  groups(null, list);
-  const personal = element('div', { className: 'atl-bank-custom-filters' });
-  const customIds = new Set(catalogue.filter(tag => tag.kind === 'custom' && !tag.parentId).map(tag => tag.id));
-  for (const label of [...list.children]) {
-    if (customIds.has(label.querySelector('input')?.value)) personal.append(label);
+  list.setAttribute('aria-label', 'Etiquetas gramaticales');
+  const selections = new Map();
+  const compareLabels = (a, b) => compare(a.label, b.label);
+  for (const tag of [...catalogue].sort(compareLabels)) {
+    const check = element('input', { type: 'checkbox', value: tag.id, checked: state.tags.includes(tag.id) });
+    const row = element('label', { className: 'atl-tag-option' });
+    row.append(check, tag.label);
+    const parent = catalogue.find(item => item.id === tag.parentId);
+    selections.set(tag.id, { check, row, terms: foldLatin([tag.label, parent?.label ?? ''].join(' ')) });
+    check.addEventListener('change', onChange);
+    list.append(row);
   }
-  if (personal.children.length) {
-    const group = element('details', { className: 'atl-tag-group', open: Boolean(personal.querySelector(':checked')) });
-    group.append(element('summary', { textContent: 'Etiquetas propias' }), personal);
-    list.append(group);
-  }
-  panel.append(list);
-  panel.addEventListener('toggle', () => { state.grammarOpen = panel.open; });
+  const noTags = element('p', { className: 'muted small', textContent: 'No hay etiquetas con esa búsqueda.', hidden: true });
+  list.append(noTags);
+  const findTags = () => {
+    const query = foldLatin(tagQuery.value.trim());
+    let found = false;
+    for (const { row, terms } of selections.values()) {
+      row.hidden = !terms.includes(query);
+      found ||= !row.hidden;
+    }
+    noTags.hidden = found;
+  };
+  tagQuery.addEventListener('input', findTags);
+  const toolbar = element('div', { className: 'atl-bank-tag-controls' });
+  toolbar.append(tagQuery, modeLabel, pendingLabel);
+  panel.append(toolbar, list);
   function read() {
-    const tags = [...selections.values()].filter(check => check.checked).map(check => check.value);
-    summary.textContent = tags.length ? 'Filtrar por etiquetas · ' + tags.length + ' seleccionadas' : 'Filtrar por etiquetas';
+    const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
     return { work: work.value, reference: reference.value, origin: origin.value,
       usage: usage.value, mode: mode.value, tags, includePending: pending.checked };
   }
@@ -94,39 +84,17 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     usage.value = '';
     mode.value = 'all';
     pending.checked = false;
-    for (const selection of selections.values()) selection.checked = false;
+    tagQuery.value = '';
+    findTags();
+    for (const { check } of selections.values()) check.checked = false;
   }
   function toggleTag(id) {
-    const control = selections.get(id);
+    const control = selections.get(id)?.check;
     if (!control) return;
     control.checked = !control.checked;
     onChange();
   }
   return { panel, work, reference, origin, usage, read, reset, toggleTag };
-}
-
-export function appendBankGroups(target, texts, sort, appendRows) {
-  if (sort === 'title-asc') { appendRows(target, texts); return; }
-  let parent, subgroup, parentTitle, subgroupTitle;
-  for (const text of texts) {
-    const author = text.source.author?.trim() || 'Autor sin indicar';
-    const work = text.source.work?.trim() || 'Obra sin indicar';
-    const [first, second] = sort === 'work-asc' ? [work, author] : [author, work];
-    if (first !== parentTitle) {
-      parentTitle = first;
-      subgroupTitle = undefined;
-      parent = element('section', { className: 'atl-bank-group' });
-      parent.append(element('h5', { textContent: first }));
-      target.append(parent);
-    }
-    if (second !== subgroupTitle) {
-      subgroupTitle = second;
-      subgroup = element('section', { className: 'atl-bank-work' });
-      subgroup.append(element('h6', { textContent: second }));
-      parent.append(subgroup);
-    }
-    appendRows(subgroup, [text]);
-  }
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {
@@ -208,7 +176,7 @@ export function appendDuplicateCards(target, pairs, sources, { kindLabel, source
   }
 }
 
-export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, automaticFor = () => [], isProtected, onClose, onError }) {
+export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, automaticFor = () => [], difficultyFor, isProtected, onClose, onError }) {
   let index = texts.findIndex(text => text.id === selected.id);
   if (index < 0) return;
   const content = element('div', { className: 'atl-bank-reader' });
@@ -232,6 +200,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   tools.append(previous, position, next);
   const title = element('h3');
   const reference = element('p', { className: 'muted' });
+  const difficulty = element('p', { className: 'atl-reader-difficulty' });
   const latin = element('p', { className: 'atl-reader-latin', lang: 'la' });
   const tags = element('div', { className: 'grammar-chips atl-reader-tags' });
   const pending = element('p', { className: 'muted' });
@@ -251,7 +220,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   const removeButton = makeButton('Quitar del banco', editCurrent(remove));
   actions.append(makeButton('Editar ficha', editCurrent(edit)), makeButton('Etiquetar', editCurrent(tag)),
     makeButton('Ver usos anteriores', editCurrent(usage)), removeButton);
-  content.append(tools, title, reference, latin, tags, pending, notes, glossary, actions);
+  content.append(tools, title, reference, difficulty, latin, tags, pending, notes, glossary, actions);
   const reader = modal('Lectura del texto', content, [{ label: 'Volver al listado' }],
     { width: 'min(760px, 96vw)', onClose });
   const labels = new Map(catalogue.map(tag => [tag.id, tag.label]));
@@ -265,6 +234,9 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     if (focused === next && next.disabled) previous.focus();
     title.textContent = text.title;
     reference.textContent = [text.source.author, text.source.work, text.source.reference].filter(Boolean).join(' · ');
+    const assessment = difficultyFor(text);
+    difficulty.textContent = 'Dificultad ' + difficultyText(assessment.level) + ' · ' +
+      (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
     latin.textContent = text.latin;
     tags.replaceChildren();
     for (const id of text.tagIds) {
