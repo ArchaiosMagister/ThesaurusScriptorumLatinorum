@@ -7,6 +7,8 @@ export function integrateNotebook(source) {
     source = source.replace(original, () => replacement);
   };
 
+  source = "import { bankTagVisible, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
+  source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
   source = "import { appendDuplicateCards, createBankFilters, openBankReader } from './atl-bank-catalog.js';\n" + source;
   source = "import { contextualBankAnalysis, rulesVersion } from './atl-bank-context.js';\n" + source;
@@ -41,7 +43,7 @@ export function integrateNotebook(source) {
   replace('    const bank = el(\'section\', \'cuaderno-home-bank\');', `    return home;
 }
 
-const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', usage: '', mode: 'all', tags: [], includePending: false };
+const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', usage: '', exam: false, examYear: '', examCommunity: '', mode: 'all', tags: [], includePending: false };
 let refreshBankProposals = () => {};
 let bankAutomaticTags = () => [];
 let refreshBankUses = () => {};
@@ -196,13 +198,14 @@ window.addEventListener('atl-view', () => {
     };
     inputs.get('latin').addEventListener('input', updateEstimate);
     updateEstimate();
-    form.append(difficultyField);
+    const exam = selectividadEditor(source.selectividad);
+    form.append(difficultyField, exam.container);
     const glossary = vocabularyEditor(source);
     form.append(glossary.section);
     if (source.teacherDocx)
         form.append(`);
   replace("        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin') };",
-    "        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin'), notes: value('notes'), difficulty: difficulty.value ? Number(difficulty.value) : null };");
+    "        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin'), notes: value('notes'), difficulty: difficulty.value ? Number(difficulty.value) : null, selectividad: exam.read() };");
   replace('            const loaded = await repo.load();\n            const current = loaded.corpus.texts.find(t => t.id === source.id);',
     `            await writeSource(async () => {
             const historical = await repo.load();
@@ -210,7 +213,7 @@ window.addEventListener('atl-view', () => {
             const loaded = primary ? historical : await workspace.loadCorpus();
             const current = loaded.corpus.texts.find(t => t.id === source.id);
             const vocabulary = glossary.read();`);
-  replace('            if (same) {', '            if (same && data.difficulty === (current.difficulty ?? null)) {');
+  replace('            if (same) {', '            if (same && data.difficulty === (current.difficulty ?? null) && JSON.stringify(data.selectividad) === JSON.stringify(current.selectividad ?? null)) {');
   replace('const saveCopy = linked || (changedLatin && Boolean(current.teacherDocx));',
     'const saveCopy = (linked && !same) || (changedLatin && Boolean(current.teacherDocx));');
   replace("                data.reference === (current.source.reference ?? '');",
@@ -319,6 +322,32 @@ window.addEventListener('atl-view', () => {
             if (bank.isConnected) populate();
         }, 100);
     };
+    function openPlanner() {
+        showBankPlanner({
+            read: async filtered => {
+                const texts = filtered ? currentResults() : corpus.texts;
+                const saved = await bankAnalysisIndex(texts, catalogue, isRejectedProposal);
+                return { texts, catalogue, automatic: new Map([...saved].map(([id, review]) => [id, review.automatic])),
+                    pendingAnalyses: texts.some(text => !saved.get(text.id)?.current) };
+            },
+            match: matchesGrammarTag,
+            create: async (title, plan) => writeSource(async () => {
+                const latest = await loadCombinedCorpus();
+                const current = new Map(latest.texts.map(text => [text.id, text]));
+                if (plan.some(({ text }) => JSON.stringify(text) !== JSON.stringify(current.get(text.id))))
+                    throw Error('El Banco cambió desde la previsualización. Actualiza la cobertura.');
+                const id = await composer.createNotebookNamed(title, plan);
+                if (!id) throw Error('No se pudo crear el cuaderno.');
+                currentId = id;
+                rememberNotebook();
+                await reload();
+                render();
+                return id;
+            }),
+            modal: (...args) => M.modal(...args)
+        });
+    }
+    bankActions.append(button('Crear cuaderno por trimestres', () => openPlanner(), 'hbtn'));
     const loadAnalysis = async () => {
         const saved = await bankAnalysisIndex(corpus.texts, catalogue, isRejectedProposal);
         if (!bank.isConnected) return;
@@ -345,10 +374,11 @@ window.addEventListener('atl-view', () => {
   replace('    bank.append(bankToolbar);', '    bank.append(bankToolbar, filters.panel);');
   replace("        viewSelect.value = 'all';\n        populate();", "        difficultySelect.value = '';\n        filters.reset();\n        populate();");
   replace('    function currentResults() {', `    function currentResults() {
-        const { work, reference, origin, usage, mode, tags } = filters.read();
+        const { work, reference, origin, usage, mode, tags, exam, examYear, examCommunity } = filters.read();
         const referenceNeedle = foldLatin(reference);`);
   replace("            const author = t.source.author?.trim() ?? '';", `            const author = t.source.author?.trim() ?? '';
             if (difficultySelect.value && String(difficultyFor(t).level) !== difficultySelect.value) return false;
+            if (!matchesSelectividad(t, examYear, examCommunity, exam)) return false;
             if (work && t.source.work?.trim() !== work) return false;
             if (referenceNeedle && !foldLatin(t.source.reference ?? '').includes(referenceNeedle)) return false;
             if (origin && (t.origin?.kind ?? 'unknown') !== origin) return false;
@@ -371,7 +401,7 @@ window.addEventListener('atl-view', () => {
             return authorOrder || workOrder || referenceOrder || titleOrder || compare(a.id, b.id);`);
   replace("        const isFiltered = Boolean(search.value.trim()) || authorSelect.value !== 'all';", `        const criteria = filters.read();
         Object.assign(bankState, criteria, { query: search.value, author: authorSelect.value, sort: sortSelect.value, difficulty: difficultySelect.value });
-        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage ||
+        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage || criteria.exam || criteria.examYear || criteria.examCommunity ||
             criteria.tags.length || criteria.includePending) || authorSelect.value !== 'all';
         if (criteria.usage && !usesReady) {
             bankResultCount.textContent = usesUnavailable ? 'No se pudo consultar el historial de usos.' : 'Consultando los usos registrados…';
@@ -408,28 +438,33 @@ window.addEventListener('atl-view', () => {
                 onError: error => M.toast(String(error), 7000)
             }));
             rowSummary.append(read);`);
+  replace("            const titleGroup = el('span', 'cuaderno-home-text-heading-info');", `            if (text.selectividad) sourceParts.push(['Selectividad', text.selectividad.year, text.selectividad.community].filter(Boolean).join(' · '));
+            const source = sourceParts.join(' · ');
+            const titleGroup = el('span', 'cuaderno-home-text-heading-info');`);
+  replace("            const source = [text.source.author, text.source.work, text.source.reference]\n                .filter(Boolean).join(' · ');",
+    "            const sourceParts = [text.source.author, text.source.work, text.source.reference].filter(Boolean);");
   const inlineStart = "            row.append(el('p', 'cuaderno-home-latin', text.latin));";
   const inlineEnd = '            target.append(row);';
   const start = source.indexOf(inlineStart);
   const end = source.indexOf(inlineEnd, start);
   if (start < 0 || end < 0) throw new Error('Revisar las tarjetas del banco.');
   source = source.slice(0, start) + `            const chips = el('div', 'grammar-chips cuaderno-bank-row-tags');
-            const chosenTags = [...text.tagIds].sort((a, b) => Number(b.startsWith('custom.')) - Number(a.startsWith('custom.')));
+            const chosenTags = text.tagIds.filter(bankTagVisible).sort((a, b) => Number(b.startsWith('custom.')) - Number(a.startsWith('custom.')));
             for (const id of chosenTags.slice(0, 2)) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip', item.label));
             }
-            for (const id of pendingFor(text.id).slice(0, 1)) {
+            for (const id of pendingFor(text.id).filter(bankTagVisible).slice(0, 1)) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip atl-pending-tag', 'Pendiente: ' + item.label));
             }
-            const automatic = automaticFor(text.id);
-            const reviewCount = analysisIndex.get(text.id)?.pending.length ?? 0;
-            for (const id of automatic.slice(0, Math.max(0, 2 - text.tagIds.length))) {
+            const automatic = automaticFor(text.id).filter(bankTagVisible);
+            const reviewCount = analysisIndex.get(text.id)?.pending.filter(bankTagVisible).length ?? 0;
+            for (const id of automatic.slice(0, Math.max(0, 2 - chosenTags.length))) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip', item.label + ' · Automática'));
             }
-            const remaining = Math.max(0, automatic.length + text.tagIds.length - 2);
+            const remaining = Math.max(0, automatic.length + chosenTags.length - 2);
             if (remaining) chips.append(el('span', 'small muted', '+' + remaining));
             if (reviewCount && !bankState.includePending) chips.append(el('span', 'small muted', reviewCount + ' pendientes'));
             const usage = el('span', 'small muted', 'Usado en documentos');
@@ -568,5 +603,7 @@ window.addEventListener('atl-view', () => {
         }
         if (automatic.children.length > 1) result.append(automatic);`);
   replace('choose.value = selections.get(key) ?? proposal.tagId;', 'choose.value = selections.get(key) ?? acceptedTag;');
+  replace('            const acceptedTag = corrected.get(key) ?? proposal.tagId;',
+    "            if (!bankTagVisible(proposal.tagId) && !proposal.tagId.startsWith('gram.verbo.') && proposal.tagId !== 'gram.ut') continue;\n            const acceptedTag = corrected.get(key) ?? proposal.tagId;");
   return source;
 }

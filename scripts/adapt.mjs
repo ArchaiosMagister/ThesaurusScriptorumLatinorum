@@ -1,3 +1,4 @@
+import { integratePeriodValidation, integrateCurriculumComposer, integrateCurriculumExport } from './curriculum-integration.mjs';
 import { simplifyNotebookOrganization, simplifyNotebookHeader, stableNotebookOverview } from './notebook-organizer.mjs';
 import { modernizeBank } from './bank-interface.mjs';
 import { sharedExamEditorStyle, alignNotebookEditorMarkup } from './exam-editor-style.mjs';
@@ -96,6 +97,8 @@ export async function adaptModule(directory, module, pages, academicRevision) {
   if (module === 'cuaderno') {
     const validation = join(directory, 'core', 'validation.js');
     await writeFile(validation, integrateOriginValidation(await readFile(validation, 'utf8')));
+    const editionValidation = join(directory, 'core', 'edition-validation.js');
+    await writeFile(editionValidation, integratePeriodValidation(await readFile(editionValidation, 'utf8')));
     const operations = join(directory, 'core', 'editor-operations.js');
     await writeFile(operations, integrateOriginWrites(await readFile(operations, 'utf8')));
     const editionOperations = join(directory, 'core', 'edition-operations.js');
@@ -123,7 +126,7 @@ export function lexicalValuesForDocument(option) {
 }
 `);
     const documents = join(directory, 'export', 'notebook-documents.js');
-    await writeFile(documents, (await readFile(documents, 'utf8'))
+    await writeFile(documents, integrateCurriculumExport(await readFile(documents, 'utf8'))
       .replace('import { displayedAcademicSlotValue }', 'import { lexicalValuesForDocument }')
       .replace('option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {')
       .replace('displayedAcademicSlotValue(option.kind, slot)', 'value'));
@@ -133,6 +136,8 @@ export function lexicalValuesForDocument(option) {
     const bankVocabulary = await readFile(new URL('./bank-vocabulary.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'ui', 'atl-bank-catalog.js'), catalogue);
     await cp(new URL('./bank-difficulty.js', import.meta.url), join(directory, 'ui', 'atl-bank-difficulty.js'));
+    await cp(new URL('./bank-curriculum.js', import.meta.url), join(directory, 'ui', 'atl-bank-curriculum.js'));
+    await cp(new URL('./bank-planner.js', import.meta.url), join(directory, 'ui', 'atl-bank-planner.js'));
     await writeFile(join(directory, 'ui', 'atl-bank-review.js'), bankReview);
     await cp(new URL('./bank-context.js', import.meta.url), join(directory, 'ui', 'atl-bank-context.js'));
     const grammarTags = join(directory, 'core', 'grammar-tags.js');
@@ -140,7 +145,10 @@ export function lexicalValuesForDocument(option) {
     const catalogueStart = 'export const GRAMMAR_CATALOGUE = [';
     if (!grammarSource.includes(catalogueStart)) throw new Error('Revisar el catálogo gramatical integrado.');
     await writeFile(grammarTags, "import { contextualTags } from '../ui/atl-bank-context.js';\n" +
-      grammarSource.replace(catalogueStart, catalogueStart + '\n    ...contextualTags,'));
+      grammarSource.replace(catalogueStart, catalogueStart + '\n    ...contextualTags,')
+      .replace('Cercanía (hic)', 'Demostrativo hic')
+      .replace('Media distancia (iste)', 'Demostrativo iste')
+      .replace('Lejanía (ille)', 'Demostrativo ille'));
 
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
     const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
@@ -151,7 +159,7 @@ export function lexicalValuesForDocument(option) {
     const readingCardFile = join(directory, 'ui', 'latin-reading-card.js');
     const readingCard = integrateLatinReadingCard(await readFile(readingCardFile, 'utf8'));
     await writeFile(readingCardFile, readingCard);
-    const editionWithCards = integrateReadingCardPreview(edition);
+    const editionWithCards = integrateReadingCardPreview(integrateCurriculumComposer(edition));
     await writeFile(join(directory, 'ui', 'atl-edition.js'), editionWithCards
       .replace('import { displayedAcademicSlotValue }', 'import { displayedAcademicSlotValue, lexicalValuesForDocument }')
       .replace('option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {')
@@ -431,7 +439,7 @@ export function lexicalValuesForDocument(option) {
       ? '../../shared/personal-academic.js' : '../shared/personal-academic.js');
     if (page === notebookPage) {
       additions.push('./atl-index.html', './atl-cuadernos.html', './atl-repertorios.html', '../ui/atl-repertorios.js', '../ui/atl-edition.js',
-        '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js',
+        '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js', '../ui/atl-bank-curriculum.js', '../ui/atl-bank-planner.js',
         '../ui/atl-bank-vocabulary.js', '../../shared/text-usage.js');
     }
     await writeFile(workerPath, worker.replace(marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ','));

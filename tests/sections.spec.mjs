@@ -309,6 +309,93 @@ test('el Banco muestra, filtra y ordena la dificultad; la valoración docente se
   await expect(cards).toHaveCount(0);
 });
 
+test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramaticales específicas', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  async function mark(title, year, community) {
+    await bank.getByRole('button', { name: new RegExp('^' + title + ' ') }).click();
+    await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+    await modal.getByRole('checkbox', { name: 'Selectividad', exact: true }).check();
+    await modal.getByRole('spinbutton', { name: 'Año de Selectividad' }).fill(year);
+    await modal.getByRole('combobox', { name: 'Comunidad autónoma' }).selectOption(community);
+    await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+    await expect(modal).toBeHidden();
+  }
+  await mark('Uno', '2024', 'Andalucía');
+  await mark('Dos', '2025', 'Galicia');
+  await page.reload();
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  await bank.getByRole('checkbox', { name: 'Solo Selectividad' }).check();
+  const listing = bank.locator('.cuaderno-home-bank-list');
+  await expect(listing.locator('article')).toHaveCount(2);
+  await bank.getByRole('combobox', { name: 'Filtrar por año de Selectividad' }).selectOption('2025');
+  await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Andalucía');
+  await expect(listing.locator('article')).toHaveCount(0);
+  await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Galicia');
+  await expect(listing.locator('article')).toHaveCount(1);
+  await listing.getByRole('button', { name: /^Dos / }).click();
+  await expect(frame.locator('.atl-reader-exam')).toHaveText('Selectividad · 2025 · Galicia');
+  await modal.getByRole('button', { name: 'Volver al listado' }).click();
+  await expect(bank.getByRole('checkbox', { name: 'Demostrativo', exact: true })).toHaveCount(0);
+  await expect(bank.getByRole('checkbox', { name: 'Cum preposición', exact: true })).toHaveCount(0);
+  await expect(bank.getByRole('checkbox', { name: /^Demostrativo / })).toHaveCount(3);
+});
+
+test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y repaso', async ({ page }) => {
+  await page.goto(path);
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  await bank.waitFor();
+  await frame.locator('html').evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('../storage/indexeddb-corpus-repository.js');
+    const { upsertText } = await import('../core/editor-operations.js');
+    const { attachGrammarTags } = await import('../core/grammar-tags.js');
+    const repository = new IndexedDbCorpusRepository();
+    const before = await repository.load();
+    let corpus = before.corpus;
+    for (let i = 0; i < 50; i++) {
+      const id = 'plan.' + i;
+      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est.', author: 'César',
+        reference: String(i), work: 'Bellum Gallicum', difficulty: 1 + Math.floor(i / 10) }, id, '2026-11-22T09:00:00.000Z');
+      corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.gerundivo' : 'gram.ablativo.absoluto']);
+    }
+    await repository.save(corpus, before.revision);
+  });
+  await page.reload();
+  await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
+  const panel = frame.locator('.atl-bank-planner');
+  const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
+  await expect(panel.getByText(/^Sin ejemplos en la selección/)).toBeVisible();
+  await expect(create).toBeDisabled();
+  await panel.getByRole('checkbox', { name: 'Limitar a etiquetas presentes en la selección' }).check();
+  await expect(panel.getByRole('status')).toContainText('50 de 50 textos');
+  await expect(panel.getByText('Tercer trimestre · 15 textos')).toBeVisible();
+  await expect(panel.getByText('Repaso y refuerzo · 5 textos')).toBeVisible();
+  await create.click();
+  await expect(frame.locator('.atl-organize-main')).toContainText('Textos del cuaderno (50)');
+  const { edition } = await notebookSnapshot(frame, 'Lecturas por trimestres');
+  expect(new Set(edition.placements.map(item => item.source.sourceId)).size).toBe(50);
+  expect(edition.placements.map(item => item.period)).toEqual([
+    ...Array(15).fill('trimestre-1'), ...Array(15).fill('trimestre-2'),
+    ...Array(15).fill('trimestre-3'), ...Array(5).fill('repaso')
+  ]);
+  const level = item => 1 + Math.floor(Number(item.source.sourceId.split('.')[1]) / 10);
+  const teaching = edition.placements.slice(0, 45).map(level);
+  expect(teaching).toEqual([...teaching].sort((a, b) => a - b));
+  expect(edition.placements.slice(45).map(level)).toEqual([1, 2, 3, 4, 5]);
+  expect(edition.placements.flatMap(item => item.grammaticalTagIds)).toEqual(
+    expect.arrayContaining(['gram.gerundivo', 'gram.ablativo.absoluto'])
+  );
+  const word = await frame.locator('html').evaluate(async (_, edition) => {
+    const { createNotebookDocx } = await import('../export/notebook-documents.js');
+    return new TextDecoder().decode(createNotebookDocx(edition));
+  }, edition);
+  expect(word).toContain('Primer trimestre');
+  expect(word).toContain('Repaso y refuerzo');
+});
+
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {
   await page.goto(path);
   const bankFrame = await seedBank(page);
@@ -776,7 +863,7 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await paste.getByRole('textbox', { name: 'Título' }).fill('Análisis sin red');
     await paste.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
     await paste.getByRole('button', { name: 'Guardar en el banco' }).click();
-    await expect(notebook.getByText('Pronombres y determinantes · Automática', { exact: true })).toBeVisible();
+    await expect(notebook.getByText('Posesivos · Automática', { exact: true })).toBeVisible();
 
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     await expect(notebook.getByRole('heading', { name: 'Mis cuadernos', exact: true })).toBeVisible();
@@ -969,10 +1056,10 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await modal.getByRole('textbox', { name: 'Título' }).fill('Concordancia de prueba');
   await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
   await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
-  const automatic = bank.getByText('Pronombres y determinantes · Automática', { exact: true });
+  const automatic = bank.getByText('Posesivos · Automática', { exact: true });
   await expect(automatic).toBeVisible();
   await bank.getByText('Más filtros', { exact: true }).click();
-  const pronouns = bank.getByRole('checkbox', { name: 'Pronombres y determinantes', exact: true, includeHidden: true });
+  const pronouns = bank.getByRole('checkbox', { name: 'Posesivos', exact: true, includeHidden: true });
   await pronouns.evaluate(node => {
     for (let group = node.closest('details'); group; group = group.parentElement.closest('details')) group.open = true;
   });
@@ -981,7 +1068,7 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await pronouns.uncheck();
   await card.click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
-  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Pronombres y determinantes · Automática' });
+  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Posesivos · Automática' });
   await modal.getByText('Etiquetas automáticas', { exact: true }).click();
   await expect(agreement).toBeVisible();
   await expect(modal.locator('.grammar-proposal-card').filter({ hasText: /Subjuntivo · (Pendiente|Automática)/ })).toHaveCount(0);
@@ -996,7 +1083,7 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await expect(card).toBeVisible();
   await card.click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
-  await expect(modal.getByText('Suas copias · Pronombres y determinantes · Descartada', { exact: true })).toBeVisible();
+  await expect(modal.getByText('Suas copias · Posesivos · Descartada', { exact: true })).toBeVisible();
 });
 
 test('una ficha editorial recuperada admite notas y vocabulario reutilizables', async ({ page }) => {

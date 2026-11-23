@@ -1,3 +1,5 @@
+import { bankTagVisible } from './atl-bank-curriculum.js';
+import { communitySelect } from './atl-bank-planner.js';
 import { GRAMMAR_GROUP_IDS, matchesGrammarTag } from '../core/grammar-tags.js';
 import { foldLatin } from '../core/library.js';
 import { difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';
@@ -31,6 +33,19 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   usage.value = state.usage;
   usage.addEventListener('change', onChange);
 
+  const exam = element('input', { type: 'checkbox', checked: state.exam });
+  const examLabel = element('label', { className: 'atl-tag-option' });
+  examLabel.append(exam, ' Solo Selectividad');
+  const examYear = element('select');
+  examYear.setAttribute('aria-label', 'Filtrar por año de Selectividad');
+  const years = [...new Set(texts.map(text => text.selectividad?.year).filter(Boolean))].sort((a, b) => b - a);
+  examYear.append(new Option('Todos los años', ''), ...years.map(year => new Option(String(year), String(year))));
+  examYear.value = years.includes(Number(state.examYear)) ? state.examYear : '';
+  const examCommunity = communitySelect('Todas las comunidades');
+  examCommunity.setAttribute('aria-label', 'Filtrar por comunidad autónoma');
+  examCommunity.value = state.examCommunity;
+  for (const control of [exam, examYear, examCommunity]) control.addEventListener('change', onChange);
+
   const panel = element('section', { className: 'atl-grammar-filters' });
   const mode = element('select', { id: 'atl-grammar-match' });
   mode.append(new Option('Todas las etiquetas', 'all'), new Option('Alguna etiqueta', 'any'));
@@ -48,7 +63,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   list.setAttribute('aria-label', 'Etiquetas gramaticales');
   const selections = new Map();
   const compareLabels = (a, b) => compare(a.label, b.label);
-  for (const tag of [...catalogue].sort(compareLabels)) {
+  for (const tag of catalogue.filter(tag => bankTagVisible(tag.id)).sort(compareLabels)) {
     const check = element('input', { type: 'checkbox', value: tag.id, checked: state.tags.includes(tag.id) });
     const row = element('label', { className: 'atl-tag-option' });
     row.append(check, tag.label);
@@ -75,13 +90,16 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   function read() {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
     return { work: work.value, reference: reference.value, origin: origin.value,
-      usage: usage.value, mode: mode.value, tags, includePending: pending.checked };
+      usage: usage.value, exam: exam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
   }
   function reset() {
     work.value = '';
     reference.value = '';
     origin.value = '';
     usage.value = '';
+    exam.checked = false;
+    examYear.value = '';
+    examCommunity.value = '';
     mode.value = 'all';
     pending.checked = false;
     tagQuery.value = '';
@@ -94,7 +112,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     control.checked = !control.checked;
     onChange();
   }
-  return { panel, work, reference, origin, usage, read, reset, toggleTag };
+  return { panel, work, reference, origin, usage, examLabel, examYear, examCommunity, read, reset, toggleTag };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {
@@ -201,6 +219,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   const title = element('h3');
   const reference = element('p', { className: 'muted' });
   const difficulty = element('p', { className: 'atl-reader-difficulty' });
+  const exam = element('p', { className: 'atl-reader-exam' });
   const latin = element('p', { className: 'atl-reader-latin', lang: 'la' });
   const tags = element('div', { className: 'grammar-chips atl-reader-tags' });
   const pending = element('p', { className: 'muted' });
@@ -220,7 +239,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   const removeButton = makeButton('Quitar del banco', editCurrent(remove));
   actions.append(makeButton('Editar ficha', editCurrent(edit)), makeButton('Etiquetar', editCurrent(tag)),
     makeButton('Ver usos anteriores', editCurrent(usage)), removeButton);
-  content.append(tools, title, reference, difficulty, latin, tags, pending, notes, glossary, actions);
+  content.append(tools, title, reference, exam, difficulty, latin, tags, pending, notes, glossary, actions);
   const reader = modal('Lectura del texto', content, [{ label: 'Volver al listado' }],
     { width: 'min(760px, 96vw)', onClose });
   const labels = new Map(catalogue.map(tag => [tag.id, tag.label]));
@@ -234,21 +253,24 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     if (focused === next && next.disabled) previous.focus();
     title.textContent = text.title;
     reference.textContent = [text.source.author, text.source.work, text.source.reference].filter(Boolean).join(' · ');
+    exam.hidden = !text.selectividad;
+    exam.textContent = text.selectividad
+      ? ['Selectividad', text.selectividad.year, text.selectividad.community].filter(Boolean).join(' · ') : '';
     const assessment = difficultyFor(text);
     difficulty.textContent = 'Dificultad ' + difficultyText(assessment.level) + ' · ' +
       (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
     latin.textContent = text.latin;
     tags.replaceChildren();
     for (const id of text.tagIds) {
-      if (!labels.has(id)) continue;
+      if (!labels.has(id) || !bankTagVisible(id)) continue;
       const chip = element('span', { className: 'grammar-chip', textContent: labels.get(id) });
       chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
       tags.append(chip);
     }
     for (const id of automaticFor(text.id)) {
-      if (labels.has(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
+      if (labels.has(id) && bankTagVisible(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
     }
-    const proposals = (pendingTags?.get(text.id) ?? []).map(id => labels.get(id)).filter(Boolean);
+    const proposals = (pendingTags?.get(text.id) ?? []).filter(bankTagVisible).map(id => labels.get(id)).filter(Boolean);
     pending.textContent = proposals.length ? 'Propuestas pendientes: ' + proposals.join(' · ') : '';
     pending.hidden = !proposals.length;
     notes.textContent = text.notes ?? '';

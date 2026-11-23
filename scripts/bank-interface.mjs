@@ -3,6 +3,10 @@ export function modernizeBank(source) {
     if (source.split(before).length !== 2) throw Error('Revisar la interfaz del banco: ' + before);
     source = source.replace(before, () => after);
   };
+  replace("        if (!selected.size) {", "        if (![...selected].some(bankTagVisible)) {");
+  replace("        for (const id of selected) {", "        for (const id of [...selected].filter(bankTagVisible)) {");
+  replace("                for (const tag of all) {",
+    "                for (const tag of all.filter(item => bankTagVisible(item.id) || item.id === acceptedTag)) {");
   replace("    const manual = el('details', 'cuaderno-bank-manual');",
     `    const custom = el('form', 'atl-create-tag');
     const name = el('input');
@@ -18,6 +22,10 @@ export function modernizeBank(source) {
             return;
         }
         let tag = findTagByLabel(label, all);
+        if (tag && !bankTagVisible(tag.id)) {
+            feedback.textContent = 'Ese nombre se reserva para una categoría gramatical.';
+            return;
+        }
         if (!tag) {
             tag = { id: 'custom.' + crypto.randomUUID(), label, kind: 'custom', parentId: null };
             all.push(tag);
@@ -35,7 +43,7 @@ export function modernizeBank(source) {
   replace("    for (const tag of all) {\n        const label = el('label', 'cuaderno-bank-tag-option'), check = el('input');",
     "    function appendTagOption(tag, target) {\n        const label = el('label', 'cuaderno-bank-tag-option'), check = el('input');");
   replace("        list.append(label);\n    }\n    search.addEventListener('input', () => {",
-    "        target.append(label);\n    }\n    for (const tag of all) appendTagOption(tag, list);\n    search.addEventListener('input', () => {");
+    "        target.append(label);\n    }\n    for (const tag of all.filter(item => bankTagVisible(item.id))) appendTagOption(tag, list);\n    search.addEventListener('input', () => {");
   replace("                        const next = attachGrammarTags(saved.corpus, text.id, [...selected], allGrammarTags(corpus));",
     `                        const latest = allGrammarTags(saved.corpus, allGrammarTags(corpus));
                         const ids = [...selected].map(id => {
@@ -70,7 +78,10 @@ export function modernizeBank(source) {
     const filterFields = el('div', 'atl-bank-more-fields');
     filterFields.append(bankField('Autor', authorSelect, ''), bankField('Obra', filters.work, ''),
         bankField('Referencia', filters.reference, ''), bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
-    moreFilters.append(filterFields);
+    const examFields = el('div', 'atl-bank-more-fields');
+    examFields.append(filters.examLabel, bankField('Año de Selectividad', filters.examYear, ''),
+        bankField('Comunidad autónoma', filters.examCommunity, ''));
+    moreFilters.append(filterFields, examFields);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
     filterChips.setAttribute('aria-label', 'Etiquetas de filtro activas');
 ` + source.slice(to);
@@ -78,7 +89,7 @@ export function modernizeBank(source) {
     shortcuts.setAttribute('aria-label', 'Etiquetas usadas en el banco');
     const counts = new Map();
     for (const text of corpus.texts) for (const id of text.tagIds) counts.set(id, (counts.get(id) ?? 0) + 1);
-    const frequent = catalogue.filter(tag => counts.has(tag.id)).sort((a, b) =>
+    const frequent = catalogue.filter(tag => counts.has(tag.id) && bankTagVisible(tag.id)).sort((a, b) =>
         Number(b.kind === 'custom') - Number(a.kind === 'custom') ||
         counts.get(b.id) - counts.get(a.id) || bankCollator.compare(a.label, b.label)).slice(0, 5);
     const quickTags = new Map();

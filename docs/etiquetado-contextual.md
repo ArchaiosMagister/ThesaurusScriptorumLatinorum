@@ -11,7 +11,7 @@ El generador integrado de Cuadernos recorría todos los candidatos devueltos por
 - Se verifica el lema, la morfología y la coincidencia exacta de los límites UTF-16 con el texto.
 - Una forma verbal personal puede incorporarse cuando las lecturas coinciden en tiempo, modo y voz, aunque varíe el lema. *Venit* queda pendiente con presente y perfecto disponibles en la evidencia.
 - En formas no personales y pronombres se exige coincidencia de las lecturas, con reglas adicionales de concordancia. *Suas copias* se resuelve por caso, género y número, incluso cuando el género del sustantivo figura en la entrada léxica. La lectura verbal queda en el desplegable.
-- En *cum* se distingue el ablativo nominal adyacente del verbo personal adyacente cuando concuerdan con la selección. No se deduce de ahí un valor temporal, causal o concesivo.
+- Las lecturas preposicional y conjuntiva de *cum* siguen en el análisis completo. El catálogo conserva el *cum* histórico para clasificaciones sintácticas revisadas.
 - Para el tiempo compuesto se exige participio de perfecto nominativo, `sum` seleccionado, coincidencia de número, adyacencia y continuidad de oración. Las lecturas incompatibles conservan la revisión. Por ejemplo, *profectus est* admite también una lectura de *proficio*.
 - La concordancia de un participio puede motivar una revisión sintáctica. La etiqueta de ablativo absoluto requiere una separación adicional por coma incluso para proponerse. Las formas participiales e infinitivas se registran por separado de las construcciones. Los valores de *ut*, el relativo de enlace y las decisiones existentes sobre gerundio y gerundivo siguen bajo revisión docente.
 

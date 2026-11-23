@@ -844,3 +844,35 @@
   #editor .atl-bank .cuaderno-bank-reset { grid-column: 1 / -1; justify-self: end; }
   #editor .atl-bank .cuaderno-bank-reset:disabled { display: none; }
 }
+
+@media screen {
+  .atl-selectividad {
+    border: 1px solid var(--rule);
+    border-radius: .45rem;
+    padding: .5rem;
+    margin: .5rem 0;
+  }
+
+  .atl-selectividad-fields, .atl-planner-counts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    gap: .45rem;
+  }
+
+  .atl-selectividad-fields[hidden] { display: none; }
+  .atl-selectividad label:has(input[type="checkbox"]),
+  .atl-bank-planner label:has(input[type="checkbox"]) {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .5rem;
+  }
+
+  .atl-bank-planner details { margin-block: .4rem; padding: .4rem .6rem; border: 1px solid var(--rule); }
+  .atl-bank-planner summary { cursor: pointer; }
+  .atl-bank-planner input[type="number"] { width: 100%; min-width: 0; }
+  #editor .atl-organize-list .atl-curriculum-period { list-style: none; padding-block: .45rem .15rem; }
+  .atl-curriculum-period h5 { color: var(--accent); margin: 0; }
+  .atl-reader-exam { color: var(--accent); font-size: .86rem; }
+}

@@ -29,7 +29,7 @@ const find = (rows, fragment, id) => rows.find(row => row.fragment === fragment 
 test('concordancia posesiva y exclusión del subjuntivo homógrafo', async () => {
   for (const fragment of ['suas copias', 'Suas copias']) {
     const rows = await analyze(fragment + '.');
-    const agreement = find(rows, fragment, 'pronombres');
+    const agreement = find(rows, fragment, 'pron.posesivo');
     assert.equal(agreement?.state, 'automatic');
     assert.match(agreement.evidence.join(' '), /acusativo femenino plural/);
     assert.ok(agreement.alternatives.some(reading => reading.includes('subjuntivo')));
@@ -37,10 +37,9 @@ test('concordancia posesiva y exclusión del subjuntivo homógrafo', async () =>
   }
 });
 
-test('cum preposicional y conjuntivo, quod ambiguo y venit temporalmente ambiguo', async () => {
+test('cum conserva el análisis verbal pertinente, quod y venit mantienen sus ambigüedades', async () => {
   const rows = await analyze('Cum militibus. Cum venisset. Quod dixit. Venit.');
-  assert.equal(find(rows, 'Cum militibus', 'cum.preposicion')?.state, 'automatic');
-  assert.equal(find(rows, 'Cum venisset', 'cum.conjuncion')?.state, 'automatic');
+  assert.ok(!rows.some(row => row.tagId.startsWith('gram.cum.')));
   assert.equal(find(rows, 'venisset', 'subjuntivo')?.state, 'automatic');
   assert.equal(find(rows, 'Quod', 'pron.relativo')?.state, 'pending');
   assert.ok(!rows.some(row => ['gram.relativo', 'gram.cum.historico'].includes(row.tagId)));

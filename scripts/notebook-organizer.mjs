@@ -68,6 +68,12 @@ export function simplifyNotebookOrganization(source) {
                 element.querySelector('.atl-organize-main input'))?.focus({ preventScroll: true });
         }
         e.placements.forEach((p, index) => {
+            const periodName = periods.find(([key]) => key === p.period)?.[1];
+            if (periodName && p.period !== e.placements[index - 1]?.period) {
+                const heading = node('li', 'atl-curriculum-period');
+                heading.append(node('h5', '', periodName));
+                list.append(heading);
+            }
             const row = node('li', 'edition-notebook-row atl-organize-row');
             row.dataset.placement = p.id;
             const info = node('div', 'atl-organize-info');
@@ -146,7 +152,7 @@ export function simplifyNotebookOrganization(source) {
         const titleLabel = element.closest('#editor')?.querySelector('.cuaderno-context-current');
         if (titleLabel) titleLabel.textContent = draft.title;
         const idx`);
-  return source;
+  return "import { periods } from './atl-bank-curriculum.js';\n" + source;
 }
 
 export function simplifyNotebookHeader(source) {
