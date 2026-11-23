@@ -4,3 +4,7 @@
 /playwright-report/
 /test-results/
 /dist-build/
+
+/vendor/**/node_modules/
+/vendor/**/dist/
+/vendor/**/.test-dist/
