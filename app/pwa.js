@@ -25,13 +25,13 @@ export async function prepareOffline() {
   await new Promise((resolve, reject) => {
     const channel = new MessageChannel();
     const timeout = setTimeout(() => finish(new Error('La descarga sigue en curso. Comprueba de nuevo al terminar.')), 120000);
-    function finish(error) {
+    function finish(error, summary) {
       clearTimeout(timeout);
       channel.port1.close();
       if (error) reject(error);
-      else resolve();
+      else resolve(summary);
     }
-    channel.port1.onmessage = ({ data }) => finish(data.ok ? null : new Error(data.message || 'No se pudieron descargar los recursos.'));
+    channel.port1.onmessage = ({ data }) => finish(data.ok ? null : new Error(data.message || 'No se pudieron descargar los recursos.'), data);
     worker.postMessage('prepare-offline', [channel.port2]);
   });
 }

@@ -28,6 +28,10 @@ jobs:
       - run: npm run build
       - run: npm test && npm run test:ipad-selection && node tests/collatinus-grammar-integration.mjs
         working-directory: vendor/cuaderno
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-webkit-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps webkit
       - run: npm run test:webkit -- -g 'la ficha Collatinus'
       - run: npm run test:webkit

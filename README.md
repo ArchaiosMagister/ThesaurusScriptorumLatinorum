@@ -58,7 +58,7 @@ El mismo menú admite las copias globales v1 del banco histórico y las copias e
 
 La configuración privada de sincronización, sus credenciales y los puntos de sincronización se gestionan en el navegador correspondiente. Los recursos estáticos se recuperan con la PWA.
 
-**Instalar** usa el manifiesto general. Safari ofrece «Añadir a pantalla de inicio» desde Compartir. **Preparar sin conexión** descarga las tres secciones; conviene esperar el aviso de que han quedado preparadas. El servicio general mantiene una caché por versión y **Actualizar** pide confirmación antes de activar una versión preparada y recargar. La compilación usa rutas relativas compatibles con el subdirectorio de GitHub Pages.
+**Instalar** usa el manifiesto general. Safari ofrece «Añadir a pantalla de inicio» desde Compartir. **Preparar sin conexión** descarga las tres secciones; conviene esperar el aviso de que han quedado preparadas. Si se repite, reutiliza los recursos ya guardados, incluso después de una descarga interrumpida. Al instalar una actualización, el servicio reutiliza los archivos de bancos académicos, bibliotecas y fuentes que tengan idéntica huella SHA-256; solo descarga de nuevo los modificados. En la primera actualización desde una versión antigua sin huellas debe descargar el paquete completo una vez. **Actualizar** pide confirmación antes de activar la versión preparada y recargar. La compilación usa rutas relativas compatibles con el subdirectorio de GitHub Pages.
 
 ## Comprobación de la versión local
 
