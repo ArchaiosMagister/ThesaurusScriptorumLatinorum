@@ -151,7 +151,7 @@ test('un pasaje de la biblioteca se guarda en el banco y el cuaderno abierto se 
   await library.getByRole('button', { name: 'Guardar en el banco' }).click();
   await expect(bank.getByText('1 texto distinto', { exact: true })).toBeVisible();
   const count = bank.getByRole('status').first();
-  await bank.getByText('Autor, obra y otros filtros', { exact: true }).click();
+  await bank.getByText('Más filtros', { exact: true }).click();
   const origin = bank.getByRole('combobox', { name: 'Filtrar textos por procedencia' });
   const usage = bank.getByRole('combobox', { name: 'Filtrar textos por uso' });
   await origin.selectOption('own');
@@ -216,13 +216,12 @@ test('el lector combina obra, búsqueda y etiquetas y recorre el orden de refere
   await page.goto(path);
   const frame = await seedBank(page);
   const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
-  await bank.getByText('Autor, obra y otros filtros', { exact: true }).click();
+  await bank.getByText('Más filtros', { exact: true }).click();
   await bank.getByRole('combobox', { name: 'Filtrar textos por procedencia' }).selectOption('unknown');
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 4');
   await bank.getByRole('combobox', { name: 'Filtrar textos por procedencia' }).selectOption('');
   await bank.getByRole('combobox', { name: 'Filtrar textos por obra' }).selectOption('Bellum Gallicum');
-  await bank.getByRole('searchbox').fill('lux');
-  await bank.locator('.atl-grammar-filters > summary').click();
+  await bank.getByRole('searchbox', { name: 'Buscar en banco de textos propios' }).fill('lux');
   for (const label of ['Ablativo absoluto', 'Participio concertado']) {
     const checkbox = bank.getByRole('checkbox', { name: label, exact: true, includeHidden: true });
     await checkbox.evaluate(node => {
@@ -231,8 +230,9 @@ test('el lector combina obra, búsqueda y etiquetas y recorre el orden de refere
     await checkbox.check();
   }
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 2 de 4');
-  await expect(bank.locator('.atl-bank-group').getByRole('heading', { name: 'César', exact: true })).toBeVisible();
-  await expect(bank.locator('.atl-bank-work').getByRole('heading', { name: 'Bellum Gallicum', exact: true })).toBeVisible();
+  await expect(bank.locator('.atl-bank-card .cuaderno-home-text-source')).toHaveText([
+    'César · Bellum Gallicum · 2', 'César · Bellum Gallicum · 10'
+  ]);
   const reference = bank.getByRole('textbox', { name: 'Filtrar textos por referencia' });
   await reference.fill('2');
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 4');
@@ -245,9 +245,155 @@ test('el lector combina obra, búsqueda y etiquetas y recorre el orden de refere
   await expect(reader.getByRole('heading', { name: 'Uno' })).toBeVisible();
   await expect(reader.getByRole('status')).toHaveText('2 de 2');
   await frame.getByRole('button', { name: 'Volver al listado' }).click();
-  await expect(bank.getByRole('searchbox')).toHaveValue('lux');
+  await expect(bank.getByRole('searchbox', { name: 'Buscar en banco de textos propios' })).toHaveValue('lux');
   await bank.getByRole('combobox', { name: 'Coincidencia gramatical' }).selectOption('any');
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 3 de 4');
+});
+
+test('el Banco muestra, filtra y ordena la dificultad; la valoración docente se conserva y se puede retirar', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const listing = bank.locator('.cuaderno-home-bank-list');
+  await expect(listing.locator(':scope > article')).toHaveCount(4);
+  await expect(listing.locator('details')).toHaveCount(0);
+  const columns = () => listing.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+  expect(await columns()).toBeGreaterThan(1);
+  const viewport = page.viewportSize();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await columns()).toBe(1);
+  expect(await bank.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+  await page.setViewportSize(viewport);
+
+  const cards = listing.locator('.atl-bank-card');
+  const card = bank.getByRole('button', { name: /^Cuatro / });
+  await card.click();
+  const reader = frame.locator('.atl-bank-reader');
+  await expect(reader.locator('.atl-reader-difficulty')).toContainText('Estimada');
+  await reader.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+  const editor = frame.locator('.modal').last();
+  const teacher = editor.getByRole('combobox', { name: 'Dificultad docente' });
+  await expect(teacher).toHaveValue('');
+  await expect(editor.getByText(/^Estimación automática: /)).toBeVisible();
+  await teacher.selectOption('5');
+  await editor.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(card.locator('.atl-card-difficulty')).toHaveAttribute('data-manual', 'true');
+  const difficulty = bank.getByRole('combobox', { name: 'Filtrar textos por dificultad' });
+  await difficulty.selectOption('5');
+  await expect(cards).toHaveCount(1);
+  await expect(card).toBeVisible();
+  await difficulty.selectOption('');
+  const order = bank.getByRole('combobox', { name: 'Ordenar textos del banco' });
+  await order.selectOption('difficulty-desc');
+  await expect(cards.first()).toHaveText(/Cuatro/);
+  await page.reload();
+  await expect(card.locator('.atl-card-difficulty')).toHaveText('5/5');
+  const stored = await page.evaluate(async () => {
+    const { captureBackup, readSyncData } = await import('./backup-store.js');
+    const { payload } = await captureBackup();
+    const { data } = await readSyncData();
+    const workspace = 'atl-v1:cuaderno-textos-latinos-workspace';
+    const difficultyIn = editor => editor[workspace].corpus[0][1].corpus.texts
+      .find(item => item.id === 'doc.cuatro')?.difficulty;
+    return [difficultyIn(payload.databases), difficultyIn(data.editor)];
+  });
+  expect(stored).toEqual([5, 5]);
+
+  await card.click();
+  await expect(reader.locator('.atl-reader-difficulty')).toContainText('Docente');
+  await reader.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+  await teacher.selectOption('');
+  await editor.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(card.locator('.atl-card-difficulty')).toHaveAttribute('data-manual', 'false');
+  await difficulty.selectOption('5');
+  await expect(cards).toHaveCount(0);
+});
+
+test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramaticales específicas', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  async function mark(title, year, community) {
+    await bank.getByRole('button', { name: new RegExp('^' + title + ' ') }).click();
+    await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+    await modal.getByRole('checkbox', { name: 'Selectividad', exact: true }).check();
+    await modal.getByRole('spinbutton', { name: 'Año de Selectividad' }).fill(year);
+    await modal.getByRole('combobox', { name: 'Comunidad autónoma' }).selectOption(community);
+    await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+    await expect(modal).toBeHidden();
+  }
+  await mark('Uno', '2024', 'Andalucía');
+  await mark('Dos', '2025', 'Galicia');
+  await page.reload();
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  await bank.getByRole('checkbox', { name: 'Solo Selectividad' }).check();
+  const listing = bank.locator('.cuaderno-home-bank-list');
+  await expect(listing.locator('article')).toHaveCount(2);
+  await bank.getByRole('combobox', { name: 'Filtrar por año de Selectividad' }).selectOption('2025');
+  await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Andalucía');
+  await expect(listing.locator('article')).toHaveCount(0);
+  await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Galicia');
+  await expect(listing.locator('article')).toHaveCount(1);
+  await listing.getByRole('button', { name: /^Dos / }).click();
+  await expect(frame.locator('.atl-reader-exam')).toHaveText('Selectividad · 2025 · Galicia');
+  await modal.getByRole('button', { name: 'Volver al listado' }).click();
+  await expect(bank.getByRole('checkbox', { name: 'Demostrativo', exact: true })).toHaveCount(0);
+  await expect(bank.getByRole('checkbox', { name: 'Cum preposición', exact: true })).toHaveCount(0);
+  await expect(bank.getByRole('checkbox', { name: /^Demostrativo / })).toHaveCount(3);
+});
+
+test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y repaso', async ({ page }) => {
+  await page.goto(path);
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  await bank.waitFor();
+  await frame.locator('html').evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('../storage/indexeddb-corpus-repository.js');
+    const { upsertText } = await import('../core/editor-operations.js');
+    const { attachGrammarTags } = await import('../core/grammar-tags.js');
+    const repository = new IndexedDbCorpusRepository();
+    const before = await repository.load();
+    let corpus = before.corpus;
+    for (let i = 0; i < 50; i++) {
+      const id = 'plan.' + i;
+      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est.', author: 'César',
+        reference: String(i), work: 'Bellum Gallicum', difficulty: 1 + Math.floor(i / 10) }, id, '2026-11-22T09:00:00.000Z');
+      corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.gerundivo' : 'gram.ablativo.absoluto']);
+    }
+    await repository.save(corpus, before.revision);
+  });
+  await page.reload();
+  await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
+  const panel = frame.locator('.atl-bank-planner');
+  const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
+  await expect(panel.getByText(/^Sin ejemplos en la selección/)).toBeVisible();
+  await expect(create).toBeDisabled();
+  await panel.getByRole('checkbox', { name: 'Limitar a etiquetas presentes en la selección' }).check();
+  await expect(panel.getByRole('status')).toContainText('50 de 50 textos');
+  await expect(panel.getByText('Tercer trimestre · 15 textos')).toBeVisible();
+  await expect(panel.getByText('Repaso y refuerzo · 5 textos')).toBeVisible();
+  await create.click();
+  await expect(frame.locator('.atl-organize-main')).toContainText('Textos del cuaderno (50)');
+  const { edition } = await notebookSnapshot(frame, 'Lecturas por trimestres');
+  expect(new Set(edition.placements.map(item => item.source.sourceId)).size).toBe(50);
+  expect(edition.placements.map(item => item.period)).toEqual([
+    ...Array(15).fill('trimestre-1'), ...Array(15).fill('trimestre-2'),
+    ...Array(15).fill('trimestre-3'), ...Array(5).fill('repaso')
+  ]);
+  const level = item => 1 + Math.floor(Number(item.source.sourceId.split('.')[1]) / 10);
+  const teaching = edition.placements.slice(0, 45).map(level);
+  expect(teaching).toEqual([...teaching].sort((a, b) => a - b));
+  expect(edition.placements.slice(45).map(level)).toEqual([1, 2, 3, 4, 5]);
+  expect(edition.placements.flatMap(item => item.grammaticalTagIds)).toEqual(
+    expect.arrayContaining(['gram.gerundivo', 'gram.ablativo.absoluto'])
+  );
+  const word = await frame.locator('html').evaluate(async (_, edition) => {
+    const { createNotebookDocx } = await import('../export/notebook-documents.js');
+    return new TextDecoder().decode(createNotebookDocx(edition));
+  }, edition);
+  expect(word).toContain('Primer trimestre');
+  expect(word).toContain('Repaso y refuerzo');
 });
 
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {
@@ -717,7 +863,7 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await paste.getByRole('textbox', { name: 'Título' }).fill('Análisis sin red');
     await paste.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
     await paste.getByRole('button', { name: 'Guardar en el banco' }).click();
-    await expect(notebook.getByText('Pronombres y determinantes · Automática', { exact: true })).toBeVisible();
+    await expect(notebook.getByText('Posesivos · Automática', { exact: true })).toBeVisible();
 
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     await expect(notebook.getByRole('heading', { name: 'Mis cuadernos', exact: true })).toBeVisible();
@@ -863,7 +1009,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await review.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await page.reload();
 
-  await bank.locator('.atl-grammar-filters > summary').click();
+  await bank.getByText('Más filtros', { exact: true }).click();
   const passive = bank.getByRole('checkbox', { name: 'Voz pasiva', exact: true, includeHidden: true });
   await passive.evaluate(node => {
     for (let group = node.closest('details'); group; group = group.parentElement.closest('details')) group.open = true;
@@ -910,10 +1056,10 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await modal.getByRole('textbox', { name: 'Título' }).fill('Concordancia de prueba');
   await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias.');
   await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
-  const automatic = bank.getByText('Pronombres y determinantes · Automática', { exact: true });
+  const automatic = bank.getByText('Posesivos · Automática', { exact: true });
   await expect(automatic).toBeVisible();
-  await bank.locator('.atl-grammar-filters > summary').click();
-  const pronouns = bank.getByRole('checkbox', { name: 'Pronombres y determinantes', exact: true, includeHidden: true });
+  await bank.getByText('Más filtros', { exact: true }).click();
+  const pronouns = bank.getByRole('checkbox', { name: 'Posesivos', exact: true, includeHidden: true });
   await pronouns.evaluate(node => {
     for (let group = node.closest('details'); group; group = group.parentElement.closest('details')) group.open = true;
   });
@@ -922,7 +1068,7 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await pronouns.uncheck();
   await card.click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
-  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Pronombres y determinantes · Automática' });
+  const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Posesivos · Automática' });
   await modal.getByText('Etiquetas automáticas', { exact: true }).click();
   await expect(agreement).toBeVisible();
   await expect(modal.locator('.grammar-proposal-card').filter({ hasText: /Subjuntivo · (Pendiente|Automática)/ })).toHaveCount(0);
@@ -937,7 +1083,7 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await expect(card).toBeVisible();
   await card.click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
-  await expect(modal.getByText('Suas copias · Pronombres y determinantes · Descartada', { exact: true })).toBeVisible();
+  await expect(modal.getByText('Suas copias · Posesivos · Descartada', { exact: true })).toBeVisible();
 });
 
 test('una ficha editorial recuperada admite notas y vocabulario reutilizables', async ({ page }) => {
@@ -1502,6 +1648,7 @@ test('el banco permite crear, reutilizar y filtrar etiquetas propias desde las t
   await expect(chip).toHaveCount(2);
   await page.reload();
   await expect(chip).toHaveCount(2);
+  await bank.getByText('Más filtros', { exact: true }).click();
   const shortcut = bank.getByRole('button', { name: 'Ver textos con «Repaso de invierno»' });
   await expect(shortcut).toContainText('· 2');
   await shortcut.click();

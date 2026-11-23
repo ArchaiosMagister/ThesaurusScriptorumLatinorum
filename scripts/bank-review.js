@@ -3,6 +3,8 @@ import { rulesVersion } from './atl-bank-context.js';
 import { fingerprintForMark } from '../core/edition-validation.js';
 
 const prefix = 'atl-v1:cuaderno-banco-review-v1:';
+const possessiveId = 'gram.pron.posesivo';
+const normalizeKey = key => key.replace(/:gram\.pronombres$/u, ':' + possessiveId);
 
 export async function bankReviewKey(text) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text.latin));
@@ -15,15 +17,16 @@ export const proposalKeyFor = proposal => [proposal.start, proposal.end, proposa
 export function readBankReview(key, latin, storage = localStorage) {
   try {
     const record = JSON.parse(storage.getItem(key) ?? 'null');
-    const rejected = Array.isArray(record?.rejected) ? record.rejected.filter(value => typeof value === 'string') : [];
+    const rejected = Array.isArray(record?.rejected) ? record.rejected.filter(value => typeof value === 'string').map(normalizeKey) : [];
     const corrected = Array.isArray(record?.corrected) ? record.corrected.filter(row =>
-      Array.isArray(row) && row.length === 2 && row.every(value => typeof value === 'string')) : [];
+      Array.isArray(row) && row.length === 2 && row.every(value => typeof value === 'string')).map(([key, id]) => [normalizeKey(key), id]) : [];
     const pending = Array.isArray(record?.pending) ? record.pending.filter(proposal =>
       proposal && Number.isInteger(proposal.start) && Number.isInteger(proposal.end) &&
       proposal.start >= 0 && proposal.end > proposal.start && proposal.end <= latin.length &&
       typeof proposal.tagId === 'string' && Array.isArray(proposal.evidence) &&
       proposal.evidence.every(value => typeof value === 'string') && Array.isArray(proposal.alternatives) &&
-      proposal.alternatives.every(value => typeof value === 'string')) : [];
+      proposal.alternatives.every(value => typeof value === 'string')).map(proposal =>
+        proposal.tagId === 'gram.pronombres' ? { ...proposal, tagId: possessiveId } : proposal) : [];
     return { rejected, corrected, pending, version: record?.version };
   } catch {
     return { rejected: [], corrected: [], pending: [] };
@@ -31,7 +34,7 @@ export function readBankReview(key, latin, storage = localStorage) {
 }
 
 export function visibleBankAnalysis(text, review, catalogue, isRejected) {
-  if (review.version !== rulesVersion) return { automatic: [], pending: [] };
+  if (review.version !== rulesVersion) return { automatic: [], pending: [], current: false };
   const recorded = new Set(review.corrected.map(([key]) => key));
   const rejected = new Set(review.rejected);
   const allowed = new Set(catalogue.map(tag => tag.id));
@@ -39,6 +42,7 @@ export function visibleBankAnalysis(text, review, catalogue, isRejected) {
     allowed.has(proposal.tagId) && !text.tagIds.includes(proposal.tagId) &&
     !recorded.has(proposalKeyFor(proposal)) && !isRejected(proposal, rejected, catalogue));
   return {
+    current: true,
     automatic: [...new Set(rows.filter(row => row.state === 'automatic').map(row => row.tagId))],
     pending: [...new Set(rows.filter(row => row.state !== 'automatic').map(row => row.tagId))]
   };

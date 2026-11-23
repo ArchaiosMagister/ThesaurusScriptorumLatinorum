@@ -1,4 +1,4 @@
-export const rulesVersion = 1;
+export const rulesVersion = 2;
 
 const lemmaOf = candidate => candidate.lemma.split(',')[0].normalize('NFD')
   .replace(/\p{M}/gu, '').toLowerCase();
@@ -21,8 +21,7 @@ const temporalLabels = ['presente', 'imperfecto', 'futuro', 'perfecto', 'pluscua
 export const contextualTags = [
   { id: 'gram.concordancia.nominal', label: 'Concordancia nominal', parentId: 'gram.formas' },
   { id: 'gram.verbo', label: 'Formas verbales personales', parentId: 'gram.formas' },
-  { id: 'gram.cum.preposicion', label: 'Cum preposición', parentId: 'gram.formas' },
-  { id: 'gram.cum.conjuncion', label: 'Cum conjunción', parentId: 'gram.formas' },
+  { id: 'gram.pron.posesivo', label: 'Posesivos', parentId: 'gram.pronombres' },
   ...Object.entries({ indicativo: temporalLabels, subjuntivo: ['presente', 'imperfecto', 'perfecto', 'pluscuamperfecto'],
     imperativo: ['presente', 'futuro'] }).flatMap(([mood, tenses]) => tenses.flatMap(tense =>
     ['activo', 'pasivo', 'deponente'].map(voice => ({ id: finiteId([null, tense, mood, voice]),
@@ -47,17 +46,6 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     const determinant = pair.find(row => row && (possessive(row.candidate) ||
       row.candidate.pos === 'a' || row.morph.startsWith('participio de ')));
     const noun = pair.find(row => row && row.candidate.pos === 'n');
-    if (pair.every(Boolean) && lemmaOf(pair[0].candidate) === 'cum') {
-      const [particle, complement] = pair;
-      const preposition = particle.candidate.pos.includes('r') && /^ablativo /u.test(complement.morph)
-        && complement.candidate.pos === 'n' && readings[index + 1].every(row => row.candidate.pos === 'n');
-      const conjunction = particle.candidate.pos === 'c' && readings[index + 1].length > 0
-        && readings[index + 1].every(row => personal.test(row.morph));
-      if (preposition || conjunction) contextual.push({ start: first.s, end: second.e,
-        tagId: preposition ? 'gram.cum.preposicion' : 'gram.cum.conjuncion', state: 'automatic',
-        evidence: [describe(particle), describe(complement), preposition ? 'Régimen de ablativo' : 'Verbo personal adyacente'],
-        alternatives: readings[index].filter(row => row !== particle).map(describe) });
-    }
     const [participle, auxiliary] = pair;
     const participleMatch = participle && perfectParticiple.exec(participle.morph);
     const auxiliaryMatch = auxiliary && personal.exec(auxiliary.morph);
@@ -86,7 +74,7 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     const isParticiple = determinant.morph.startsWith('participio de ');
     const automatic = isPossessive || readings[determinerIndex].every(row =>
       row.candidate.lid === determinant.candidate.lid);
-    contextual.push({ start: first.s, end: second.e, tagId: isPossessive ? 'gram.pronombres' : 'gram.concordancia.nominal',
+    contextual.push({ start: first.s, end: second.e, tagId: isPossessive ? 'gram.pron.posesivo' : 'gram.concordancia.nominal',
       evidence, alternatives, state: automatic ? 'automatic' : 'pending' });
     if (!isParticiple) continue;
     const separated = tokens[index + 2]?.pb === ',' && tokens[index + 2].sent === second.sent;
