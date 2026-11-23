@@ -1549,29 +1549,34 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
           body: '<script>location.replace(' + JSON.stringify(back.href) + ')</script>'
         });
       });
-      await context.route('https://api.dropboxapi.com/oauth2/token', async route => {
-        const params = new URLSearchParams(route.request().postData());
-        expect(params.get('code_verifier')).toMatch(/^[\w-]{43}$/);
-        await route.fulfill({
-          headers: { 'access-control-allow-origin': '*' },
-          json: { access_token: 'prueba', account_id: 'cuenta-prueba', expires_in: 3600 }
-        });
-      });
-      await context.route('https://content.dropboxapi.com/2/files/*', async route => {
-        const headers = { 'access-control-allow-origin': '*', 'access-control-expose-headers': 'Dropbox-API-Result' };
-        if (route.request().url().endsWith('/download')) {
-          if (remote) {
-            await route.fulfill({ headers: { ...headers, 'Dropbox-API-Result': JSON.stringify({ rev: 'rev-' + uploads }) }, json: remote });
-          } else {
-            await route.fulfill({ status: 409, headers, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } });
-          }
-        } else {
-          const args = JSON.parse(route.request().headers()['dropbox-api-arg']);
-          expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
-          uploads++;
-          remote = route.request().postDataJSON();
-          await route.fulfill({ headers, json: { rev: 'rev-' + uploads } });
+      await context.exposeBinding('testDropbox', (_, { url, headers, body }) => {
+        if (url.endsWith('/oauth2/token')) {
+          const params = new URLSearchParams(body);
+          expect(params.get('code_verifier')).toMatch(/^[\w-]{43}$/);
+          return { status: 200, json: { access_token: 'prueba', account_id: 'cuenta-prueba', expires_in: 3600 } };
         }
+        if (url.endsWith('/download')) {
+          return remote
+            ? { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'rev-' + uploads }) }, json: remote }
+            : { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
+        }
+        const args = JSON.parse(headers['dropbox-api-arg']);
+        expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
+        uploads++;
+        remote = JSON.parse(body);
+        return { status: 200, json: { rev: 'rev-' + uploads } };
+      });
+      await context.addInitScript(() => {
+        const original = window.fetch.bind(window);
+        window.fetch = async (url, options) => {
+          if (typeof url !== 'string' ||
+              !/^https:\/\/(?:api|content)\.dropboxapi\.com\//.test(url)) return original(url, options);
+          const result = await window.testDropbox({
+            url, headers: Object.fromEntries(new Headers(options.headers)),
+            body: options.body instanceof Blob ? await options.body.text() : options.body?.toString()
+          });
+          return new Response(JSON.stringify(result.json), { status: result.status, headers: result.headers });
+        };
       });
     }
     async function link(view) {
