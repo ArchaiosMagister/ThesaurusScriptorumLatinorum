@@ -31,16 +31,16 @@ export function readBankReview(key, latin, storage = localStorage) {
 }
 
 export function visibleBankAnalysis(text, review, catalogue, isRejected) {
+  if (review.version !== rulesVersion) return { automatic: [], pending: [] };
   const recorded = new Set(review.corrected.map(([key]) => key));
   const rejected = new Set(review.rejected);
   const allowed = new Set(catalogue.map(tag => tag.id));
   const rows = review.pending.filter(proposal =>
     allowed.has(proposal.tagId) && !text.tagIds.includes(proposal.tagId) &&
     !recorded.has(proposalKeyFor(proposal)) && !isRejected(proposal, rejected, catalogue));
-  const current = review.version === rulesVersion;
   return {
-    automatic: [...new Set(rows.filter(row => current && row.state === 'automatic').map(row => row.tagId))],
-    pending: [...new Set(rows.filter(row => !current || row.state !== 'automatic').map(row => row.tagId))]
+    automatic: [...new Set(rows.filter(row => row.state === 'automatic').map(row => row.tagId))],
+    pending: [...new Set(rows.filter(row => row.state !== 'automatic').map(row => row.tagId))]
   };
 }
 

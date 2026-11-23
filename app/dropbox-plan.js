@@ -6,7 +6,7 @@ export function selectEditor(localHash, remoteHash, checkpoint, localIsEmpty) {
 }
 
 /** Reconciliación de tres vías: ausencia + huella anterior equivale a una baja, no a un alta. */
-export function mergeUsages(local, remote, checkpoints, fingerprint) {
+export function mergeUsages(local, remote, checkpoints, fingerprint, conflict = null) {
   const localRows = new Map(local), remoteRows = new Map(remote);
   const merged = new Map();
   const ids = new Set([...localRows.keys(), ...remoteRows.keys(), ...checkpoints.keys()]);
@@ -22,6 +22,7 @@ export function mergeUsages(local, remote, checkpoints, fingerprint) {
     const changedRemotely = oldHash === undefined ? remoteHash !== null : remoteHash !== oldHash;
     if (changedLocally && changedRemotely) {
       const title = localRows.get(id)?.title ?? remoteRows.get(id)?.title ?? id;
+      if (conflict) throw new Error(conflict);
       throw new Error('El uso del examen «' + title + '» cambió o se eliminó en ambos dispositivos. Se han conservado las dos versiones.');
     }
     const winner = changedLocally ? localRows : remoteRows;

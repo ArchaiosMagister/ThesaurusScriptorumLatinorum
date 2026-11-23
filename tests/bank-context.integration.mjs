@@ -61,6 +61,11 @@ test('las formas no personales no demuestran por sí solas una función sintáct
   assert.ok(!rows.some(row => ['gram.participio', 'gram.ablativo.absoluto', 'gram.infinitivo'].includes(row.tagId)));
 });
 
+test('un ablativo separado por coma puede requerir confirmar su función', async () => {
+  const rows = await analyze('Urbe capta, milites discesserunt.');
+  assert.equal(find(rows, 'Urbe capta', 'ablativo.absoluto')?.state, 'pending');
+});
+
 test('pasajes de César, Cicerón y Virgilio sin falsos positivos sintácticos', async () => {
   const caesar = await analyze('Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani.');
   assert.ok(find(caesar, 'quarum', 'pron.relativo'));

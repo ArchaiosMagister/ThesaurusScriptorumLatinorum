@@ -451,8 +451,11 @@ window.addEventListener('atl-view', () => {
         reviewKey = key;
         const saved = readBankReview(key, text.latin);
         for (const rejectedKey of saved.rejected) rejected.add(rejectedKey);
-        for (const [proposal, tag] of saved.corrected) if (selected.has(tag)) corrected.set(proposal, tag);
-        pending = saved.pending;
+        for (const [proposal, tag] of saved.corrected) corrected.set(proposal, tag);
+        pending = saved.version === rulesVersion ? saved.pending : saved.pending.filter(proposal => {
+            const key = proposalKey(proposal);
+            return corrected.has(key) || isRejectedProposal(proposal, rejected, all);
+        });
         if (pending.length) renderProposals();
         return saved;
     }).catch(() => { /* El etiquetado manual sigue disponible. */ });
@@ -477,5 +480,16 @@ window.addEventListener('atl-view', () => {
     "const label = discarded ? 'Descartada' : accepted ? 'Confirmada' : proposal.state === 'automatic' ? 'Automática' : 'Pendiente';");
   replace("row.dataset.state = discarded ? 'dismissed' : accepted ? 'confirmed' : 'pending';",
     "row.dataset.state = discarded ? 'dismissed' : accepted ? 'confirmed' : proposal.state ?? 'pending';");
+  replace('        for (const proposal of pending) {', `        const automaticWasOpen = result.dataset.automaticOpen === 'true';
+        const automatic = el('details', 'atl-automatic-proposals');
+        automatic.open = automaticWasOpen;
+        automatic.append(el('summary', '', 'Etiquetas automáticas'));
+        automatic.addEventListener('toggle', () => { result.dataset.automaticOpen = String(automatic.open); });
+        for (const proposal of pending) {`);
+  replace('            result.append(row);\n        }', `            if (row.dataset.state === 'automatic') automatic.append(row);
+            else result.append(row);
+        }
+        if (automatic.children.length > 1) result.append(automatic);`);
+  replace('choose.value = selections.get(key) ?? proposal.tagId;', 'choose.value = selections.get(key) ?? acceptedTag;');
   return source;
 }
