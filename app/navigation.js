@@ -107,8 +107,11 @@ function headerAction(button, pending, run) {
 headerAction(update, 'Comprobando actualizaciones…', () => updateApplication(prepareReload));
 headerAction(document.getElementById('app-install'), '', installApplication);
 headerAction(document.getElementById('app-offline'), 'Descargando recursos de las tres pestañas…', async () => {
-  await prepareOffline();
-  return 'Las tres pestañas están preparadas para funcionar sin conexión.';
+  const summary = await prepareOffline();
+  const detail = Number.isInteger(summary?.downloaded)
+    ? ' (' + summary.downloaded + ' recursos descargados; ' + summary.reused + ' reutilizados).'
+    : '.';
+  return 'Las tres pestañas están preparadas para funcionar sin conexión' + detail;
 });
 
 function syncView(panel, frame) {

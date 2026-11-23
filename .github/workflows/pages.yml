@@ -30,6 +30,10 @@ jobs:
       # No publicar si falla la regresión integral (incluidos iPad y escritorio WebKit).
       - run: npm test && npm run test:ipad-selection && node tests/collatinus-grammar-integration.mjs
         working-directory: vendor/cuaderno
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-webkit-${{ hashFiles('package-lock.json') }}
       - run: npx playwright install --with-deps webkit
       - run: npm run test:webkit
       - uses: actions/upload-pages-artifact@v3

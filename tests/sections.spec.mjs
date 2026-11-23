@@ -612,7 +612,13 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
   const source = test.info().project.use.baseURL;
   let offline = false;
   let updated = false;
+  let expensiveRequests = 0;
   const server = createServer(async (request, response) => {
+    if (request.url?.endsWith('/modulos/examinator/js/datos.js')) {
+      expensiveRequests++;
+      // Durante una actualización la copia anterior debe aportar el banco idéntico.
+      if (updated) { response.writeHead(503).end(); return; }
+    }
     if (offline) {
       response.writeHead(503).end();
       return;
@@ -634,6 +640,11 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.goto('http://127.0.0.1:' + server.address().port + path);
     await page.getByRole('button', { name: 'Preparar sin conexión' }).click();
     await expect(page.locator('#app-status')).toHaveText(/tres pestañas están preparadas/, { timeout: 60000 });
+    expect(expensiveRequests).toBeGreaterThan(0);
+    const firstDownload = expensiveRequests;
+    await page.getByRole('button', { name: 'Preparar sin conexión' }).click();
+    await expect(page.locator('#app-status')).toHaveText(/\(0 recursos descargados; .* reutilizados\)/);
+    expect(expensiveRequests).toBe(firstDownload);
     const registrations = await page.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).map(item => item.scope));
     expect(registrations).toEqual([new URL(path, page.url()).href]);
     await expect.poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller))).toBe(true);
@@ -655,6 +666,7 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.getByRole('button', { name: 'Actualizar', exact: true }).click();
     await expect.poll(() => page.evaluate(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting)),
       { timeout: 45000 }).toBe(true);
+    expect(expensiveRequests).toBe(firstDownload);
     page.once('dialog', prompt => prompt.accept());
     const reload = page.waitForEvent('load');
     await page.getByRole('button', { name: 'Actualizar', exact: true }).click();
