@@ -302,7 +302,7 @@
       },
       {
         "path": "scripts/build-library.mjs",
-        "sha256": "3a46009997af06459b2d0a201fa25eede855149a8c458463dea78559371773fe"
+        "sha256": "0361d128146ed59c726492ab1a952dbc203e9a44ad6eee726f994712ae624096"
       },
       {
         "path": "scripts/build-pwa-icons.mjs",

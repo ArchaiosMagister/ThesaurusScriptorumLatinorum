@@ -9,12 +9,11 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import { DOMParser } from '@xmldom/xmldom';
 
-const EXAMINATOR_COMMIT = '4ca31b4b2852f6b3ac0dc28c3f6ff3f2ad15d4a8';
 const PERSEUS_COMMIT = '192fef80a2fd785a389e6584ca2315fd1f80a94e';
 const examinatorData = new URL('../../examinator/js/', import.meta.url);
 const nepoteSources = new URL('../library-sources/nepote/', import.meta.url);
 const RAW_PERSEUS = 'https://raw.githubusercontent.com/PerseusDL/canonical-latinLit/' + PERSEUS_COMMIT + '/';
-const REPO_SOURCE = 'https://github.com/ArchaiosMagister/examinator2/blob/' + EXAMINATOR_COMMIT + '/FUENTES.md';
+const EUTROPIO_SOURCE = 'https://www.thelatinlibrary.com/eutropius.html';
 
 const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
 const idOf = (urn) => urn.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -37,12 +36,13 @@ async function examinadorIncludes() {
   for (const [path, contents] of files) {
     const data = JSON.parse(contents);
     if (!/(césar|caesar|eutropio|eutropius)/i.test(data.author)) continue;
+    const isEutropio = /eutrop/i.test(data.author);
     if (!Array.isArray(data.lines) || data.lines.length === 0) {
       throw new Error('Faltan las líneas de ' + path);
     }
     selected.push({
       urn: data.urn,
-      author: /eutrop/i.test(data.author) ? 'Eutropio' : 'Julio César',
+      author: isEutropio ? 'Eutropio' : 'Julio César',
       title: data.title,
       latin: data.latin,
       genre: data.genre || 'Historia',
@@ -51,8 +51,8 @@ async function examinadorIncludes() {
         c: String(line.c), t: clean(line.t), k: line.k || 'p',
         ...(line.s ? {s:clean(line.s)} : {}),
       })),
-      source: data.source || REPO_SOURCE,
-      license: data.license || 'Texto incorporado en Examinator2; fuente original citada en FUENTES.md',
+      source: data.source || (isEutropio ? EUTROPIO_SOURCE : ''),
+      license: data.license || 'Texto de The Latin Library incorporado en Examinator2.',
       editorial: data.desc || '',
       provenance: 'Examinator2',
     });
