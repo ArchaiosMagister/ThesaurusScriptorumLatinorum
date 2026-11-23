@@ -188,6 +188,14 @@ export function lexicalValuesForDocument(option) {
        .update(readingCard).update(editionWithCards)
       .digest('hex').slice(0, 12);
   } else {
+    // Conservar el generador PDF en caché, pero no ejecutarlo hasta su uso en iOS.
+    const shimPath = join(directory, 'js', 'shim.js');
+    const shim = await readFile(shimPath, 'utf8');
+    const pdfCall = '        const blob = await window.EXPdf.generate(html);';
+    if (shim.split(pdfCall).length !== 2) throw new Error('Revisar la exportación PDF de Examinator.');
+    await writeFile(shimPath, shim.replace(pdfCall, '        await window.atlLoadPdfExporter();\n' + pdfCall));
+    await writeFile(join(directory, 'js', 'atl-pdf-loader.js'),
+      await readFile(new URL('./lazy-pdf-loader.js', import.meta.url), 'utf8'));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-bank.js'), bankScript);
     const mainFile = join(directory, 'js', 'exam.js');
@@ -336,6 +344,7 @@ export function lexicalValuesForDocument(option) {
     if (module === 'examinator') {
       html = html.replace('js/exam.js', 'js/atl-exam-editor.js').replace('js/start.js', 'js/atl-exam-start.js')
         .replace('<script src="js/pwa.js"></script>', '')
+        .replace('<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>')
         .replace('js/lists.js', 'js/atl-exam-lists.js')
         .replace('js/library.js', 'js/atl-exam-library.js')
         .replace('js/lexico-filtros.js', 'js/atl-exam-filters.js')
@@ -394,7 +403,8 @@ export function lexicalValuesForDocument(option) {
     if (!worker.includes(marker)) throw new Error('Revisar recursos sin conexión en ' + workerPath);
     const additions = ['./' + stylesheet, ...(module === 'examinator'
       ? [...examAssets, './js/atl-exam-editor.js', './js/atl-exam-start.js', './js/atl-exam-lists.js',
-        './js/atl-exam-library.js', './js/atl-exam-filters.js', './js/atl-exam-propose.js'] : [])];
+        './js/atl-exam-library.js', './js/atl-exam-filters.js', './js/atl-exam-propose.js',
+         './js/atl-pdf-loader.js'] : [])];
     additions.push(page === notebookPage ? '../../academic/teacher-bank.js' : '../academic/teacher-bank.js');
     if (module === 'cuaderno') additions.push(page === notebookPage
       ? '../../shared/personal-academic.js' : '../shared/personal-academic.js');

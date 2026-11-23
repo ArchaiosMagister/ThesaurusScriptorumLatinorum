@@ -181,13 +181,14 @@ document.getElementById('app-academic').addEventListener('click', async () => {
 
 addEventListener('popstate', () => openSection(location.hash.slice(1)));
 addEventListener('hashchange', () => openSection(location.hash.slice(1)));
+// Inicia la navegación antes de esperar a registrar el Service Worker.
+openSection(location.hash.slice(1));
 let workerWarning;
 try {
   await startApplicationWorker();
 } catch (error) {
   workerWarning = 'No se pudo preparar el modo sin conexión: ' + error.message;
 }
-openSection(location.hash.slice(1));
 if (workerWarning) setStatus(workerWarning);
 setupBackup(prepareReload, setStatus);
 
