@@ -5,6 +5,7 @@ const key = 'atl-v1:dropbox';
 const file = '/thesaurus-sync-v1.json';
 const redirect = new URL('./', location.href).href;
 const format = 'thesaurus-dropbox-v1';
+const tokenEndpoint = 'https://api.dropboxapi.com/oauth2/token';
 
 function randomCode() {
   return base64url(crypto.getRandomValues(new Uint8Array(32)));
@@ -30,7 +31,8 @@ async function connect(appKey) {
   const url = new URL('https://www.dropbox.com/oauth2/authorize');
   url.search = new URLSearchParams({
     client_id: appKey, response_type: 'code', redirect_uri: redirect, state,
-    code_challenge: base64url(new Uint8Array(hash)), code_challenge_method: 'S256'
+    code_challenge: base64url(new Uint8Array(hash)), code_challenge_method: 'S256',
+    token_access_type: 'offline'
   });
   location.assign(url);
 }
@@ -44,21 +46,74 @@ async function authorizeCallback() {
   if (!pending || pending.state !== url.searchParams.get('state') || Date.now() - pending.time > 600_000)
     throw new Error('La autorización de Dropbox ha caducado. Vuelve a vincular la cuenta.');
   if (url.searchParams.has('error')) throw new Error('Se canceló la autorización de Dropbox.');
-  const response = await fetch('https://api.dropboxapi.com/oauth2/token', {
-    method: 'POST', signal: AbortSignal.timeout(30_000),
-    body: new URLSearchParams({
-      code: url.searchParams.get('code'), grant_type: 'authorization_code', client_id: pending.appKey,
-      code_verifier: pending.verifier, redirect_uri: redirect
-    })
+  const response = await requestToken({
+    code: url.searchParams.get('code'), grant_type: 'authorization_code', client_id: pending.appKey,
+    code_verifier: pending.verifier, redirect_uri: redirect
   });
   if (!response.ok) throw new Error('Dropbox no pudo completar la autorización. Comprueba la clave y la URL de retorno.');
-  const { access_token: token, account_id: account, expires_in: lifetime } = await response.json();
-  if (!token || !account || !Number.isFinite(lifetime)) throw new Error('Dropbox devolvió una sesión incompleta.');
-  save(sessionStorage, 'session', { token, account, appKey: pending.appKey, expires: Date.now() + lifetime * 1000 });
+  const result = await response.json();
+  if (typeof result.refresh_token !== 'string' || !result.refresh_token ||
+      typeof result.account_id !== 'string' || !result.account_id) {
+    throw new Error('Dropbox no concedió acceso persistente. Vuelve a autorizar la aplicación.');
+  }
+  const connection = {
+    id: crypto.randomUUID(), refresh: result.refresh_token, account: result.account_id, appKey: pending.appKey
+  };
+  const session = accessSession(connection, result);
+  save(localStorage, 'connection', connection);
+  save(sessionStorage, 'session', session);
   return true;
 }
 
-async function content(session, route, args, body) {
+async function requestToken(fields) {
+  try {
+    return await fetch(tokenEndpoint, {
+      method: 'POST', signal: AbortSignal.timeout(30_000), body: new URLSearchParams(fields)
+    });
+  } catch {
+    throw new Error('No se pudo conectar con Dropbox. Comprueba la conexión y vuelve a intentarlo.');
+  }
+}
+
+function accessSession(connection, result) {
+  const { access_token: token, expires_in: lifetime } = result;
+  if (typeof token !== 'string' || !token || !Number.isFinite(lifetime) || lifetime <= 0 ||
+      (result.account_id && result.account_id !== connection.account)) {
+    throw new Error('Dropbox devolvió una sesión incompleta.');
+  }
+  return {
+    id: connection.id, token, account: connection.account, appKey: connection.appKey,
+    expires: Date.now() + lifetime * 1000
+  };
+}
+
+async function activeSession(expected) {
+  const connection = read(localStorage, 'connection');
+  if (!connection || (expected && expected.id !== connection.id))
+    throw new Error('Vuelve a vincular la cuenta de Dropbox.');
+  const cached = read(sessionStorage, 'session');
+  if (cached?.id === connection.id && cached.expires > Date.now() + 60_000) return cached;
+  const response = await requestToken({
+    grant_type: 'refresh_token', refresh_token: connection.refresh, client_id: connection.appKey
+  });
+  const result = await response.json().catch(() => ({}));
+  if (read(localStorage, 'connection')?.id !== connection.id)
+    throw new Error('La conexión de Dropbox cambió en otra pestaña.');
+  if (!response.ok) {
+    if (response.status === 400 && result.error === 'invalid_grant') {
+      remove(localStorage, 'connection');
+      remove(sessionStorage, 'session');
+      throw new Error('Dropbox retiró el acceso. Vuelve a vincular la cuenta.');
+    }
+    throw new Error('No se pudo renovar la sesión de Dropbox (' + response.status + '). Vuelve a intentarlo.');
+  }
+  const session = accessSession(connection, result);
+  save(sessionStorage, 'session', session);
+  return session;
+}
+
+async function content(expected, route, args, body, retry = true) {
+  const session = await activeSession(expected);
   let response;
   try {
     response = await fetch('https://content.dropboxapi.com/2/files/' + route, {
@@ -70,7 +125,8 @@ async function content(session, route, args, body) {
   if (response.ok) return response;
   if (response.status === 401) {
     remove(sessionStorage, 'session');
-    throw new Error('La sesión de Dropbox ha caducado. Vuelve a vincular la cuenta.');
+    if (retry) return content(expected, route, args, body, false);
+    throw new Error('Dropbox rechazó la sesión renovada. Comprueba el acceso de la aplicación.');
   }
   if (response.status === 409) {
     const detail = await response.json().catch(() => null);
@@ -154,12 +210,8 @@ export async function setupDropbox(prepareReload, setStatus) {
   const message = document.getElementById('dropbox-status');
   let busy = false;
   function report(text) { message.textContent = text; setStatus(text); }
-  function session() {
-    const current = read(sessionStorage, 'session');
-    return current?.expires > Date.now() ? current : null;
-  }
   function paint() {
-    const connected = Boolean(session());
+    const connected = Boolean(read(localStorage, 'connection'));
     dialog.dataset.connected = String(connected);
     connection.textContent = connected ? 'Vinculado' : 'Sin vincular';
     setup.hidden = connectButton.hidden = connected;
@@ -194,18 +246,22 @@ export async function setupDropbox(prepareReload, setStatus) {
     await connect(value);
   }));
   disconnect.addEventListener('click', () => {
+    remove(localStorage, 'connection');
     remove(sessionStorage, 'session');
     paint();
     report('Sesión de Dropbox cerrada en este navegador.');
   });
   syncButton.addEventListener('click', () => void run(async () => {
-    const current = session();
+    const current = read(localStorage, 'connection');
     if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
     report('Comparando los datos con Dropbox…');
     const work = () => synchronize(current, prepareReload, report);
     if (navigator.locks) await navigator.locks.request(key, work);
     else await work();
   }));
+  addEventListener('storage', event => {
+    if (event.key === key + ':connection' || event.key === null) paint();
+  });
   if (read(sessionStorage, 'completed')) {
     remove(sessionStorage, 'completed');
     report('Sincronización con Dropbox completada.');

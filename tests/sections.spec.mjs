@@ -1535,12 +1535,14 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
 test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compartir el examen completo', async ({ page, browser }) => {
   let remote;
   let uploads = 0;
+  let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
   try {
     for (const context of [page.context(), destination]) {
       await context.route('https://www.dropbox.com/oauth2/authorize?*', async route => {
         const request = new URL(route.request().url());
         expect(request.searchParams.get('code_challenge_method')).toBe('S256');
+        expect(request.searchParams.get('token_access_type')).toBe('offline');
         const back = new URL(request.searchParams.get('redirect_uri'));
         back.searchParams.set('code', 'codigo-de-prueba');
         back.searchParams.set('state', request.searchParams.get('state'));
@@ -1552,8 +1554,17 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       await context.exposeBinding('testDropbox', (_, { url, headers, body }) => {
         if (url.endsWith('/oauth2/token')) {
           const params = new URLSearchParams(body);
+          if (params.get('grant_type') === 'refresh_token') {
+            expect(params.get('refresh_token')).toBe('renovacion-prueba');
+            expect(params.get('client_id')).toBe('claveprueba');
+            renewals++;
+            return { status: 200, json: { access_token: 'renovado', expires_in: 3600 } };
+          }
           expect(params.get('code_verifier')).toMatch(/^[\w-]{43}$/);
-          return { status: 200, json: { access_token: 'prueba', account_id: 'cuenta-prueba', expires_in: 3600 } };
+          return {
+            status: 200,
+            json: { access_token: 'prueba', refresh_token: 'renovacion-prueba', account_id: 'cuenta-prueba', expires_in: 3600 }
+          };
         }
         if (url.endsWith('/download')) {
           return remote
@@ -1630,6 +1641,21 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       };
     })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true });
     expect(uploads).toBe(1);
+    await tablet.close();
+
+    const reopened = await destination.newPage();
+    await reopened.goto(new URL(path, page.url()).href);
+    await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
+    await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
+    await expect(reopened.locator('#dropbox-connection')).toHaveText('Vinculado');
+    await reopened.getByRole('button', { name: 'Sincronizar ahora' }).click();
+    await expect(reopened.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(renewals).toBe(1);
+    await reopened.getByRole('button', { name: 'Cerrar sesión de Dropbox' }).click();
+    await reopened.reload();
+    await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
+    await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
+    await expect(reopened.locator('#dropbox-connection')).toHaveText('Sin vincular');
   } finally {
     await destination.close();
   }
