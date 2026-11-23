@@ -134,12 +134,19 @@ async function synchronize(session, prepareReload, report) {
     usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
   });
   report('Sincronización con Dropbox completada.');
-  if (localChanges) location.reload();
+  if (localChanges) {
+    save(sessionStorage, 'completed', true);
+    location.reload();
+  }
 }
 
 export async function setupDropbox(prepareReload, setStatus) {
   const dialog = document.getElementById('dropbox-dialog');
+  const backupDialog = document.getElementById('backup-dialog');
   const open = document.getElementById('app-dropbox');
+  const back = document.getElementById('dropbox-back');
+  const setup = document.getElementById('dropbox-setup');
+  const connection = document.getElementById('dropbox-connection');
   const connectButton = document.getElementById('dropbox-connect');
   const syncButton = document.getElementById('dropbox-sync');
   const disconnect = document.getElementById('dropbox-disconnect');
@@ -152,10 +159,13 @@ export async function setupDropbox(prepareReload, setStatus) {
     return current?.expires > Date.now() ? current : null;
   }
   function paint() {
-    connectButton.disabled = busy || Boolean(session());
-    syncButton.disabled = busy || !session();
-    disconnect.disabled = busy || !session();
-    appKey.disabled = busy || Boolean(session());
+    const connected = Boolean(session());
+    dialog.dataset.connected = String(connected);
+    connection.textContent = connected ? 'Vinculado' : 'Sin vincular';
+    setup.hidden = connectButton.hidden = connected;
+    syncButton.hidden = disconnect.hidden = !connected;
+    connectButton.disabled = syncButton.disabled = disconnect.disabled = appKey.disabled = busy;
+    back.disabled = busy;
   }
   async function run(work) {
     if (busy) return;
@@ -167,9 +177,14 @@ export async function setupDropbox(prepareReload, setStatus) {
   }
   appKey.value = read(localStorage, 'appKey') ?? '';
   open.addEventListener('click', () => {
-    document.getElementById('backup-dialog').close();
+    backupDialog.close();
     paint();
     dialog.showModal();
+  });
+  back.addEventListener('click', () => {
+    dialog.close();
+    backupDialog.showModal();
+    open.focus();
   });
   connectButton.addEventListener('click', () => void run(async () => {
     const value = appKey.value.trim();
@@ -191,6 +206,10 @@ export async function setupDropbox(prepareReload, setStatus) {
     if (navigator.locks) await navigator.locks.request(key, work);
     else await work();
   }));
+  if (read(sessionStorage, 'completed')) {
+    remove(sessionStorage, 'completed');
+    report('Sincronización con Dropbox completada.');
+  }
   try {
     if (await authorizeCallback()) {
       report('Dropbox vinculado. Pulsa «Sincronizar ahora» para comparar los datos.');
