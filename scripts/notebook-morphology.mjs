@@ -143,5 +143,5 @@ export function integrateManualNotebookUnderline(source) {
         row.append(label);
         if (replaceWord) row.append(replaceWord);
         row.append(add);`)
-    .replace('    renderPaperSelect,savePaperSelection,', '    renderPaperSelect,savePaperSelection,markSelectedWord,');
+    .replace(/renderPaperSelect,\s*savePaperSelection,/u, 'renderPaperSelect,savePaperSelection,markSelectedWord,');
 }
