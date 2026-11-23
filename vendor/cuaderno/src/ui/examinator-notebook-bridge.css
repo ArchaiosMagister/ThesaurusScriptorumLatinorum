@@ -1,0 +1,1796 @@
+/**
+ * Adaptaciones puntuales de CuadernoTextosLatinos SOBRE el CSS literal de
+ * Examinator2. No modifica las clases originales de su biblioteca.
+ */
+:root{color-scheme:light;}
+/* Tema deliberado y persistente solo del cuaderno experimental.
+   Examinator2 de referencia y el papel A4 no se modifican. */
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']){
+  color-scheme:dark;
+  --paper:#182128;--paper-2:#26333d;--panel:#202b34;
+  --ink:#edf2f3;--ink-2:#c6d3d8;--ink-3:#9cb0b9;
+  --rule:#42535e;--rule-2:#354650;--accent:#a8d9e8;
+  --accent-soft:#294653;--link:#a6c8ff;
+}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) #editor .edition-menu-content,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) #editor .edition-menu-nav{background:var(--panel);}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) #editor .edition-preview-stack{background:#151c22;}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .card input:not([type='checkbox']),
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .card textarea,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .card select,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) #editor .field-control{
+  background:var(--paper);color:var(--ink);border-color:var(--rule);
+}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-paper{
+  color-scheme:light;background:#fff;color:#151515;
+}
+
+/* Vista editorial: menús 40 % y hoja 60 %; sin modificar Examinator2 original. */
+body[data-has-editor='true']{--cuaderno-menu-width:40%;}
+body[data-has-editor='true'] main#main{grid-template-columns:var(--cuaderno-menu-width) minmax(0,1fr);}
+body[data-has-editor='true'] #editor{min-width:0;}
+#editor .edition-toolbar{display:none!important;}
+#editor .edition-layout{display:block!important;min-width:0;}
+#editor .edition-settings{display:grid!important;gap:8px;min-width:0;max-width:none;padding:0;}
+#editor .edition-settings>.edition-menu-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+#editor .edition-menu-nav .btn{
+  border:1px solid var(--rule);border-radius:6px;padding:5px 6px;
+  min-height:30px;background:var(--panel);color:var(--ink-2);font:400 12px var(--ui-font);
+}
+#editor .edition-menu-nav .btn-primary{background:var(--accent-soft);color:var(--accent);border-color:var(--accent);}
+#editor .edition-menu-content{padding:8px;background:var(--panel);border:1px solid var(--rule);border-radius:9px;max-height:none;}
+#editor .edition-menu-content .btn{min-height:30px;font-size:12px;}
+#editor .edition-preview-stack{
+  position:fixed;z-index:2;left:var(--cuaderno-menu-width,40%);top:48px;bottom:0;right:0;
+  min-width:0;min-height:0;max-height:none;display:block!important;
+  overflow:auto;background:#d9d6cf;padding:12px;
+}
+#editor .edition-preview-stack>.edition-navigation{
+  margin:0 0 8px;display:flex;flex-wrap:wrap;
+  background:var(--panel);border:1px solid var(--rule);border-radius:7px;
+}
+#editor .edition-preview-stack .edition-preview{
+  display:block!important;min-width:0;margin:0;padding:0;background:transparent;
+}
+#editor .edition-preview-stack .edition-paper-pages{padding:0;}
+#editor .edition-paper{
+  border:0;box-shadow:0 6px 24px rgba(0,0,0,.18);background:#fff;
+}
+#editor .edition-mobile-switch{display:none!important;}
+#editor .edition-mobile-hidden{display:block!important;}
+body[data-has-editor='true'] #preview .sheet{display:none;}
+#editor .original-open-row{justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--rule-2);}
+.original-own-list{display:grid;gap:5px;max-height:360px;overflow:auto;margin:8px 0;}
+.original-own-list .tbtn{text-align:left;white-space:normal;}
+.original-paste .field{margin:0 0 9px;}
+.original-paste textarea{resize:vertical;width:100%;}
+#editor .edition-question-panel,#editor .edition-option{background:var(--panel);}
+#editor .edition-question-panel h3{font-size:13px;}
+#editor .card p{margin:8px 0;}
+/* Se conserva la pantalla original a dos columnas en iPad; en móviles
+   pequeños se permite desplazamiento vertical sin reducir la hoja A4. */
+@media(max-width:700px){
+  body{overflow:auto;display:block;min-height:100dvh;}
+  header{position:sticky;top:0;z-index:4;height:48px;overflow-x:auto;}
+  main{display:block;min-height:calc(100dvh - 48px);}
+  #editor{min-height:calc(100dvh - 48px);padding-bottom:0;}
+  #editor .edition-preview-stack{
+    position:static;display:block!important;overflow:auto;
+    width:100%;max-width:none;height:auto;min-height:440px;
+    border-top:1px solid var(--rule);margin-top:12px;
+  }
+  #preview{display:none;}
+  #lib{inset:48px 0 0;grid-template-rows:46px minmax(0,1fr);}
+  #lib .lbody{grid-template-columns:minmax(0,1fr);grid-template-rows:45% 55%;}
+  #lib .lcat{border-right:0;border-bottom:1px solid var(--rule);}
+  #lib .rtext{padding:10px;}
+  #lib .rl{grid-template-columns:48px minmax(0,1fr);}
+  #lib .lhead{gap:5px;padding:0 8px;}
+  #lib .lhead .small{display:none;}
+}
+/* El header original de Examinator2 es horizontal. El header de una hoja
+   académica tiene título y referencia en DOS renglones independientes. */
+.edition-paper > header.edition-paper-head,
+.edition-print-root .edition-paper > header.edition-paper-head{
+  display:block!important;text-align:center;min-height:0;
+  background:transparent!important;color:#111!important;
+  border-left:0;border-right:0;
+  padding:.45em 0 .3em;white-space:normal;
+}
+.edition-paper .edition-paper-title{
+  display:block;font-family:inherit!important;font-weight:700;
+  font-size:1.06em;line-height:1.32;
+}
+.edition-paper .edition-paper-source{
+  display:block;font-family:inherit!important;font-size:1em;
+  font-weight:400;line-height:1.4;margin:.12em 0 0;
+}
+.edition-paper .edition-vocabulary,
+.edition-paper .edition-vocabulary *,
+.edition-paper .edition-questions,
+.edition-paper .edition-question{
+  font-family:inherit;
+}
+/* Mantener siempre visibles las cinco secciones al desplazar el panel. */
+#editor .edition-settings{overflow:visible;align-content:start;}
+#editor .edition-menu-nav{
+  position:sticky;top:0;z-index:12;display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;
+  padding:7px 0;background:var(--paper);border-bottom:1px solid var(--rule);
+}
+#editor .edition-menu-nav .btn{
+  padding:5px 1px;font-size:11px;white-space:nowrap;
+  min-width:0;text-overflow:clip;
+}
+#editor .edition-preview-bar{
+  display:flex;flex-wrap:wrap;align-items:center;gap:7px;
+}
+#editor .edition-zoom-controls{
+  display:inline-flex;align-items:end;gap:4px;
+}
+#editor .edition-zoom-controls .edition-field{width:88px;min-width:0;}
+#editor .edition-zoom-controls .edition-zoom-step{
+  flex:0 0 32px;min-width:32px;min-height:32px;padding:2px;
+  font-size:18px;font-weight:650;
+}
+#editor .edition-preview-bar .edition-add-source{
+  background:var(--accent);color:#fff;border-color:var(--accent);
+  font-weight:600;min-height:30px;
+}
+@media(max-width:1100px){
+  #editor .edition-menu-nav{grid-template-columns:repeat(5,minmax(0,1fr));}
+  #editor .edition-menu-nav .btn{font-size:10.5px;}
+}
+/* PR C · ÚNICAMENTE PANELES del cuaderno experimental.
+   Referencia: Examinator2 usa campos 5–8 px, botones de ~30 px y panel
+   de hasta 600 px. No se modifica su biblioteca, el lector ni la hoja A4.
+   Las reglas de impresión quedan excluidas deliberadamente. */
+@media screen{
+  #editor .edition-settings{gap:5px;}
+  #editor .edition-menu-nav{padding:5px 0;gap:3px;}
+  #editor .edition-menu-nav .btn{
+    min-height:30px;padding:5px 2px;line-height:1.25;
+    font-size:11.5px;font-weight:500;border-radius:6px;
+  }
+  #editor .edition-menu-content{
+    padding:8px;gap:8px;align-content:start;min-width:0;max-width:600px;
+    box-sizing:border-box;
+  }
+  #editor .edition-menu-content .edition-field{
+    min-width:0;gap:3px;margin:0;font-size:12.5px;font-weight:600;
+  }
+  #editor .edition-menu-content .edition-field-label{
+    color:var(--ink-2);font-size:12px;font-weight:600;line-height:1.3;
+  }
+  #editor .edition-menu-content input.field-control,
+  #editor .edition-menu-content select.field-control{
+    box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+    height:30px;min-height:30px;margin:0;padding:5px 8px;
+    border:1px solid var(--rule);border-radius:6px;
+    font:400 13px/1.3 var(--ui-font);
+  }
+  #editor .edition-menu-content textarea.field-control{
+    box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+    min-height:110px;height:142px;margin:0;padding:6px 8px;
+    border:1px solid var(--rule);border-radius:6px;
+    font:400 15px/1.5 var(--text-font);resize:vertical;
+  }
+  #editor .edition-menu-content .btn{
+    box-sizing:border-box;max-width:100%;min-height:30px;
+    padding:4px 8px;border-radius:6px;
+    font:600 12px/1.35 var(--ui-font);
+    white-space:normal;overflow-wrap:anywhere;
+  }
+  /* Los iconos y el indicador Guardada tienen tamaños estables. */
+  #editor .edition-vocab-row .edition-vocab-save{
+    width:84px;min-width:84px;max-width:84px;
+    min-height:28px;padding:3px 2px;white-space:nowrap;font-size:11px;
+  }
+  #editor .edition-vocab-row .edition-vocab-remove,
+  #editor .edition-vocab-row .edition-vocab-reset{
+    width:28px;min-width:28px;min-height:28px;
+    padding:0;font-size:18px;
+  }
+  #editor .edition-menu-content .edition-vocab-row input.field-control{
+    min-height:28px;padding:3px 5px;font-size:12px;
+  }
+  #editor .edition-menu-content .edition-vocab-quantity .field-control{
+    width:auto;min-width:135px;max-width:210px;min-height:30px;
+    padding:4px 6px;font-size:12px;
+  }
+  #editor .edition-menu-content .edition-vocab-modes .btn{
+    min-height:30px;padding:4px 8px;
+  }
+  /* Texto y Formato son formularios compactos, sin ocultar controles. */
+  #editor .edition-menu-text,
+  #editor .edition-menu-format{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    column-gap:8px;row-gap:8px;
+  }
+  #editor .edition-menu-text>.edition-field:first-child,
+  #editor .edition-menu-text>.edition-field:has(textarea),
+  #editor .edition-menu-text>.edition-academic-select,
+  #editor .edition-menu-text>.hint,
+  #editor .edition-menu-format>.edition-margin-grid,
+  #editor .edition-menu-format>select.field-control,
+  #editor .edition-menu-format>.edition-option-head,
+  #editor .edition-menu-format>.hint{
+    grid-column:1/-1;
+  }
+  #editor .edition-menu-format>.edition-margin-grid{gap:6px 8px;}
+  #editor .edition-menu-format>.edition-field{max-width:100%;}
+  /* Cada tarjeta sigue accesible, pero desperdicia menos altura. */
+  #editor .edition-question-panel{
+    padding:9px;gap:7px;border-radius:7px;
+  }
+  #editor .edition-question-panel h3{margin:0;font-size:13px;}
+  #editor .edition-question-top{gap:6px;}
+  #editor .edition-option{padding:7px 8px;gap:6px;margin:0;}
+  #editor .edition-question-shortcuts{gap:5px;}
+  #editor .edition-menu-content .edition-question-jump{
+    min-height:29px;padding:4px 6px;text-align:left;font-size:11.5px;
+  }
+  #editor .edition-academic-option,
+  #editor .edition-academic-question,
+  #editor .edition-academic-morph{
+    padding:7px 8px;gap:6px;margin:4px 0 0;
+  }
+  #editor .edition-academic-option>.edition-field{max-width:205px;}
+  #editor .edition-academic-review{padding:8px;gap:7px;margin:6px 0;}
+  #editor .edition-inline-edit{gap:5px;min-width:0;}
+  #editor .edition-inline-edit>.edition-field{
+    flex:1 1 132px;min-width:0;
+  }
+  #editor .edition-inline-edit>.field-control{
+    flex:1 1 132px;min-width:0;width:auto;
+  }
+  #editor .edition-inline-edit .btn{flex:0 0 auto;}
+  #editor .edition-menu-content .edition-notebook-row{
+    gap:4px;padding:5px 0;
+  }
+  #editor .edition-notebook-row>span{
+    flex:1 1 145px;min-width:0;overflow-wrap:anywhere;
+  }
+  #editor .edition-notebook-row>.btn{
+    min-width:30px;min-height:30px;padding:4px 7px;
+  }
+  #editor .edition-menu-content .edition-vocab-add{gap:5px;}
+  #editor .edition-menu-content .edition-vocab-add>.btn{
+    flex:0 0 auto;
+  }
+}
+/* Safari iPhone: 16 px al enfocar evita el zoom involuntario.
+   Se conservan la hoja A4 desplazable y las cinco pestañas. */
+@media screen and (max-width:760px){
+  #editor .edition-menu-text,
+  #editor .edition-menu-format{grid-template-columns:minmax(0,1fr);}
+  #editor .edition-menu-content input.field-control,
+  #editor .edition-menu-content select.field-control,
+  #editor .edition-menu-content textarea.field-control{
+    font-size:16px;min-height:34px;
+  }
+  #editor .edition-menu-content textarea.field-control{
+    min-height:110px;height:140px;
+  }
+  #editor .edition-menu-content .edition-vocab-row input.field-control{
+    font-size:16px;min-height:34px;
+  }
+  #editor .edition-menu-content .edition-vocab-quantity .field-control{
+    font-size:16px;min-height:34px;max-width:none;flex:1;
+  }
+  #editor .edition-menu-content{padding:7px;gap:7px;}
+  #editor .edition-menu-nav .btn{font-size:10.5px;}
+}
+@media print{
+  .edition-print-root .edition-paper-head{display:block!important;}
+  .edition-print-root .edition-paper-head h2{font-family:inherit!important;}
+}
+
+@media screen {
+  #editor .card select[aria-label='Elegir cuaderno'] {
+    width:100%;max-width:100%;min-height:36px;
+  }
+  #editor .card details {margin:8px 0;}
+  #editor .card details summary {cursor:pointer;padding-block:6px;}
+  #editor .card .row {flex-wrap:wrap;}
+}
+
+@media screen {
+  #editor .card input[type='file'][hidden] {display:none;}
+  html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .toast {
+    background:var(--paper-2);color:var(--ink);border:1px solid var(--rule);
+  }
+}
+
+.original-open-row,.original-own-row {
+  display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;
+  padding:.55rem 0;border-bottom:1px solid var(--rule-2);
+}
+.original-open-row > span,.original-own-row > strong {flex:1 1 100%;}
+.original-own-row > small {flex:1 1 100%;}
+.word-review {display:grid;gap:.6rem;}
+.word-review-item > summary {font-weight:700;cursor:pointer;}
+.word-review-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.35rem .7rem;}
+.word-review .field {display:grid;gap:.15rem;margin:0;}
+.word-review input,.word-review textarea {width:100%;min-width:0;box-sizing:border-box;}
+.word-review textarea {margin-top:.4rem;resize:vertical;}
+.word-review p {margin:.25rem 0;}
+.word-import-errors {margin:.25rem 0;}
+.grammar-chips {display:flex;flex-wrap:wrap;gap:.35rem;margin:.25rem 0 .65rem;}
+.grammar-chip {border-radius:999px;padding:.2em .65em;font-size:.9em;background:#e5e9ed;color:#1a2c3e;}
+.grammar-chip[data-group="gram.oracion"] {background:#f1e0f8;color:#4e2061;}
+.grammar-chip[data-group="gram.formas"] {background:#dbece2;color:#154632;}
+.grammar-chip[data-group="gram.pronombres"] {background:#e1eaff;color:#253f70;}
+.grammar-chip[data-group="gram.funciones"] {background:#ffeac9;color:#60380f;}
+.grammar-tag-search {width:100%;box-sizing:border-box;margin-bottom:.45rem;}
+.simple-tag-option[hidden],.simple-tag-group[hidden] {display:none!important;}
+.grammar-proposal-card {
+  padding:.55rem .7rem;margin:.4rem 0;border:1px solid var(--rule-2);border-radius:.55rem;
+  border-inline-start:.28rem solid #a97628;background:var(--paper-2);
+}
+.grammar-proposal-card[data-state="confirmed"] {border-inline-start-color:#398361;}
+.grammar-proposal-card[data-state="dismissed"] {border-inline-start-color:var(--rule);}
+.grammar-proposal-card > summary {font-weight:700;cursor:pointer;}
+
+
+/* Fase 1: entrada sin hoja A4 vacía, con cuadernos en tarjetas y banco visible. */
+@media screen {
+  body[data-cuaderno-home='true'] main#main{
+    display:block!important;grid-template-columns:none!important;min-height:calc(100dvh - 48px);
+  }
+  body[data-cuaderno-home='true'] #preview{display:none!important;}
+  body[data-cuaderno-home='true'] #editor{
+    width:min(100%,1200px);max-width:none;min-width:0;margin:0 auto;
+    padding:16px;box-sizing:border-box;
+  }
+  #editor .cuaderno-home{max-width:none;display:grid;gap:18px;}
+  #editor .cuaderno-home h3{margin:0;font-size:1.2rem;}
+  #editor .cuaderno-home h4{margin:0;font-size:1.06rem;}
+  #editor .cuaderno-home h5{margin:0;font-size:.98rem;overflow-wrap:anywhere;}
+  #editor .cuaderno-home p{margin:0;}
+  #editor .cuaderno-home-heading,
+  #editor .cuaderno-home-bank-heading{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;
+  }
+  #editor .cuaderno-home-actions,
+  #editor .cuaderno-home-card-actions{
+    display:flex;flex-wrap:wrap;gap:7px;align-items:center;
+  }
+  #editor .cuaderno-home-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));gap:12px;
+  }
+  #editor .cuaderno-home-card{
+    display:flex;flex-direction:column;gap:9px;padding:13px;
+    border:1px solid var(--rule);border-radius:10px;background:var(--paper-2);
+  }
+  #editor .cuaderno-home-card-actions{margin-top:auto;}
+  #editor .cuaderno-home-card-actions button,
+  #editor .cuaderno-home-actions button{min-height:34px;}
+  #editor .cuaderno-home-backups{border-top:1px solid var(--rule-2);padding-top:9px;}
+  #editor .cuaderno-home-backups summary{cursor:pointer;}
+  #editor .cuaderno-home-bank{display:grid;gap:10px;border-top:1px solid var(--rule);padding-top:14px;}
+  #editor .cuaderno-home-bank input[type='search']{
+    width:100%;min-height:38px;box-sizing:border-box;
+    background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:7px;padding:8px 10px;
+  }
+  #editor .cuaderno-home-bank-list{display:grid;gap:7px;}
+  #editor .cuaderno-home-category{border:1px solid var(--rule-2);border-radius:7px;padding:4px 10px;}
+  #editor .cuaderno-home-category>summary{padding:8px 2px;font-weight:600;cursor:pointer;}
+  #editor .cuaderno-home-subcategory{margin:4px 0 6px 12px;border-inline-start:3px solid var(--rule);}
+  #editor .cuaderno-home-text{margin:5px 2px;border-top:1px solid var(--rule-2);padding:4px 0;}
+  #editor .cuaderno-home-text>summary{cursor:pointer;font-weight:500;padding:7px 0;}
+  #editor .cuaderno-home-latin{
+    font-family:var(--text-font);font-size:14px;line-height:1.6;
+    white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0 10px!important;
+  }
+}
+@media screen and (max-width:760px){
+  body[data-cuaderno-home='true'] #editor{padding:8px;}
+  #editor .cuaderno-home{gap:12px;padding:11px;}
+  #editor .cuaderno-home-grid{grid-template-columns:minmax(0,1fr);}
+  #editor .cuaderno-home-bank input[type='search']{font-size:16px;}
+  #editor .cuaderno-home-card-actions button,
+  #editor .cuaderno-home-actions button{min-height:42px;}
+}
+
+/* La cabecera completa pertenece al editor, no a la pantalla inicial.
+   Al ocultar acciones redundantes evitamos que la fila original
+   (botones con white-space: nowrap) ensanche el viewport del iPad. */
+@media screen{
+  body[data-cuaderno-home='true'] header #btnNew,
+  body[data-cuaderno-home='true'] header #btnOpen,
+  body[data-cuaderno-home='true'] header #btnSave,
+  body[data-cuaderno-home='true'] header #btnLib,
+  body[data-cuaderno-home='true'] header #btnLists,
+  body[data-cuaderno-home='true'] header #btnSettings,
+  body[data-cuaderno-home='true'] header #btnDocx,
+  body[data-cuaderno-home='true'] header #btnPdf,
+  body[data-cuaderno-home='true'] header .sep{display:none!important;}
+  body[data-cuaderno-home='true'] header{min-width:0;max-width:100%;}
+  body[data-cuaderno-home='true'] .cuaderno-home,
+  body[data-cuaderno-home='true'] .cuaderno-home-bank,
+  body[data-cuaderno-home='true'] .cuaderno-home-bank-list{min-width:0;}
+  body[data-cuaderno-home='true'] .cuaderno-home{grid-template-columns:minmax(0,1fr);}
+}
+/* La cabecera original contiene más botones que el ancho de iPad.
+   El desplazamiento es interno, no aumenta la anchura del documento. */
+@media screen {
+  body[data-cuaderno-home='true']{display:block;overflow-x:hidden;overflow-y:auto;min-height:100dvh;}
+  body[data-cuaderno-home='true']>header{
+    display:flex;width:100%;max-width:100%;height:48px;
+    overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  }
+  body[data-cuaderno-home='true'] #main{width:100%;max-width:100%;min-width:0;}
+  body[data-cuaderno-home='true'] #editor{min-width:0;max-width:100%;overflow-x:hidden;}
+  body[data-cuaderno-home='true'] .cuaderno-home{min-width:0;max-width:100%;}
+}
+
+
+/* Banco independiente: acciones por fuente y catálogo etiquetable. */
+@media screen{
+  #editor .cuaderno-home-bank .cuaderno-home-actions{margin:0 0 3px;}
+  #editor .cuaderno-home-text-actions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;}
+  #editor .cuaderno-home-text-actions button{min-height:34px;}
+  .cuaderno-bank-tag-editor{display:grid;gap:10px;}
+  .cuaderno-bank-tag-editor>input{
+    width:100%;box-sizing:border-box;min-height:36px;padding:7px 9px;
+    border:1px solid var(--rule);border-radius:7px;background:var(--paper);color:var(--ink);
+  }
+  .cuaderno-bank-tag-options{display:grid;gap:3px;max-height:49vh;overflow-y:auto;}
+  .cuaderno-bank-tag-option{
+    display:flex;align-items:flex-start;gap:9px;min-height:30px;
+    padding:5px 7px;border-bottom:1px solid var(--rule-2);
+  }
+  .cuaderno-bank-tag-option[hidden]{display:none!important;}
+  .cuaderno-bank-tag-option input{flex:none;margin-top:3px;}
+  .cuaderno-bank-tag-option span{overflow-wrap:anywhere;}
+}
+@media screen and (max-width:760px){
+  #editor .cuaderno-home-text-actions button{min-height:42px;}
+  .cuaderno-bank-tag-editor>input{font-size:16px;}
+}
+
+
+/* Fase 3: separar decisiones del docente, catálogo y sugerencias del motor. */
+@media screen {
+  .cuaderno-bank-tag-editor .cuaderno-bank-current{margin:0 0 4px;}
+  .cuaderno-bank-tag-editor>.cuaderno-bank-manual{
+    border:1px solid var(--rule-2);border-radius:8px;padding:8px;
+  }
+  .cuaderno-bank-manual>summary{font-weight:600;cursor:pointer;padding:5px 0;}
+  .cuaderno-bank-manual>input{margin:8px 0;box-sizing:border-box;width:100%;
+    min-height:36px;padding:7px 9px;border:1px solid var(--rule);
+    border-radius:7px;background:var(--paper);color:var(--ink);}
+  .cuaderno-bank-collatinus{
+    border-top:1px solid var(--rule);padding-top:12px;display:grid;gap:8px;
+  }
+  .cuaderno-bank-collatinus h3{font-size:1rem;margin:0;}
+  .cuaderno-bank-collatinus p{margin:4px 0;}
+  .cuaderno-bank-collatinus-results{display:grid;gap:7px;}
+  .cuaderno-bank-proposal-toolbar{
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;
+  }
+  .cuaderno-bank-proposal-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;}
+  .cuaderno-bank-proposal-actions select{flex:1 1 165px;min-width:0;max-width:100%;
+    min-height:34px;border:1px solid var(--rule);border-radius:6px;
+    background:var(--paper);color:var(--ink);}
+  .cuaderno-bank-proposal-actions label{display:inline-flex;align-items:center;gap:5px;}
+  .cuaderno-bank-proposal-actions .hbtn,.cuaderno-bank-proposal-actions .tbtn{min-height:34px;}
+  .cuaderno-bank-evidence{margin-top:5px;border-top:1px solid var(--rule-2);}
+  .cuaderno-bank-evidence summary{cursor:pointer;font-size:12px;color:var(--ink-2);padding:5px 0;}
+  .cuaderno-bank-evidence p{font-size:12px;overflow-wrap:anywhere;}
+}
+@media screen and (max-width:760px) {
+  .cuaderno-bank-manual>input,.cuaderno-bank-proposal-actions select{font-size:16px;}
+  .cuaderno-bank-proposal-actions .hbtn,.cuaderno-bank-proposal-actions .tbtn{min-height:42px;}
+}
+
+
+/* Banco propio desde el editor: selección gramatical táctil y búsquedas combinadas. */
+@media screen {
+  .original-bank-picker{display:grid;gap:9px;min-width:0;}
+  .original-bank-picker>p{margin:3px 0;}
+  .original-bank-picker>input[type='search'],
+  .original-bank-filters>input[type='search']{
+    width:100%;max-width:100%;min-height:36px;box-sizing:border-box;
+    padding:7px 9px;border:1px solid var(--rule);border-radius:7px;
+    background:var(--paper);color:var(--ink);
+  }
+  .original-bank-result-count{font-weight:600;}
+  .original-bank-filters{border:1px solid var(--rule-2);border-radius:8px;padding:7px 10px;}
+  .original-bank-filters>summary{font-weight:600;cursor:pointer;padding:5px 0;}
+  .original-bank-filters>input[type='search']{margin:8px 0;}
+  .original-bank-filter-groups{display:grid;gap:5px;margin:5px 0;}
+  .original-bank-filter-group{border:1px solid var(--rule-2);border-radius:6px;padding:4px 8px;}
+  .original-bank-filter-group>summary{cursor:pointer;font-weight:600;padding:4px 0;}
+  .original-bank-filter-group[hidden],.original-bank-filter-option[hidden]{display:none!important;}
+  .original-bank-filter-choices{display:grid;gap:2px;margin:4px 0;}
+  .original-bank-filter-option{display:flex;align-items:center;gap:8px;
+    min-height:30px;padding:4px 5px;border-bottom:1px solid var(--rule-2);}
+  .original-bank-filter-option input{flex:0 0 auto;}
+  .original-bank-filter-option span{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+  .original-bank-filter-option small{flex:0 0 auto;}
+  .original-bank-picker .original-own-list{max-height:45vh;min-height:0;margin:0;}
+  .original-bank-picker .original-own-row{padding:9px 3px;gap:7px;}
+  .original-bank-picker .original-bank-excerpt{
+    flex:1 1 100%;white-space:pre-wrap;overflow-wrap:anywhere;
+    font-family:var(--text-font);font-size:14px;line-height:1.5;
+    margin:0;color:var(--ink-2);
+  }
+  .original-bank-picker .grammar-chips{flex:1 1 100%;margin:2px 0;}
+  .original-bank-picker .original-own-row button{min-height:34px;}
+}
+@media screen and (max-width:760px){
+  .original-bank-picker>input[type='search'],
+  .original-bank-filters>input[type='search']{font-size:16px;}
+  .original-bank-filter-option{min-height:40px;}
+  .original-bank-picker .original-own-row button{min-height:42px;}
+}
+
+
+/* En iPad la cabecera original conserva botones horizontales más anchos
+   que el visor. El scroll pertenece a la cabecera, no al documento. */
+@media screen and (min-width:701px) and (max-width:1100px){
+  body[data-has-editor='true']>header{
+    box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+    overflow-x:auto;overflow-y:hidden;white-space:nowrap;
+  }
+  body[data-has-editor='true'] main#main{
+    box-sizing:border-box;width:100%;max-width:100%;min-width:0;
+  }
+}
+
+
+/* Mejoras docentes: etiquetas a la vista, gestión masiva del banco y ordenación. */
+@media screen{
+  #editor .cuaderno-bank-bulk{
+    display:flex;flex-wrap:wrap;align-items:center;gap:7px;
+    padding:9px;border:1px solid var(--rule-2);border-radius:9px;
+    background:var(--paper-2);min-width:0;
+  }
+  #editor .cuaderno-bank-bulk .small{margin:0;}
+  #editor .cuaderno-bank-bulk>p{flex:1 1 100%;}
+  #editor .cuaderno-bank-bulk button{min-height:34px;}
+  #editor .cuaderno-bank-bulk button:disabled{opacity:.5;cursor:not-allowed;}
+  #editor .cuaderno-home-select{
+    display:inline-flex;align-items:center;gap:5px;font-size:.85rem;
+    padding:3px 5px;margin:0;min-height:30px;
+  }
+  #editor .cuaderno-home-select input{flex:0 0 auto;}
+  #editor .cuaderno-home-select input:disabled{opacity:.5;}
+  #editor .cuaderno-current-tags{
+    display:grid;gap:5px;margin:9px 0 4px;padding:8px;
+    background:var(--paper-2);border:1px solid var(--rule-2);border-radius:8px;
+  }
+  #editor .cuaderno-current-tags>strong{font-size:.9rem;}
+  #editor .cuaderno-current-tags .grammar-chips{margin:0;}
+  #editor .cuaderno-current-tags>.hbtn{justify-self:start;min-height:34px;}
+  #editor .edition-tags-summary{
+    display:grid;gap:6px;padding:8px;border:1px solid var(--rule-2);
+    border-radius:7px;background:var(--paper-2);min-width:0;
+  }
+  #editor .edition-tags-summary .grammar-chips{margin:0;}
+  #editor .edition-tags-summary>.btn{justify-self:start;min-height:32px;}
+  #editor .edition-notebook-list{margin:5px 0;padding-left:24px;}
+  #editor .edition-notebook-review,
+  #editor .edition-notebook-advanced{
+    border:1px solid var(--rule-2);border-radius:8px;padding:7px 10px;
+    min-width:0;margin-top:8px;
+  }
+  #editor .edition-notebook-review>summary,
+  #editor .edition-notebook-advanced>summary{cursor:pointer;font-weight:600;padding:5px 0;}
+  #editor .edition-notebook-advanced .edition-inline-edit{
+    display:flex;flex-wrap:wrap;gap:8px;min-width:0;margin:6px 0;
+  }
+  #editor .edition-notebook-advanced .edition-inline-edit .field-control{flex:1 1 150px;min-width:0;}
+}
+@media screen and (max-width:760px){
+  #editor .cuaderno-bank-bulk button,
+  #editor .cuaderno-current-tags>.hbtn{min-height:42px;}
+  #editor .edition-tags-summary>.btn{min-height:42px;}
+}
+
+
+/* La casilla de selección se ve sin desplegar el texto latino. */
+@media screen{
+  #editor .cuaderno-home-text-heading{display:flex;align-items:center;gap:8px;min-width:0;}
+  /* El indicador ▸/▾ se define una sola vez junto a las tarjetas del banco. */
+  #editor .cuaderno-home-text-heading::before{flex:none;}
+  #editor .cuaderno-home-text-heading>span{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
+  #editor .cuaderno-home-text-heading>.cuaderno-home-select{
+    flex:0 0 auto;cursor:pointer;min-height:34px;display:inline-flex;align-items:center;
+  }
+}
+
+/* Ajustes cromáticos de los controles: sin cambios en la hoja imprimible. */
+:root{
+  --cuaderno-ui-word:#245bb0;--cuaderno-ui-word-soft:#eaf2ff;
+  --cuaderno-ui-pdf:#b52638;--cuaderno-ui-pdf-soft:#fff0f1;
+  --cuaderno-ui-save:#245bb0;--cuaderno-ui-save-soft:#eaf2ff;
+  --cuaderno-ui-add:#176a48;--cuaderno-ui-add-soft:#e9f6ee;
+  --cuaderno-ui-regen:#925c0a;--cuaderno-ui-regen-soft:#fff4dc;
+  --cuaderno-ui-remove:#b52638;
+  --cuaderno-ui-current:#e7f1f7;--cuaderno-ui-current-ink:#145676;
+}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']){
+  --cuaderno-ui-word:#9cc4ff;--cuaderno-ui-word-soft:#1b3555;
+  --cuaderno-ui-pdf:#ffadb6;--cuaderno-ui-pdf-soft:#49262e;
+  --cuaderno-ui-save:#9cc4ff;--cuaderno-ui-save-soft:#1b3555;
+  --cuaderno-ui-add:#9de5bd;--cuaderno-ui-add-soft:#1d4132;
+  --cuaderno-ui-regen:#ffd38c;--cuaderno-ui-regen-soft:#49391f;
+  --cuaderno-ui-remove:#ffadb6;
+  --cuaderno-ui-current:#244251;--cuaderno-ui-current-ink:#b6eaff;
+}
+@media screen{
+  /* Las clases semánticas no modifican el comportamiento de los botones. */
+  :is(#editor,.modal,body>header) button.cuaderno-ui-word{
+    background:var(--cuaderno-ui-word-soft);border:1px solid var(--cuaderno-ui-word);
+    color:var(--cuaderno-ui-word);
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-pdf{
+    background:var(--cuaderno-ui-pdf-soft);border:1px solid var(--cuaderno-ui-pdf);
+    color:var(--cuaderno-ui-pdf);
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-save{
+    background:var(--cuaderno-ui-save-soft);border:1px solid var(--cuaderno-ui-save);
+    color:var(--cuaderno-ui-save);
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-regen,
+  #editor button.edition-vocab-reset{
+    background:var(--cuaderno-ui-regen-soft);border:1px solid var(--cuaderno-ui-regen);
+    color:var(--cuaderno-ui-regen);
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-remove{
+    background:transparent;border:1px solid var(--cuaderno-ui-remove);
+    color:var(--cuaderno-ui-remove);
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-add{
+    background:var(--cuaderno-ui-add-soft);border:1px solid var(--cuaderno-ui-add);
+    color:var(--cuaderno-ui-add);
+  }
+  /* Solo la exportación (no la importación) es sólida. */
+  :is(#editor,.modal,body>header) button.cuaderno-ui-export.cuaderno-ui-word,
+  body[data-has-editor='true']>header #btnDocx{
+    background:#245bb0;border-color:#245bb0;color:#fff;
+  }
+  :is(#editor,.modal,body>header) button.cuaderno-ui-export.cuaderno-ui-pdf,
+  body[data-has-editor='true']>header #btnPdf{
+    background:#b52638;border-color:#b52638;color:#fff;
+  }
+  /* Guardar cambia a Guardado sin desplazar ningún campo. */
+  #editor .edition-vocab-row .edition-vocab-save{
+    display:inline-flex;align-items:center;justify-content:center;
+    box-sizing:border-box;flex:0 0 84px;width:84px;min-width:84px;max-width:84px;
+    height:30px;min-height:30px;padding:3px 4px;white-space:nowrap;
+    font-size:11px;font-weight:650;font-variant-numeric:tabular-nums;
+  }
+  #editor .edition-vocab-row .edition-vocab-save.is-saved{
+    background:var(--cuaderno-ui-add-soft);color:var(--cuaderno-ui-add);
+    border-color:var(--cuaderno-ui-add);
+  }
+  #editor .edition-vocab-row .edition-vocab-save[data-save-state='saving']{
+    background:var(--cuaderno-ui-save-soft);color:var(--cuaderno-ui-save);
+    border-color:var(--cuaderno-ui-save);font-size:10px;cursor:progress;
+    opacity:1;
+  }
+  #editor .edition-vocab-row .edition-vocab-save[data-save-state='error']{
+    color:var(--cuaderno-ui-remove);border-color:var(--cuaderno-ui-remove);
+  }
+  #editor .edition-menu-nav .btn[aria-current='page']{
+    background:var(--cuaderno-ui-current);color:var(--cuaderno-ui-current-ink);
+    /* El borde y la marca inferior activos se definen en el bloque final. */
+  }
+  /* Misma altura y esquinas en cada grupo, sin alterar la distribución. */
+  #editor .cuaderno-home :is(button.hbtn,button.tbtn),
+  #editor .edition-menu-content button.btn,
+  body[data-has-editor='true']>header :is(button.hbtn,button.tbtn){
+    box-sizing:border-box;border-radius:6px;
+    font-family:var(--ui-font);font-weight:600;line-height:1.35;
+  }
+  #editor .cuaderno-home :is(button.hbtn,button.tbtn){min-height:34px;}
+  :is(#editor,.modal,body>header) button:is(.cuaderno-ui-word,.cuaderno-ui-pdf,.cuaderno-ui-save,.cuaderno-ui-regen,.cuaderno-ui-remove,.cuaderno-ui-add):focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+  :is(#editor,.modal,body>header) button:is(.cuaderno-ui-word,.cuaderno-ui-pdf,.cuaderno-ui-save,.cuaderno-ui-regen,.cuaderno-ui-remove,.cuaderno-ui-add):disabled{
+    opacity:.55;cursor:not-allowed;
+  }
+}
+@media screen and (max-width:760px){
+  #editor .cuaderno-home :is(button.hbtn,button.tbtn){min-height:42px;}
+}
+
+/* Cabecera editorial unificada; no afecta al papel ni a la impresión. */
+@media screen{
+  #editor .cuaderno-editor-overview{
+    display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;min-width:0;
+  }
+  #editor .cuaderno-context-top{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:8px;min-width:0;
+  }
+  #editor .cuaderno-context-heading{
+    display:flex;flex:1 1 200px;align-items:center;gap:10px;min-width:0;
+  }
+  #editor .cuaderno-context-heading-text{flex:1 1 150px;min-width:0;}
+  #editor .cuaderno-context-heading h3{
+    margin:0 0 2px;font:650 11px/1.2 var(--ui-font);
+    letter-spacing:.02em;color:var(--ink-3);
+  }
+  #editor .cuaderno-context-current{
+    display:block;font:700 15px/1.3 var(--ui-font);
+    color:var(--ink);overflow-wrap:anywhere;
+  }
+  #editor .cuaderno-context-count{
+    flex:0 0 auto;white-space:nowrap;padding:4px 8px;
+    border-radius:999px;background:var(--accent-soft);
+    color:var(--accent);font:650 11px/1.2 var(--ui-font);
+  }
+  #editor .cuaderno-context-links{
+    display:flex;align-items:center;flex-wrap:wrap;gap:5px;
+  }
+  #editor .cuaderno-context-links .hbtn{
+    min-height:30px;padding:5px 7px;font-size:11.5px;
+  }
+  #editor .cuaderno-context-tools{
+    display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;
+    border-top:1px solid var(--rule-2);padding-top:8px;
+  }
+  #editor .cuaderno-editor-overview label.cuaderno-context-switch{
+    flex:1 1 160px;min-width:0;max-width:280px;
+    display:flex;flex-direction:column;gap:3px;margin:0;
+    font:600 11px/1.2 var(--ui-font);color:var(--ink-2);
+  }
+  #editor .cuaderno-context-switch select{
+    width:100%;max-width:100%;min-width:0;min-height:31px;
+    background:var(--paper);color:var(--ink);
+    padding:4px 6px;box-sizing:border-box;
+  }
+  #editor .cuaderno-context-backups{flex:0 1 auto;min-width:0;margin:0;}
+  #editor .cuaderno-context-backups>summary{
+    cursor:pointer;list-style:none;display:inline-flex;align-items:center;
+    border:1px solid var(--rule);border-radius:6px;
+    min-height:31px;padding:5px 9px;
+    font:600 11.5px/1.3 var(--ui-font);color:var(--ink-2);
+    background:var(--panel);
+  }
+  #editor .cuaderno-context-backups>summary::-webkit-details-marker{display:none;}
+  #editor .cuaderno-context-backups>summary::after{
+    content:'▾';margin-left:7px;font-size:11px;
+  }
+  #editor .cuaderno-context-backups[open]{flex:1 1 100%;}
+  #editor .cuaderno-context-backup-buttons{
+    margin:6px 0 0;padding:8px;gap:6px;
+    border:1px solid var(--rule-2);border-radius:7px;
+    background:var(--paper-2);
+  }
+  #editor .cuaderno-context-backup-buttons .hbtn{min-height:30px;font-size:11.5px;}
+  #editor .cuaderno-context-add{
+    display:grid;gap:6px;border-top:1px solid var(--rule-2);
+    padding-top:8px;
+  }
+  #editor .cuaderno-context-add h4{
+    margin:0;font:650 12px/1.25 var(--ui-font);
+    color:var(--ink-2);
+  }
+  #editor .cuaderno-context-add .row{gap:5px;}
+  #editor .cuaderno-context-add .hbtn{
+    min-height:31px;padding:5px 8px;font-size:12px;
+  }
+}
+@media screen and (max-width:760px){
+  #editor .cuaderno-context-links .hbtn,
+  #editor .cuaderno-context-add .hbtn,
+  #editor .cuaderno-context-backups>summary,
+  #editor .cuaderno-context-backup-buttons .hbtn{min-height:38px;}
+  #editor .cuaderno-context-switch select{
+    font-size:16px;min-height:38px;
+  }
+}
+
+/* OLED: negro real en fondos de aplicación, dejando blancos los documentos A4.
+   Los acentos cromáticos de Word, PDF y demás botones se mantienen. */
+html[data-cuaderno-theme='oled']{
+  color-scheme:dark;
+  --paper:#000;--paper-2:#000;--panel:#000;
+  --ink:#f2f5f6;--ink-2:#ccd7dc;--ink-3:#a0b0b8;
+  --rule:#343c41;--rule-2:#252b30;
+  --accent:#a8d9e8;--accent-soft:#09232e;--link:#9ecaff;
+}
+@media screen{
+  html[data-cuaderno-theme='oled'],
+  html[data-cuaderno-theme='oled'] body,
+  html[data-cuaderno-theme='oled'] body>header,
+  html[data-cuaderno-theme='oled'] main,
+  html[data-cuaderno-theme='oled'] #editor,
+  html[data-cuaderno-theme='oled'] #preview,
+  html[data-cuaderno-theme='oled'] #lib,
+  html[data-cuaderno-theme='oled'] #editor .edition-preview-stack,
+  html[data-cuaderno-theme='oled'] #editor .edition-preview-stack>.edition-navigation,
+  html[data-cuaderno-theme='oled'] #editor .edition-settings,
+  html[data-cuaderno-theme='oled'] #editor .edition-menu-content,
+  html[data-cuaderno-theme='oled'] #editor .edition-menu-nav,
+  html[data-cuaderno-theme='oled'] #editor .edition-question-panel,
+  html[data-cuaderno-theme='oled'] #editor .edition-option,
+  html[data-cuaderno-theme='oled'] .modal,
+  html[data-cuaderno-theme='oled'] .pop,
+  html[data-cuaderno-theme='oled'] .card,
+  html[data-cuaderno-theme='oled'] .vlist{
+    background:#000;
+  }
+  html[data-cuaderno-theme='oled'] :is(#editor,#lib,.modal) input:not([type='checkbox']):not([type='radio']):not([type='file']),
+  html[data-cuaderno-theme='oled'] :is(#editor,#lib,.modal) select,
+  html[data-cuaderno-theme='oled'] :is(#editor,#lib,.modal) textarea,
+  html[data-cuaderno-theme='oled'] .vrow input[type='text']:focus,
+  html[data-cuaderno-theme='oled'] .vrow input[type='text']:hover{
+    background:#000;color:var(--ink);border-color:var(--rule);
+  }
+  html[data-cuaderno-theme='oled'] :is(#editor,#lib,.modal) input::placeholder,
+  html[data-cuaderno-theme='oled'] :is(#editor,#lib,.modal) textarea::placeholder{
+    color:var(--ink-3);opacity:1;
+  }
+  /* En los selectores no se confunde el negro de fondo con el activo. */
+  html[data-cuaderno-theme='oled'] #editor .edition-menu-nav .btn[aria-current='page']{
+    background:var(--cuaderno-ui-current);color:var(--cuaderno-ui-current-ink);
+  }
+  html[data-cuaderno-theme='oled'] #editor .edition-paper,
+  html[data-cuaderno-theme='oled'] .edition-paper,
+  html[data-cuaderno-theme='oled'] .edition-print-root .edition-paper{
+    background:#fff;color:#151515;color-scheme:light;
+  }
+}
+
+/* Reorganización aprobada: solo presentación de los controles existentes.
+   Sin modificaciones en hoja A4, exportación ni diseño de impresión. */
+@media screen{
+  body>header{gap:6px;padding-inline:10px;}
+  body>header .sep{display:none!important;}
+  body>header .cuaderno-header-nav,
+  body>header .cuaderno-header-save,
+  body>header .cuaderno-header-exports{
+    display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;min-width:0;
+  }
+  body>header .cuaderno-header-nav{
+    border:1px solid var(--rule-2);border-radius:7px;padding:2px;
+  }
+  body>header .cuaderno-header-nav .hbtn{border:0;min-height:30px;padding:5px 7px;}
+  body>header .cuaderno-header-nav #btnOpen{font-weight:650;color:var(--ink);}
+  body>header .cuaderno-header-nav #btnNew{
+    min-width:30px;width:30px;padding:4px;
+    font-size:19px;line-height:1;
+    background:var(--accent-soft);color:var(--accent);
+  }
+  body>header .cuaderno-header-save{
+    border-inline-start:1px solid var(--rule-2);
+    padding-inline-start:7px;
+  }
+  body>header .cuaderno-header-save-state{
+    display:inline-flex;align-items:center;justify-content:center;
+    box-sizing:border-box;flex:0 0 auto;min-height:26px;
+    font-size:10.5px;font-weight:700;line-height:1.25;
+    max-width:112px;padding:3px 7px;border-radius:6px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    border:1px solid var(--rule-2);color:var(--ink-2);
+  }
+  body>header .cuaderno-header-save-state[data-state='pending']{
+    color:var(--cuaderno-ui-regen);border-color:var(--cuaderno-ui-regen);
+    background:var(--cuaderno-ui-regen-soft);
+  }
+  body>header .cuaderno-header-save-state[data-state='saving']{
+    color:var(--cuaderno-ui-save);border-color:var(--cuaderno-ui-save);
+    background:var(--cuaderno-ui-save-soft);
+  }
+  body>header .cuaderno-header-save-state[data-state='saved']{
+    color:var(--cuaderno-ui-add);border-color:var(--cuaderno-ui-add);
+    background:var(--cuaderno-ui-add-soft);
+  }
+  body>header .cuaderno-header-save-state[data-state='error']{
+    color:var(--cuaderno-ui-remove);border-color:var(--cuaderno-ui-remove);
+  }
+  body>header .cuaderno-header-save-state:empty{display:none;}
+  body>header .cuaderno-header-exports .hbtn{
+    min-height:32px;min-width:48px;padding:5px 9px;
+    font-weight:700;letter-spacing:.01em;
+  }
+  body>header .cuaderno-theme-select{
+    min-height:32px;max-width:102px;min-width:80px;
+    border:1px solid var(--rule);border-radius:6px;
+    background:var(--panel);color:var(--ink);
+    padding:4px 6px;font:600 12px var(--ui-font);
+  }
+  body>header .cuaderno-header-more-trigger{
+    min-height:32px;padding:5px 8px;
+    font-weight:600;
+  }
+  body>.cuaderno-header-more{
+    position:fixed;top:49px;right:10px;z-index:70;
+    background:var(--panel);border:1px solid var(--rule);
+    border-radius:8px;padding:6px;
+    box-shadow:0 12px 30px rgba(0,0,0,.2);
+  }
+  body>.cuaderno-header-more[hidden]{display:none!important;}
+  body>.cuaderno-header-more .hbtn{
+    width:100%;min-height:36px;text-align:left;font-size:12px;
+  }
+  body[data-cuaderno-home='true']>header :is(.cuaderno-header-nav,.cuaderno-header-save,.cuaderno-header-exports,.cuaderno-header-more-trigger){
+    display:none!important;
+  }
+  body[data-cuaderno-home='true']>header .cuaderno-theme-select{margin-left:auto;}
+  #editor .cuaderno-context-add{gap:5px;}
+  #editor .cuaderno-add-actions{
+    display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
+    gap:6px;min-width:0;
+  }
+  #editor .cuaderno-add-primary,
+  #editor .cuaderno-add-secondary{
+    display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;
+  }
+  #editor .cuaderno-add-secondary .hbtn{
+    border-color:var(--rule-2);background:var(--panel);
+    color:var(--ink-2);
+  }
+  #editor .cuaderno-add-actions .hbtn{
+    min-height:31px;padding:5px 8px;font-size:11.5px;
+  }
+  /* Cinco pestañas fijas de igual ancho, estado activo inequívoco. */
+  #editor .edition-menu-nav .btn{
+    min-height:32px;font-weight:600;
+    transition:background-color .1s,color .1s;
+  }
+  /* El subrayado inferior y el foco se unifican en los retoques finales. */
+  /* Tres bloques breves, sin duplicar ni ocultar opciones académicas. */
+  #editor .edition-menu-vocabulary{
+    display:grid;gap:7px;
+  }
+  #editor .edition-menu-vocabulary>.edition-vocab-section{
+    display:grid;gap:6px;align-content:start;min-width:0;
+    border:1px solid var(--rule-2);border-radius:8px;
+    padding:8px;background:var(--panel);
+  }
+  #editor .edition-vocab-section>h3{
+    font:700 12.5px/1.3 var(--ui-font);
+    color:var(--accent);margin:0;
+  }
+  #editor .edition-vocab-selection .edition-vocab-toolbar{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+    min-width:0;margin:0;
+  }
+  #editor .edition-vocab-selection .edition-vocab-modes{
+    display:flex;flex-wrap:wrap;gap:4px;
+  }
+  #editor .edition-vocab-analysis>.btn{
+    justify-self:start;white-space:normal;text-align:left;
+    min-height:31px;max-width:100%;
+  }
+  #editor .edition-vocab-entries>.hint{margin:0;font-size:11.5px;}
+  #editor .edition-vocab-entries .edition-vocab-list{min-width:0;}
+  #editor .edition-vocab-entries .edition-vocab-bulk{margin:0;gap:5px;}
+  #editor .edition-vocab-entries .edition-vocab-add{margin:0;}
+}
+@media screen and (max-width:760px){
+  body>header .brand{font-size:18px;margin-right:3px;}
+  body>header .cuaderno-header-save-state{
+    display:inline-flex;min-height:30px;max-width:96px;padding:3px 6px;
+  }
+  body>header .cuaderno-header-nav .hbtn{min-height:36px;}
+  body>header .cuaderno-theme-select{min-height:36px;font-size:16px;}
+  #editor .cuaderno-add-actions .hbtn{min-height:38px;}
+}
+@media screen and (max-width:460px){
+  body[data-has-editor='true']>header{
+    overflow-x:auto;overflow-y:hidden;max-width:100%;
+    white-space:nowrap;
+    scrollbar-width:thin;
+  }
+  body>header .brand{font-size:15px;}
+  body>header .cuaderno-header-nav #btnOpen{font-size:11.5px;}
+  body>header .cuaderno-header-save{padding-inline-start:3px;}
+  #editor .edition-settings>.edition-menu-nav{
+    grid-template-columns:repeat(5,minmax(84px,1fr));
+    overflow-x:auto;overscroll-behavior-inline:contain;
+    scroll-snap-type:x proximity;scrollbar-width:thin;
+    max-width:100%;
+  }
+  #editor .edition-menu-nav .btn{scroll-snap-align:start;font-size:11.5px;}
+  #editor .cuaderno-add-primary,
+  #editor .cuaderno-add-secondary{flex:1 1 100%;}
+  #editor .cuaderno-add-primary>.hbtn,
+  #editor .cuaderno-add-secondary>.hbtn{flex:1 1 0;}
+}
+
+/* Fase 2: organización visual de Texto, Preguntas, Formato y Organizar.
+   Estilos de pantalla; la edición A4 y @media print no se alteran. */
+@media screen{
+  #editor .edition-menu-text>.edition-bibliography,
+  #editor .edition-menu-format>.edition-format-group{
+    grid-column:1/-1;min-width:0;
+    border:1px solid var(--rule-2);
+    border-radius:8px;background:var(--panel);
+    margin:0;padding:0;
+  }
+  #editor .edition-bibliography>summary,
+  #editor .edition-format-group>summary{
+    display:flex;align-items:center;justify-content:space-between;
+    cursor:pointer;min-height:34px;padding:7px 9px;
+    color:var(--ink-2);font:650 12px/1.3 var(--ui-font);
+  }
+  #editor .edition-bibliography>summary:focus-visible,
+  #editor .edition-format-group>summary:focus-visible{
+    outline:2px solid var(--accent);outline-offset:-2px;
+  }
+  #editor .edition-bibliography-fields,
+  #editor .edition-format-group-fields{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;min-width:0;padding:8px;
+    border-top:1px solid var(--rule-2);
+  }
+  #editor .edition-bibliography-fields>.edition-field:last-child{
+    grid-column:1/-1;
+  }
+  #editor .edition-format-group-fields .edition-field{
+    min-width:0;margin:0;
+  }
+  #editor .edition-format-group-fields .edition-font-family{
+    min-width:0;display:grid;gap:3px;
+  }
+  #editor .edition-format-group-fields .edition-margin-grid{
+    grid-column:1/-1;min-width:0;
+  }
+  #editor .edition-question-shortcuts{
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:5px;min-width:0;
+  }
+  #editor .edition-menu-content .edition-question-jump{
+    min-width:0;min-height:30px;
+    padding:4px 5px;text-align:center;
+    white-space:normal;font:600 11px/1.2 var(--ui-font);
+  }
+  #editor .edition-question-top{display:flex;align-items:center;flex-wrap:wrap;}
+  #editor .edition-menu-content .edition-question-fold{
+    margin-left:auto;min-height:28px;padding:3px 7px;
+    font-size:11px;font-weight:600;
+  }
+  #editor .edition-question-panel.is-folded{
+    gap:0;padding-block:6px;
+  }
+  #editor .edition-question-panel.is-folded .edition-question-top{
+    min-height:31px;
+  }
+  #editor .edition-menu-notebook>.edition-organize-primary,
+  #editor .edition-menu-notebook>.edition-organize-review{
+    min-width:0;display:grid;gap:7px;padding:9px;
+    border:1px solid var(--rule-2);border-radius:8px;
+    background:var(--panel);
+  }
+  #editor .edition-organize-primary>h3,
+  #editor .edition-organize-review>h3{
+    margin:0;color:var(--accent);
+    font:700 12.5px/1.3 var(--ui-font);
+  }
+  #editor .edition-organize-primary>.hint,
+  #editor .edition-organize-review>.hint{
+    margin:0;font-size:11.5px;
+  }
+  #editor .edition-organize-primary .edition-notebook-list{margin:0;}
+  #editor .edition-organize-review .edition-notebook-review{
+    margin:0;
+  }
+  #editor .edition-menu-format>.edition-option-head,
+  #editor .edition-menu-format>.btn,
+  #editor .edition-menu-format>.hint{
+    grid-column:1/-1;
+  }
+}
+@media screen and (max-width:760px){
+  #editor .edition-bibliography-fields,
+  #editor .edition-format-group-fields{grid-template-columns:minmax(0,1fr);}
+  #editor .edition-bibliography-fields>.edition-field:last-child{
+    grid-column:1/-1;
+  }
+  #editor .edition-question-shortcuts{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #editor .edition-menu-content .edition-question-jump{
+    font-size:12px;min-height:38px;
+  }
+  #editor .edition-bibliography>summary,
+  #editor .edition-format-group>summary{min-height:38px;}
+  #editor .edition-menu-content .edition-question-fold{min-height:36px;}
+}
+
+/* Preguntas estilo Examinator2. Solo panel editor, nunca hoja A4 ni impresión.
+   A-F: cabeceras planas, enunciados discretos, filas + Otra/Otro, configuraciones
+   plegables y morfología compacta, conservando manejadores originales. */
+@media screen{
+  #editor .edition-menu-questions{
+    display:grid;gap:7px;align-content:start;
+  }
+  #editor .edition-menu-questions>.edition-question-index{
+    display:block;position:sticky;top:0;z-index:4;
+    padding:4px 0 7px;margin:0;
+    background:var(--paper);border:0;border-radius:0;
+    border-bottom:1px solid var(--rule-2);
+  }
+  #editor .edition-menu-questions .edition-question-shortcuts{
+    display:flex;flex-wrap:wrap;gap:4px;
+  }
+  #editor .edition-menu-questions .edition-question-jump{
+    flex:1 1 auto;min-width:80px;min-height:29px;
+    padding:4px 6px;font-size:11px;font-weight:600;
+    border-radius:5px;text-align:center;
+  }
+  #editor .edition-question-panel{
+    display:grid;gap:5px;padding:7px 8px;
+    border:1px solid var(--rule-2);border-left:1px solid var(--rule-2);
+    border-radius:7px;background:var(--panel);
+  }
+  #editor .edition-question-panel.is-inactive{
+    border-color:var(--rule-2);opacity:.72;
+  }
+  #editor .edition-question-panel.is-folded{
+    padding:5px 7px;gap:0;
+  }
+  #editor .edition-question-panel .edition-question-top{
+    display:flex;align-items:center;flex-wrap:nowrap;
+    min-width:0;gap:6px;
+  }
+  #editor .edition-question-panel .edition-question-top>input[type=checkbox]{
+    flex:0 0 17px;width:17px;height:17px;margin:0;
+    accent-color:var(--accent-button);
+  }
+  #editor .edition-question-panel .edition-question-top>h3{
+    flex:1 1 auto;min-width:0;margin:0;
+    color:var(--accent);font:700 13px/1.25 var(--ui-font);
+  }
+  #editor .edition-question-points{
+    flex:0 0 66px;max-width:66px;
+    display:flex;align-items:center;gap:2px;min-width:0;
+    margin:0;
+  }
+  #editor .edition-question-points .edition-field{
+    position:relative;display:block;min-width:0;width:100%;
+    margin:0;
+  }
+  #editor .edition-question-points .edition-field-label{
+    position:absolute;width:1px;height:1px;padding:0;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;
+  }
+  #editor .edition-question-points input.field-control{
+    width:100%;height:28px;min-height:28px;
+    padding:3px 4px;text-align:right;font-size:12px;
+    font-variant-numeric:tabular-nums;
+  }
+  #editor .edition-question-panel .edition-question-fold{
+    flex:0 0 28px;min-width:28px;max-width:28px;
+    width:28px;height:28px;min-height:28px;
+    margin-left:0;padding:0;line-height:1;
+    font-size:18px;color:var(--ink-2);
+  }
+  #editor .edition-statement-row{
+    display:flex;align-items:center;gap:6px;min-width:0;
+    padding:2px 0;
+  }
+  #editor .edition-statement-text{
+    min-width:0;flex:1 1 auto;overflow-wrap:anywhere;
+    font:400 12px/1.35 var(--ui-font);
+    color:var(--ink-2);
+  }
+  #editor .edition-statement-row>.edition-field{
+    flex:1 1 120px;min-width:0;margin:0;
+  }
+  #editor .edition-statement-edit,
+  #editor .edition-statement-finish{
+    flex:0 0 auto;min-height:27px;
+    padding:3px 7px;font-size:11px;
+  }
+  #editor .edition-statement-row .edition-field-label{
+    font-size:11px;
+  }
+  #editor .edition-question-panel .edition-option{
+    display:grid;gap:5px;min-width:0;
+    border:0;border-radius:0;
+    border-top:1px solid var(--rule-2);
+    padding:8px 0 5px;margin:0;
+    background:transparent;
+  }
+  #editor .edition-option .edition-option-head{
+    display:flex!important;align-items:center;flex-wrap:wrap;
+    gap:5px;min-width:0;margin:0;
+    color:var(--ink-2);
+  }
+  #editor .edition-option .edition-option-head>input[type=checkbox]{
+    flex:0 0 16px;width:16px;height:16px;margin:0;
+  }
+  #editor .edition-option .edition-option-head>strong{
+    flex:1 1 120px;font:650 12.5px/1.3 var(--ui-font);
+  }
+  #editor .edition-menu-questions .edition-generate-option{
+    min-height:26px;padding:3px 6px;font-size:11px;
+    white-space:normal;
+  }
+  #editor .edition-option-statement .edition-statement-text{
+    font-size:11.5px;
+  }
+  #editor .edition-option-rows{
+    display:grid;gap:3px;min-width:0;
+  }
+  #editor .edition-qword-row{
+    display:flex;flex-wrap:nowrap;align-items:center;
+    gap:4px;min-width:0;margin:0;
+  }
+  #editor .edition-qword-row>.edition-field{
+    flex:1 1 auto;min-width:0;margin:0;
+    position:relative;
+  }
+  /* Mantener nombre accesible «Palabra» sin desperdiciar otra línea. */
+  #editor .edition-qword-row>.edition-field>.edition-field-label{
+    position:absolute;width:1px;height:1px;padding:0;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;
+  }
+  #editor .edition-qword-row input.field-control{
+    width:100%;min-width:0;height:29px;min-height:29px;
+    padding:3px 6px;font-family:var(--text-font);
+    font-size:13.5px;font-style:italic;
+  }
+  #editor .edition-qword-row .edition-slot-regenerate,
+  #editor .edition-qword-row .edition-qword-remove{
+    flex:0 0 auto;min-height:29px;height:29px;
+    padding:3px 6px;font-size:11px;
+  }
+  #editor .edition-qword-row .edition-qword-remove{
+    min-width:28px;width:28px;max-width:28px;
+    padding:0;font-size:17px;
+    border:0;color:var(--ink-3);background:transparent;
+  }
+  #editor .edition-option-add{
+    flex-wrap:nowrap;align-items:center;gap:4px;
+    margin:1px 0 2px;min-width:0;
+  }
+  #editor .edition-option-add>input.field-control{
+    flex:1 1 auto;min-width:0;width:100%;
+    min-height:28px;height:28px;padding:3px 6px;
+    font-size:12px;
+  }
+  #editor .edition-option-add>.btn{
+    flex:0 0 auto;min-height:28px;padding:3px 7px;
+    font-size:11px;
+  }
+  #editor .edition-option-advanced,
+  #editor .edition-question-advanced{
+    min-width:0;margin:0;
+    border-top:1px solid var(--rule-2);
+    padding-top:5px;
+  }
+  #editor :is(.edition-option-advanced,.edition-question-advanced)>summary{
+    cursor:pointer;list-style:none;display:inline-flex;
+    align-items:center;gap:5px;min-height:29px;
+    padding:4px 5px;border-radius:5px;
+    font:600 11px/1.3 var(--ui-font);
+    color:var(--ink-3);
+  }
+  #editor :is(.edition-option-advanced,.edition-question-advanced)>summary::-webkit-details-marker{
+    display:none;
+  }
+  #editor :is(.edition-option-advanced,.edition-question-advanced)>summary::before{
+    content:'▸';font-size:13px;
+  }
+  #editor :is(.edition-option-advanced,.edition-question-advanced)[open]>summary::before{
+    content:'▾';
+  }
+  #editor .edition-option-advanced-body,
+  #editor .edition-question-advanced-body{
+    display:grid;gap:5px;min-width:0;padding:5px 2px;
+  }
+  #editor .edition-option-advanced-body>.edition-academic-option,
+  #editor .edition-question-advanced-body>.edition-academic-question{
+    padding:6px;gap:7px;margin:0;
+    border:1px solid var(--rule-2);border-radius:6px;
+    background:transparent;
+  }
+  #editor .edition-option-advanced-body .edition-field{
+    max-width:none;
+  }
+  /* Apariciones: una línea por forma y su análisis, sin tarjeta adicional. */
+  #editor .edition-academic-morph{
+    padding:3px 0;margin:0;gap:3px;
+    border:0;border-radius:0;background:transparent;
+  }
+  #editor .edition-academic-morph h4{
+    margin:0 0 2px;color:var(--ink-2);
+    font-size:12px;
+  }
+  #editor .edition-academic-morph-row{
+    display:flex;flex-wrap:wrap;align-items:center;
+    min-height:30px;gap:5px;padding:3px 0;
+    border-bottom:1px solid var(--rule-2);
+  }
+  #editor .edition-academic-morph-row>span{
+    flex:1 1 140px;min-width:0;font-size:12px;
+  }
+  #editor .edition-academic-morph-row>.btn{
+    flex:0 0 auto;min-height:29px;
+    padding:3px 7px;font-size:11px;
+  }
+  #editor .edition-academic-morph>.hint{
+    margin:3px 0;font-size:11px;
+  }
+  #editor .edition-question-panel>.edition-score,
+  #editor .edition-question-panel>.edition-error{
+    margin:2px 0;font-size:11px;
+  }
+}
+@media screen and (max-width:760px){
+  #editor .edition-menu-questions .edition-question-shortcuts{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:4px;
+  }
+  #editor .edition-menu-questions .edition-question-jump{
+    min-height:35px;font-size:11.5px;
+  }
+  #editor .edition-question-panel .edition-question-top{gap:4px;}
+  #editor .edition-question-panel .edition-question-fold{
+    min-height:36px;height:36px;min-width:36px;width:36px;max-width:36px;
+  }
+  #editor .edition-question-points{flex-basis:66px;}
+  #editor .edition-question-points input.field-control{
+    font-size:16px;min-height:36px;height:36px;
+  }
+  #editor .edition-menu-questions .edition-statement-edit,
+  #editor .edition-menu-questions .edition-statement-finish,
+  #editor .edition-qword-row .edition-slot-regenerate,
+  #editor .edition-qword-row .edition-qword-remove,
+  #editor .edition-menu-questions .edition-generate-option,
+  #editor .edition-option-add>.btn{
+    min-height:36px;height:auto;
+  }
+  #editor .edition-qword-row .edition-qword-remove{
+    height:36px;min-width:32px;width:32px;max-width:32px;
+  }
+  #editor .edition-qword-row input.field-control{
+    font-size:16px;min-height:36px;height:36px;
+  }
+  #editor .edition-option-add>input.field-control{
+    min-height:36px;height:36px;font-size:16px;
+  }
+}
+
+
+.cuaderno-review-passage {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  max-height: 9rem;
+  overflow: auto;
+  padding: .4rem .6rem;
+  background: var(--paper, Canvas);
+  color: var(--ink, CanvasText);
+}
+
+.cuaderno-review-passage p,
+.cuaderno-proposal-context {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Revisión global de fuentes: tarjetas legibles en iPad, sin mover el A4. */
+.cuaderno-duplicate-audit{display:grid;gap:9px;min-width:0}
+.cuaderno-duplicate-audit>p{margin:0}
+.cuaderno-duplicate-controls{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cuaderno-duplicate-controls .field{min-width:0}
+.cuaderno-duplicate-controls input,
+.cuaderno-duplicate-controls select{width:100%;min-width:0;max-width:100%}
+.cuaderno-duplicate-results{display:grid;gap:8px;max-height:56vh;overflow:auto}
+.cuaderno-duplicate-result{border:1px solid var(--rule-2,#ccc);border-radius:8px;padding:9px;min-width:0}
+.cuaderno-duplicate-result summary{cursor:pointer;overflow-wrap:anywhere;font-weight:600}
+.cuaderno-duplicate-source{border-top:1px solid var(--rule-2,#ddd);margin-top:8px;padding-top:8px;min-width:0}
+.cuaderno-duplicate-source p{margin:4px 0}
+.cuaderno-duplicate-latin{font:inherit;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.cuaderno-duplicate-latin mark{background:#f3dc94;color:#1d1d1d;border-radius:2px}
+@media(max-width:650px){.cuaderno-duplicate-controls{grid-template-columns:1fr}}
+
+/* Portada clásica opcional; se utiliza la misma estructura para PDF y A4. */
+.edition-cover{
+  box-sizing:border-box;width:210mm;min-height:297mm;
+  padding:15mm 18mm 24mm;background:#fff;color:#191919;
+  display:flex;flex-direction:column;align-items:stretch;
+  font:11pt/1.45 "Palatino Linotype",Palatino,Georgia,serif;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);overflow:hidden;
+}
+.edition-cover-heading{
+  border:1px solid #444;min-height:17mm;display:flex;
+  align-items:center;justify-content:center;text-align:center;
+  padding:2mm 6mm;font-variant:small-caps;
+}
+.edition-cover-heading h1{font:small-caps 16pt/1.25 "Palatino Linotype",Palatino,Georgia,serif;margin:0;color:#222}
+.edition-cover-subtitle,.edition-cover-course{
+  text-align:center;margin:7mm 0 0!important;font-size:11pt;
+}
+.edition-cover-figure{
+  width:100%;margin:16mm auto 0;display:flex;flex-direction:column;
+  align-items:stretch;overflow:hidden;
+}
+.edition-cover-photo{display:block;width:100%;height:89mm;object-fit:cover;box-shadow:0 4px 10px #0003}
+.edition-cover-reflection{
+  display:block;width:100%;height:26mm;object-fit:cover;object-position:center 85%;
+  transform:scaleY(-1);opacity:.26;
+  -webkit-mask-image:linear-gradient(to top,transparent,black);
+  mask-image:linear-gradient(to top,transparent,black);
+  filter:blur(1px);
+}
+.edition-cover[data-color-mode="gray"] .edition-cover-photo,
+.edition-cover[data-color-mode="gray"] .edition-cover-reflection{filter:grayscale(1);}
+.edition-cover[data-color-mode="mono"] .edition-cover-photo,
+.edition-cover[data-color-mode="mono"] .edition-cover-reflection{filter:grayscale(1) contrast(2);}
+.edition-cover-fields{
+  border:1px solid #444;padding:3mm 4mm;margin-top:auto;
+  min-height:16mm;font-variant:small-caps;font-size:10pt;
+}
+.edition-cover-fields p{margin:0!important}
+#editor .edition-cover{max-width:100%;margin:0 auto 12mm;}
+#editor .edition-cover-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#editor .edition-cover-choice{min-width:0;display:grid;align-content:start;gap:5px}
+#editor .edition-cover-choice img{width:100%;height:88px;object-fit:cover;border-radius:4px}
+#editor .edition-cover-choice .btn{white-space:normal;min-height:38px}
+#editor .edition-cover-choice small{font-size:10px;overflow-wrap:anywhere}
+#editor .edition-cover-editor{border:1px solid var(--rule);border-radius:8px;padding:7px}
+#editor .edition-cover-editor .edition-field{margin:5px 0}
+@media(max-width:600px){
+  #editor .edition-cover-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media print{
+  .edition-print-root .edition-cover{
+    display:flex!important;box-shadow:none!important;border:0!important;
+    min-height:0!important;height:272mm!important;max-height:272mm!important;
+    margin:0!important;
+    break-after:page!important;page-break-after:always!important;
+    print-color-adjust:exact;-webkit-print-color-adjust:exact;
+  }
+}
+
+/* Controles táctiles de portada y menús existentes sin zoom involuntario iOS. */
+@media screen and (max-width:760px){
+  #editor .edition-menu-text input.field-control,
+  #editor .edition-menu-format input.field-control,
+  #editor .edition-menu-format select.field-control,
+  #editor .edition-cover-editor input.field-control,
+  #editor .edition-cover-editor select.field-control{
+    font-size:16px!important;
+  }
+}
+
+
+/* Tipos de palabra, solo en el panel docente: el A4 exportado no recibe colores. */
+#editor .edition-morph-category-legend{display:flex;flex-wrap:wrap;gap:5px;margin:7px 0 11px}
+#editor .edition-morph-category{
+ display:inline-flex;align-items:center;gap:4px;white-space:nowrap;padding:3px 7px;
+ border-radius:999px;border:1px solid currentColor;font:600 11px/1.3 var(--ui-font,system-ui);
+ --cat:#44626b;color:var(--cat);background:color-mix(in srgb,var(--cat) 9%,white);
+}
+#editor .edition-morph-category[data-category="verbo-personal"]{--cat:#216eaa}
+#editor .edition-morph-category[data-category="pronombre"]{--cat:#7d50a8}
+#editor .edition-morph-category[data-category="infinitivo"]{--cat:#14776f}
+#editor .edition-morph-category[data-category="participio"]{--cat:#9c591c}
+#editor .edition-morph-category[data-category="sustantivo"]{--cat:#34733d}
+#editor .edition-morph-category[data-category="adjetivo"]{--cat:#aa3f67}
+#editor .edition-morph-category[data-category="numeral"]{--cat:#846517}
+#editor .edition-morph-category[data-selected="false"]{border-style:dashed;opacity:.60;background:transparent}
+#editor .edition-academic-morph-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#editor .edition-academic-morph-row>span:nth-child(2){flex:1 1 160px;min-width:0;overflow-wrap:anywhere}
+#editor .edition-academic-morph-row .btn{min-width:50px}
+#editor .edition-morph-inline-review{margin:7px 0 12px;border-left:3px solid var(--accent);padding:8px 10px}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) #editor .edition-morph-category{
+ background:color-mix(in srgb,var(--cat) 25%,#182128);color:#eaf1f6;border-color:var(--cat);
+}
+/* Tarjeta de lectura de Collatinus: superficie ajena a .edition-paper y a Word/PDF. */
+.edition-lexical-card{
+ position:fixed;z-index:12000;max-height:min(64vh,460px);overflow:auto;
+ color:#1c2321;background:#fff;border:1px solid #d9ddd5;border-radius:12px;
+ box-shadow:0 10px 30px rgba(20,30,28,.16),0 2px 6px rgba(20,30,28,.08);
+ font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;
+ overscroll-behavior:contain;
+}
+.edition-lexical-card-head{
+ position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:10px 12px;
+ border-bottom:1px solid #d9ddd5;background:inherit;z-index:1;
+}
+.edition-lexical-card-form{font:700 19px/1.3 "Gentium Book Plus",Palatino,Georgia,serif;flex:1}
+.edition-lexical-close{background:transparent;border:0;border-radius:7px;min-width:32px;min-height:32px;
+ font:25px/1 sans-serif;color:inherit;cursor:pointer}
+.edition-lexical-close:hover{background:rgba(80,110,100,.1)}
+.edition-lexical-card-body{padding:6px 14px 12px}
+.edition-lexical-lemma{padding:9px 0;display:grid;gap:4px}
+.edition-lexical-lemma+.edition-lexical-lemma{border-top:1px solid #d9ddd5}
+.edition-lexical-lemma-name{font:700 18px/1.2 "Gentium Book Plus",Palatino,Georgia,serif;color:#2c5a86}
+.edition-lexical-indication{font:italic 14px/1.2 Georgia,serif;color:#5d6662}
+.edition-lexical-gloss{margin:2px 0 4px}
+.edition-lexical-analyses{list-style:none;padding:0;margin:4px 0;display:grid;gap:4px;font-size:13px}
+.edition-lexical-analyses li{padding:3px 6px;border-radius:5px;background:#f3f5f1}
+.edition-lexical-analyses .edition-lexical-preferred{background:#e6eff7;border-left:3px solid #2c5a86}
+.edition-lexical-preferred-label{font-weight:700;color:#2c5a86}
+.edition-lexical-more,.edition-lexical-caveat,.edition-lexical-empty{font-size:12px;color:#5d6662;margin:8px 0 2px}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-card{
+ background:#1d2220;color:#e3e6e0;border-color:#2d3330
+}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-card-head{border-color:#2d3330}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-lemma-name,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-preferred-label{color:#8db6e0}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-analyses li{background:#262c29}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-analyses .edition-lexical-preferred{
+ background:#223947;border-color:#8db6e0}
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-indication,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-more,
+html:is([data-cuaderno-theme='dark'],[data-cuaderno-theme='oled']) .edition-lexical-caveat{color:#b0bdba}
+@media(max-width:560px){
+ .edition-lexical-card.edition-lexical-sheet{
+  left:0!important;right:0!important;top:auto!important;bottom:0!important;width:100%!important;
+  border-radius:16px 16px 0 0;max-height:60vh;
+  padding-bottom:env(safe-area-inset-bottom,0px)
+ }
+}
+
+
+/* Banco de textos: vista de catálogo, exclusivamente en Inicio. */
+@media screen{
+  #editor .cuaderno-home-bank{
+    margin-top:4px;padding:clamp(14px,2.2vw,23px);gap:14px;
+    border:1px solid var(--rule);border-radius:15px;
+    background:var(--paper-2);box-shadow:0 2px 14px rgba(0,0,0,.035);
+  }
+  #editor .cuaderno-home-bank-heading{align-items:flex-start;padding-bottom:3px;}
+  #editor .cuaderno-bank-heading-copy{display:grid;gap:3px;min-width:0;}
+  #editor .cuaderno-bank-heading-copy h4{font-size:1.25rem;letter-spacing:-.02em;}
+  #editor .cuaderno-bank-heading-copy p{font-size:.85rem;}
+  #editor .cuaderno-bank-eyebrow{
+    font-size:.66rem;letter-spacing:.12em;font-weight:800;color:var(--ink-2);
+  }
+  #editor .cuaderno-bank-total{
+    display:inline-flex;align-items:center;min-height:28px;
+    padding:3px 11px;border:1px solid var(--rule-2);border-radius:50px;
+    font-size:.79rem;font-weight:700;background:var(--paper);white-space:nowrap;
+  }
+  #editor .cuaderno-bank-main-actions{
+    padding-bottom:13px;border-bottom:1px solid var(--rule-2);
+  }
+  #editor .cuaderno-bank-toolbar{
+    display:grid;gap:9px;align-items:end;
+    grid-template-columns:minmax(11rem,2fr) repeat(3,minmax(8rem,1fr)) auto;
+    min-width:0;
+  }
+  #editor .cuaderno-bank-control{
+    display:grid;gap:5px;min-width:0;font-size:.78rem;font-weight:700;
+    color:var(--ink-2);
+  }
+  #editor .cuaderno-bank-control input,
+  #editor .cuaderno-bank-control select{
+    display:block;width:100%;min-width:0;max-width:100%;min-height:39px;
+    box-sizing:border-box;padding:7px 10px;font-size:.9rem;font-weight:400;
+    color:var(--ink);background:var(--paper);
+    border:1px solid var(--rule);border-radius:8px;
+  }
+  #editor .cuaderno-bank-reset{min-height:39px;white-space:nowrap;}
+  #editor .cuaderno-bank-reset:disabled{opacity:.55;}
+  #editor .cuaderno-bank-result-count{
+    margin:0!important;font-size:.8rem;color:var(--ink-2);
+  }
+  #editor .cuaderno-home-bank-list{gap:10px;}
+  #editor .cuaderno-home-category{
+    border:1px solid var(--rule-2);border-radius:11px;
+    background:var(--paper);padding:6px 12px;
+  }
+  #editor .cuaderno-home-category>summary{
+    padding:9px 2px;font-weight:750;color:var(--ink);
+  }
+  #editor .cuaderno-home-category-items{display:grid;gap:7px;padding-bottom:6px;}
+  #editor .cuaderno-home-text{
+    margin:0;border:1px solid var(--rule-2);border-radius:9px;
+    background:var(--paper-2);padding:0 11px;
+  }
+  #editor .cuaderno-home-text>summary{
+    display:flex;align-items:flex-start;gap:11px;list-style:none;
+    padding:12px 0;min-width:0;
+  }
+  #editor .cuaderno-home-text>summary::-webkit-details-marker{display:none;}
+  #editor .cuaderno-home-text>summary::before{
+    content:'▸';font-size:.9rem;color:var(--ink-2);flex:0 0 auto;padding-top:2px;
+  }
+  #editor .cuaderno-home-text[open]>summary::before{content:'▾';}
+  #editor .cuaderno-home-text-heading-info{display:grid;gap:4px;min-width:0;flex:1 1 auto;}
+  #editor .cuaderno-home-text-heading-info strong{
+    font-size:.96rem;line-height:1.35;overflow-wrap:anywhere;
+  }
+  #editor .cuaderno-home-text-source{
+    font-size:.82rem;line-height:1.35;color:var(--ink-2);overflow-wrap:anywhere;
+  }
+  #editor .cuaderno-home-text-snippet{
+    font-family:var(--text-font);font-size:.84rem;color:var(--ink-2);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
+  }
+  #editor .cuaderno-home-text-heading .cuaderno-home-select{
+    margin-left:auto;white-space:nowrap;
+  }
+  #editor .cuaderno-home-text[open]{
+    border-color:var(--rule);background:var(--paper);
+  }
+  #editor .cuaderno-home-text[open]>.cuaderno-home-latin{
+    border-top:1px solid var(--rule-2);padding-top:12px;
+  }
+  #editor .cuaderno-bank-row-tags{display:flex;gap:5px;flex-wrap:wrap;margin:8px 0;}
+  #editor .cuaderno-bank-show-more{justify-self:center;min-height:38px;margin:5px;}
+  #editor .cuaderno-bank-empty{
+    border:1px dashed var(--rule);border-radius:9px;padding:18px;
+    font-size:.9rem;color:var(--ink-2);background:var(--paper);
+  }
+}
+@media screen and (max-width:1050px){
+  #editor .cuaderno-bank-toolbar{grid-template-columns:repeat(2,minmax(0,1fr));}
+  #editor .cuaderno-bank-search{grid-column:1/-1;}
+}
+@media screen and (max-width:600px){
+  #editor .cuaderno-home-bank{padding:12px;gap:11px;}
+  #editor .cuaderno-bank-toolbar{grid-template-columns:minmax(0,1fr);}
+  #editor .cuaderno-bank-search{grid-column:auto;}
+  #editor .cuaderno-bank-control input,
+  #editor .cuaderno-bank-control select{font-size:16px;min-height:44px;}
+  #editor .cuaderno-bank-reset{min-height:44px;}
+  #editor .cuaderno-home-text>summary{gap:7px;flex-wrap:wrap;}
+  #editor .cuaderno-home-text-heading-info{flex-basis:calc(100% - 25px);}
+  #editor .cuaderno-home-text-heading .cuaderno-home-select{
+    margin-left:20px;min-height:36px;
+  }
+}
+
+
+/* PWA instalable: controles de estado, sin tocar la hoja ni las exportaciones. */
+@media screen{
+  body>header .brand{display:inline-flex;align-items:center;gap:6px;}
+  body>header .cuaderno-pwa-brand-icon{
+    display:inline-block;flex:0 0 auto;width:27px;height:27px;border-radius:6px;
+  }
+  #editor .cuaderno-home-pwa{
+    display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;
+    padding:9px 12px;border:1px solid var(--rule-2);
+    border-radius:9px;background:var(--panel);
+  }
+  #editor .cuaderno-home-pwa>strong{
+    font:700 12.5px/1.3 var(--ui-font);color:var(--ink);
+  }
+  .cuaderno-pwa-controls{display:grid;gap:5px;min-width:0;}
+  .cuaderno-pwa-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .cuaderno-pwa-actions>.hbtn{min-height:32px;font-size:12px;white-space:normal;}
+  .cuaderno-pwa-actions>.hbtn[hidden]{display:none!important;}
+  .cuaderno-pwa-actions>.cuaderno-pwa-update-ready{
+    background:var(--accent-soft);color:var(--accent);border-color:var(--accent);
+    font-weight:700;
+  }
+  .cuaderno-pwa-status{
+    display:block;max-width:540px;color:var(--ink-2);
+    font-size:11.5px;line-height:1.4;
+  }
+  .cuaderno-pwa-status[hidden]{display:none!important;}
+  body>.cuaderno-header-more{width:min(335px,calc(100vw - 20px));}
+  body>.cuaderno-header-more .cuaderno-pwa-controls{
+    margin-top:7px;padding-top:7px;border-top:1px solid var(--rule-2);
+  }
+  body>.cuaderno-header-more .cuaderno-pwa-actions{display:grid;grid-template-columns:1fr;}
+  body>.cuaderno-header-more .cuaderno-pwa-status{font-size:11px;}
+}
+@media print{
+  .cuaderno-home-pwa,.cuaderno-pwa-controls,.cuaderno-pwa-brand-icon{display:none!important;}
+}
+
+
+/* Retoques de portada y menús: exclusivamente presentación en pantalla.
+   Se mantienen las funciones, las cinco secciones, los temas y la hoja A4. */
+@media screen {
+  /* 1. Jerarquía editorial de Inicio */
+  #editor .cuaderno-home {gap:15px;}
+  #editor .cuaderno-home>h3 {
+    font-size:1.02rem;font-weight:650;letter-spacing:.005em;color:var(--ink-2);
+  }
+  #editor .cuaderno-home-heading {
+    gap:9px 14px;padding-bottom:9px;border-bottom:1px solid var(--rule-2);
+  }
+  #editor .cuaderno-home-heading>h4 {font-size:1.15rem;line-height:1.3;}
+  #editor .cuaderno-home-heading .cuaderno-home-actions {gap:6px;}
+
+  /* 2. Tarjetas más legibles, sin alterar botones ni comportamiento */
+  #editor .cuaderno-home-grid {gap:11px;}
+  #editor .cuaderno-home-card {
+    gap:8px;padding:14px;border-radius:11px;
+    box-shadow:0 1px 2px rgba(0,0,0,.045);
+  }
+  #editor .cuaderno-home-card h5 {
+    font-size:1rem;line-height:1.35;font-weight:700;color:var(--ink);
+  }
+  #editor .cuaderno-home-card>p.small {
+    font-size:.79rem;line-height:1.4;color:var(--ink-2);
+  }
+  #editor .cuaderno-home-card-actions {margin-top:auto;padding-top:5px;gap:6px;}
+  #editor .cuaderno-home-card-actions button {
+    min-height:34px;border-radius:7px;padding:6px 10px;font-size:.82rem;
+  }
+
+  /* 3. Solo los botones PWA se contraen; su aviso sigue siempre visible */
+  #editor .cuaderno-home-pwa {display:block;padding:8px 12px;}
+  #editor .cuaderno-home-pwa .cuaderno-pwa-controls {display:grid;gap:3px;}
+  #editor .cuaderno-home-pwa-details>summary {
+    cursor:pointer;color:var(--ink);font-size:.82rem;font-weight:650;
+    line-height:1.45;padding:3px 0;
+  }
+  #editor .cuaderno-home-pwa-details[open]>.cuaderno-pwa-actions {
+    margin-top:7px;padding-top:7px;border-top:1px solid var(--rule-2);
+  }
+  #editor .cuaderno-home-pwa .cuaderno-pwa-status {
+    max-width:100%;margin:0;font-size:.74rem;line-height:1.4;
+  }
+
+  /* 4. Misma altura y ritmo para todos los filtros del banco */
+  #editor .cuaderno-bank-toolbar {gap:8px;align-items:end;}
+  #editor .cuaderno-bank-control {gap:4px;line-height:1.3;}
+  #editor .cuaderno-home-bank .cuaderno-bank-control input,
+  #editor .cuaderno-home-bank .cuaderno-bank-control select {
+    height:39px;min-height:39px;border-radius:7px;padding:7px 9px;
+  }
+  #editor .cuaderno-bank-reset {height:39px;min-height:39px;border-radius:7px;}
+  #editor .cuaderno-bank-bulk {margin-top:3px;border-top:1px solid var(--rule-2);}
+  #editor .cuaderno-bank-main-actions {gap:7px;padding-bottom:12px;}
+
+  /* 5. Diferenciar título, referencia y muestra sin cambiar el listado */
+  #editor .cuaderno-home-category-items {gap:6px;}
+  #editor .cuaderno-home-text {border-radius:9px;}
+  #editor .cuaderno-home-text>summary {padding:10px 0;gap:9px;}
+  #editor .cuaderno-home-text-heading-info {gap:3px;}
+  #editor .cuaderno-home-text-heading-info strong {
+    font-size:.95rem;font-weight:700;line-height:1.4;
+  }
+  #editor .cuaderno-home-text-source {font-size:.8rem;line-height:1.4;}
+  #editor .cuaderno-home-text-snippet {font-size:.82rem;line-height:1.45;}
+  #editor .cuaderno-home-text-heading .cuaderno-home-select {
+    align-self:center;min-height:32px;
+  }
+
+  /* 6. Estado activo inequívoco de las cinco pestañas */
+  #editor .edition-menu-nav .btn[aria-current='page'] {
+    font-weight:750;border-color:var(--accent);
+    box-shadow:inset 0 -3px 0 var(--accent);
+  }
+  #editor .edition-menu-nav .btn[aria-current='false'] {font-weight:500;}
+  #editor .edition-menu-nav .btn:focus-visible,
+  #editor .cuaderno-home-pwa-details>summary:focus-visible {
+    outline:2px solid var(--accent);outline-offset:2px;
+  }
+}
+@media screen and (max-width:600px) {
+  /* No reducir las áreas táctiles ni provocar zoom en Safari/iPhone. */
+  #editor .cuaderno-home {gap:12px;}
+  #editor .cuaderno-home-heading .cuaderno-home-actions button,
+  #editor .cuaderno-home .cuaderno-home-card-actions button {min-height:42px;}
+  #editor .cuaderno-home-bank .cuaderno-bank-control input,
+  #editor .cuaderno-home-bank .cuaderno-bank-control select {
+    height:44px;min-height:44px;font-size:16px;
+  }
+  #editor .cuaderno-bank-reset {height:44px;min-height:44px;}
+  #editor .cuaderno-home-pwa-details>summary {padding:7px 0;min-height:34px;}
+}
+
+/* Consolidación final: tactilidad y foco de las vistas de pantalla.
+   No se modifican CSS de impresión, papel A4 ni menú original de Examinator2. */
+@media screen {
+  #editor .cuaderno-home :is(
+    .cuaderno-home-text>summary,
+    .cuaderno-home-category>summary,
+    .cuaderno-home-backups>summary,
+    .cuaderno-home-sync>summary
+  ):focus-visible {
+    outline:2px solid var(--accent);outline-offset:2px;border-radius:6px;
+  }
+}
+@media screen and (min-width:601px) and (max-width:1050px) {
+  /* iPad vertical: objetivos táctiles sin ensanchar la navegación de cinco menús. */
+  #editor .edition-menu-nav .btn {min-height:38px;}
+  /* Superar la regla de botones .hbtn/.tbtn del grupo .cuaderno-home. */
+  #editor .cuaderno-home .cuaderno-home-card-actions button {min-height:40px;}
+  #editor .cuaderno-home-text-heading .cuaderno-home-select {min-height:40px;}
+  #editor .cuaderno-home-pwa-details>summary {
+    display:flex;align-items:center;min-height:40px;padding:4px 0;
+  }
+}

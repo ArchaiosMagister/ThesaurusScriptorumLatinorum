@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Biblioteca latina offline y editor de cuadernos" />
+    <title>Cuaderno de textos latinos — Biblioteca y editor</title>
+    <link rel="stylesheet" href="./styles.css?v=0.3.1" />
+    <script type="module" src="./main.js?v=0.3.1"></script>
+  </head>
+  <body>
+    <section id="phase2" class="workspace-container" aria-label="Banco y editor de textos"></section>
+    <details id="diagnostics" class="legacy-details"><summary>Diagnóstico de almacenamiento y copias de seguridad (fase 1)</summary>
+    <main class="shell" id="app">
+      <header>
+        <p class="phase">FASE 1 · COMPROBADOR TÉCNICO · VERSIÓN 0.2.2</p>
+        <h1>Cuaderno de textos latinos</h1>
+        <p>Prueba el guardado local y la recuperación de una copia. La restauración ahora muestra <strong>antes de sustituir tus datos</strong> lo que contiene el archivo.</p>
+      </header>
+      <section class="panel" aria-labelledby="storage-heading">
+        <h2 id="storage-heading">Datos de este dispositivo</h2>
+        <dl class="metrics">
+          <div><dt>Textos</dt><dd id="count-texts">—</dd></div>
+          <div><dt>Etiquetas</dt><dd id="count-tags">—</dd></div>
+          <div><dt>Cuadernos</dt><dd id="count-notebooks">—</dd></div>
+          <div><dt>Revisión</dt><dd id="revision">—</dd></div>
+        </dl>
+        <p><strong>Texto de prueba realmente guardado:</strong> <span id="last-text">Ninguno todavía.</span></p>
+        <button type="button" id="reload">Releer datos guardados</button>
+      </section>
+      <section class="panel" aria-labelledby="test-heading">
+        <h2 id="test-heading">1. Probar el guardado</h2>
+        <label for="latin-test">Texto latino de prueba (editable)</label>
+        <textarea id="latin-test" rows="3" maxlength="200000" spellcheck="false">Helvētiī cum omnibus suīs carrīs impedīmenta contulērunt.</textarea>
+        <div class="actions">
+          <button type="button" id="save-test">Guardar texto de prueba</button>
+        </div>
+        <p class="note">El texto que aparece inicialmente es solo un ejemplo: <strong>no forma parte de las copias hasta pulsar «Guardar texto de prueba»</strong>. Si cambias el texto, guárdalo antes de exportar.</p>
+      </section>
+      <section class="panel" aria-labelledby="backup-heading">
+        <h2 id="backup-heading">2. Copia de seguridad</h2>
+        <p>Descarga una copia JSON del último contenido <strong>guardado</strong>. El archivo incluye fecha y hora en su nombre para distinguir las distintas copias.</p>
+        <button type="button" id="export-backup">Exportar copia JSON</button>
+      </section>
+      <section class="panel" aria-labelledby="restore-heading">
+        <h2 id="restore-heading">3. Examinar y recuperar una copia</h2>
+        <label for="backup-file">Selecciona el archivo JSON que deseas recuperar</label>
+        <input type="file" id="backup-file" accept=".json,application/json" />
+        <div id="backup-preview" class="preview" hidden>
+          <h3>Vista previa del JSON seleccionado</h3>
+          <p id="backup-summary"></p>
+          <p id="backup-warning" class="preview-warning"></p>
+          <h4>Texto de prueba que contiene el archivo</h4>
+          <pre id="backup-latin"></pre>
+          <p class="note">Lo mostrado arriba es lo que se recuperará, no el contenido actual del editor.</p>
+        </div>
+        <label class="confirmation">
+          <input type="checkbox" id="confirm-replace" />
+          He revisado la vista previa, he guardado una copia de mis datos actuales y autorizo su sustitución.
+        </label>
+        <button type="button" id="restore-backup" disabled>Restaurar la copia verificada</button>
+        <p class="note">La recuperación solo se habilita después de validar el JSON y de confirmar expresamente la sustitución. Si el archivo no contiene ningún texto de prueba, lo verás indicado antes de restaurarlo.</p>
+      </section>
+      <p id="status" class="status" role="status" aria-live="polite">Iniciando comprobación del almacenamiento…</p>
+      <footer>
+        <p><strong>Importante:</strong> los datos están únicamente en este navegador y dispositivo. Safari puede eliminarlos en determinadas circunstancias. Conserva siempre copias JSON externas. No hay sincronización, cuentas ni servidor de textos.</p>
+      </footer>
+    </main>
+    </details>
+  </body>
+</html>

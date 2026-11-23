@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Cuaderno latino abierto">
+  <rect width="512" height="512" fill="#173f4a"/>
+  <circle cx="256" cy="256" r="186" fill="#275765"/>
+  <circle cx="256" cy="256" r="181" fill="none" stroke="#d9ad66" stroke-width="6"/>
+  <path d="M255 175 C224 154 185 148 141 164 L141 326 C183 309 220 314 255 334Z" fill="#f3ead4" stroke="#d9ad66" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M257 175 C290 154 331 148 371 164 L371 326 C331 309 290 314 257 334Z" fill="#fff7e5" stroke="#d9ad66" stroke-width="6" stroke-linejoin="round"/>
+  <path d="M256 179 V331" stroke="#d9ad66" stroke-width="7" stroke-linecap="round"/>
+  <path d="M185 214 V273 H221" stroke="#34616b" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M292 216 Q311 207 342 215 M292 247 Q316 238 343 247 M292 278 Q317 270 340 279" stroke="#71949b" stroke-width="9" fill="none" stroke-linecap="round"/>
+  <path d="M151 346 Q256 319 361 346" fill="none" stroke="#d9ad66" stroke-width="8" stroke-linecap="round"/>
+</svg>

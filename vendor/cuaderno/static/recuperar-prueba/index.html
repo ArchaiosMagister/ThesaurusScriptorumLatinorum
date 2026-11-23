@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Recuperar copias de la prueba · Cuaderno de textos latinos</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;color-scheme:light dark}
+body{max-width:750px;margin:0 auto;padding:2rem 1.25rem;line-height:1.55}
+h1{font-size:1.5rem;line-height:1.25}h2{font-size:1.1rem}
+button,.home{font:inherit;display:inline-block;padding:.65rem .9rem;border:1px solid #777;border-radius:.45rem;margin:.2rem .4rem .4rem 0}
+button{cursor:pointer}button:disabled{opacity:.5;cursor:default}
+section{padding:1rem;border:1px solid #8886;border-radius:.8rem;margin:1rem 0}
+small{display:block;margin-top:.4rem;color:gray}.status{white-space:pre-line;overflow-wrap:anywhere}
+footer{margin-top:2rem;font-size:.9rem}a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <h1>Recuperar copias de la versión de prueba</h1>
+  <p>Esta página permite recuperar <strong>los datos que guardaste en <code>/prueba/</code> desde este mismo navegador y dispositivo</strong>, aunque el editor provisional ya no esté publicado. No elimina, importa ni modifica ninguna edición.</p>
+  <p>La versión definitiva utiliza una base de datos distinta. Las copias descargadas se conservan como archivos JSON verificables para una recuperación o importación posterior.</p>
+  <section>
+    <h2>1. Examinar los datos de prueba</h2>
+    <button id="inspect" type="button">Buscar datos guardados en este iPad</button>
+    <p class="status" id="status" role="status" aria-live="polite">No se han examinado los datos.</p>
+  </section>
+  <section>
+    <h2>2. Descargar copias sin alterar el original</h2>
+    <button id="workspace" type="button" disabled>Descargar cuadernos editoriales (JSON v2)</button>
+    <button id="legacy" type="button" disabled>Descargar textos y cuadernos anteriores (JSON v1)</button>
+    <p><small>Los archivos se generan íntegramente en tu dispositivo y se verifican antes de descargarse. No se envían a un servidor. Si abriste la prueba en otro navegador o dispositivo, sus datos no estarán aquí.</small></p>
+  </section>
+  <p><a class="home" href="../">Volver a la aplicación definitiva</a></p>
+</main>
+<footer>Este acceso de recuperación es de solo lectura. Conserva las copias JSON fuera de Safari antes de borrar los datos del navegador.</footer>
+<script type="module">
+import {WorkspaceRepository} from '../storage/workspace-repository.js';
+import {IndexedDbCorpusRepository} from '../storage/indexeddb-corpus-repository.js';
+import {createWorkspaceBackup,readWorkspaceBackup} from '../storage/workspace-backup.js';
+import {createBackup,readBackup} from '../core/backup.js';
+
+const workspace=new WorkspaceRepository('cuaderno-textos-latinos-workspace-prueba-pr10');
+const legacy=new IndexedDbCorpusRepository('cuaderno-textos-latinos-prueba-pr10');
+const status=document.getElementById('status');
+const inspectButton=document.getElementById('inspect');
+const workspaceButton=document.getElementById('workspace');
+const legacyButton=document.getElementById('legacy');
+function report(message,isError=false){
+  status.textContent=message;
+  status.style.color=isError?'#b11':'';
+}
+function download(text,filename){
+  const blob=new Blob([text],{type:'application/json;charset=utf-8'});
+  const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+  anchor.href=url;anchor.download=filename;
+  document.body.append(anchor);anchor.click();anchor.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),30000);
+}
+async function inspect(){
+  inspectButton.disabled=true;workspaceButton.disabled=true;legacyButton.disabled=true;
+  try{
+    const [editions,old]=await Promise.all([workspace.snapshot(),legacy.load()]);
+    const count=editions.editions.length;
+    const entries=old.corpus.texts.length;
+    workspaceButton.disabled=count===0 && editions.history.length===0 && !editions.corpus;
+    legacyButton.disabled=entries===0 && old.corpus.notebooks.length===0;
+    report('Cuadernos editoriales: '+count+'; textos incorporados en ediciones: '+
+      editions.editions.reduce((n,e)=>n+e.edition.placements.length,0)+
+      '; entradas en el historial: '+editions.history.length+
+      '.\nTextos anteriores: '+entries+'; cuadernos anteriores: '+old.corpus.notebooks.length+
+      '.\n'+(workspaceButton.disabled&&legacyButton.disabled
+        ?'No hay datos de prueba recuperables en este navegador.'
+        :'Ya puedes descargar las copias que correspondan.'));
+  }catch(e){report('No se han podido examinar los datos: '+String(e),true);}
+  finally{inspectButton.disabled=false;}
+}
+inspectButton.addEventListener('click',()=>void inspect());
+workspaceButton.addEventListener('click',async()=>{
+  workspaceButton.disabled=true;
+  try{
+    const json=await createWorkspaceBackup(workspace);
+    await readWorkspaceBackup(json);
+    download(json,'cuaderno-prueba-editorial-v2-'+new Date().toISOString().slice(0,10)+'.json');
+    report('Copia editorial v2 verificada y descargada. Conserva el JSON antes de limpiar Safari.');
+  }catch(e){report('No se pudo descargar la copia editorial: '+String(e),true);}
+  finally{workspaceButton.disabled=false;}
+});
+legacyButton.addEventListener('click',async()=>{
+  legacyButton.disabled=true;
+  try{
+    const snapshot=await legacy.load(),json=await createBackup(snapshot.corpus);
+    await readBackup(json);
+    download(json,'cuaderno-prueba-textos-v1-'+new Date().toISOString().slice(0,10)+'.json');
+    report('Copia de textos v1 verificada y descargada. Conserva el JSON antes de limpiar Safari.');
+  }catch(e){report('No se pudo descargar la copia de textos: '+String(e),true);}
+  finally{legacyButton.disabled=false;}
+});
+</script>
+</body>
+</html>

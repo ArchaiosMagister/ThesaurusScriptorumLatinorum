@@ -1,0 +1,79 @@
+name: Auditoría visual de documentos
+
+on:
+  pull_request:
+    paths:
+      - 'src/export/**'
+      - 'src/ui/**'
+      - 'src/core/edition-factory.ts'
+      - 'scripts/audit-**'
+      - '.github/workflows/auditoria-documental.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  documentos-reales:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 24
+    steps:
+      - name: Obtener código de la PR
+        uses: actions/checkout@v4
+      - name: Instalar Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependencias fijadas
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Compilar motor editorial y página
+        run: npm run build
+      - name: Generar tres cuadernos DOCX reales
+        run: node scripts/audit-real-documents.mjs
+      - name: Preparar renderizador y lector de PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Solo se necesitan paquetes de Ubuntu; los repositorios externos
+          # del runner pueden responder 429 o bloquear apt-get update.
+          test -f /etc/apt/sources.list.d/ubuntu.sources
+          # El mirror EC2 preconfigurado llegó a descargar <20 MB en ocho minutos.
+          # Usar el archivo oficial para evitar el cuello de botella de esa región.
+          grep -q 'mirror+file:/etc/apt/apt-mirrors.txt' /etc/apt/sources.list.d/ubuntu.sources
+          sudo sed -i 's@mirror+file:/etc/apt/apt-mirrors.txt@https://archive.ubuntu.com/ubuntu@g' \
+            /etc/apt/sources.list.d/ubuntu.sources
+          grep '^URIs:' /etc/apt/sources.list.d/ubuntu.sources
+          sudo mkdir -p /tmp/cuaderno-apt-sources-externas
+          for source in /etc/apt/sources.list.d/*; do
+            case "$source" in
+              */ubuntu.sources) ;;
+              *.list|*.sources) sudo mv "$source" /tmp/cuaderno-apt-sources-externas/ ;;
+            esac
+          done
+          echo "::group::Actualizar índices de Ubuntu"
+          sudo timeout 180s apt-get update -o Acquire::Retries=2 -o Acquire::http::Timeout=30
+          echo "::endgroup::"
+          echo "::group::Instalar LibreOffice y Poppler"
+          sudo timeout 480s apt-get install -y --no-install-recommends libreoffice-writer poppler-utils
+          echo "::endgroup::"
+          echo "::group::Descargar Chromium para Playwright"
+          timeout 180s npx playwright install chromium
+          echo "::endgroup::"
+          command -v libreoffice
+          command -v pdftotext
+      - name: Renderizar Word y exportación de navegador
+        run: |
+          mkdir -p audit-output/word-pdf
+          libreoffice -env:UserInstallation=file:///tmp/cuaderno-audit-$$ --headless --convert-to pdf \
+            --outdir audit-output/word-pdf audit-output/breve.docx audit-output/largo.docx audit-output/varios.docx
+          node scripts/audit-browser-print.mjs
+      - name: Examinar páginas A4 y paginación física
+        run: python3 scripts/audit-layout.py
+      - name: Adjuntar documentos y páginas renderizadas para revisión visual
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cuaderno-auditoria-word-pdf
+          path: audit-output/
+          if-no-files-found: warn
+          retention-days: 7

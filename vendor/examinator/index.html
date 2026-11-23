@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file:; img-src 'self' file: data: blob:; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; script-src 'self' file:; connect-src 'self' https://raw.githubusercontent.com; frame-src 'self' blob: about:">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="theme-color" content="#1d5466">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Examinator">
+<title>Examinator</title>
+<link rel="stylesheet" href="styles.css">
+<script src="js/theme.js"></script>
+</head>
+<body>
+<header>
+  <button class="hbtn mobile-menu-toggle" id="btnMobileMenu" type="button" aria-controls="headerActions" aria-expanded="false" aria-label="Abrir menú de acciones">☰ Menú</button>
+  <button class="hbtn mobile-lib-shortcut" id="btnMobileLibrary" type="button">Biblioteca</button>
+  <div class="header-actions" id="headerActions">
+  <span class="brand">Examinator</span>
+  <button class="hbtn" id="btnNew" title="Empezar un examen nuevo">Nuevo</button>
+  <button class="hbtn" id="btnOpen" title="Abrir un examen guardado">Abrir…</button>
+  <button class="hbtn" id="btnSave" title="Guardar este examen para seguir editándolo otro día">Guardar…</button>
+  <span class="sep"></span>
+  <button class="hbtn" id="btnLib" title="Textos de Perseus: descargar y elegir un fragmento">Biblioteca</button>
+  <button class="hbtn" id="btnLists" title="Listas de modificación preverbial, evolución fonética, prefijos y latinismos">Listas</button>
+  <button class="hbtn" id="btnSettings" title="Apariencia, tipo de letra, interlineado y espacios">Ajustes</button>
+  <button class="hbtn" id="btnInstall" title="Instalar Examinator como aplicación">Instalar</button>
+  <button class="hbtn" id="btnUpdate" title="Comprobar cambios y actualizar la webapp y sus recursos offline">Actualizar</button>
+  <span class="spacer"></span>
+  <span class="busy hidden" id="busy">Analizando…</span>
+  <button class="hbtn" id="btnDocx">Exportar Word</button>
+  <button class="hbtn primary" id="btnPdf">Exportar PDF</button>
+  </div>
+</header>
+<nav class="mobile-views" id="mobileViews" aria-label="Vistas del examen">
+  <button type="button" class="mobile-view on" data-view="editor" aria-pressed="true">Editar examen</button>
+  <button type="button" class="mobile-view" data-view="preview" aria-pressed="false">Vista previa</button>
+</nav>
+<main id="main">
+  <section id="editor"></section>
+  <section id="preview">
+    <div class="preview-tools" aria-label="Formato rápido del texto latino">
+      <label for="previewLatinSpacing">Interlineado latino (pt)</label>
+      <input id="previewLatinSpacing" type="number" min="12" max="144" step="any" inputmode="decimal" aria-describedby="previewSpacingWarning">
+      <span id="previewSpacingWarning" class="spacing-warning hidden" role="status" aria-live="polite"></span>
+    </div>
+    <div id="sheetSizer"><div class="sheet" id="sheet"></div></div>
+  </section>
+</main>
+<div id="lib" class="hidden"></div>
+<script src="js/datos.js"></script>
+<script src="js/bancos-datos.js"></script>
+<script src="js/lexico-bancos-datos.js"></script>
+<script src="js/bancos-loader.js"></script>
+<script src="js/incluidos.js"></script>
+<script src="js/shim.js"></script>
+<script src="js/motor.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="lib/html2pdf.bundle.min.js"></script>
+<script src="js/pdf-export.js"></script>
+<script src="js/util.js"></script>
+<script src="js/vocabulario.js"></script>
+<script src="js/render.js"></script>
+<script src="js/lexico-filtros.js"></script>
+<script src="js/propose.js"></script>
+<script src="js/latin-reading-card.js"></script>
+<script src="js/exam.js"></script>
+<script src="js/library.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/lists.js"></script>
+<script src="js/start.js"></script>
+<script src="js/pwa.js"></script>
+</body>
+</html>
+

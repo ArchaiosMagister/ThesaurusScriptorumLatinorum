@@ -1,0 +1,25 @@
+{
+  "name": "cuaderno-textos-latinos",
+  "version": "0.3.1",
+  "private": true,
+  "type": "module",
+  "description": "Infraestructura local segura para el cuaderno de textos latinos",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/core/*.test.js .test-dist/storage/*.test.js .test-dist/ui/*.test.js .test-dist/export/*.test.js",
+    "build": "npm run typecheck && tsc -p tsconfig.build.json && node scripts/copy-static.mjs && node scripts/build-library.mjs && node scripts/build-sw.mjs",
+    "check": "npm run typecheck && npm run test && npm run test:ipad-selection && npm run build && node tests/collatinus-grammar-integration.mjs",
+    "test:ipad-selection": "node tests/library-selection.cjs",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.30",
+    "fake-indexeddb": "6.2.8",
+    "typescript": "5.8.3",
+    "@playwright/test": "1.56.1",
+    "@xmldom/xmldom": "0.8.11"
+  }
+}

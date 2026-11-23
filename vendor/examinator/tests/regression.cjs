@@ -1,0 +1,252 @@
+/* Run with Node.js: node tests/regression.cjs */
+'use strict';
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '..');
+module.exports = (async () => {
+  const ctx = { console, setTimeout, clearTimeout, Uint8Array, ArrayBuffer, TextEncoder, TextDecoder, Buffer };
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  const load = (p) => vm.runInContext(fs.readFileSync(path.join(root, p), 'utf8'), ctx, { filename: p });
+  for (const p of fs.readdirSync(path.join(root, 'js'))) new vm.Script(fs.readFileSync(path.join(root, 'js', p), 'utf8'), { filename: p });
+  load('js/datos.js'); load('js/bancos-datos.js'); load('js/lexico-bancos-datos.js'); load('js/bancos-loader.js'); load('js/incluidos.js');
+  let handler;
+  const replies = new Map(); let id = 0;
+  const fakeFs = {
+    readFileSync: (p) => { if (!(p in ctx.EXDATA)) throw Error('Missing: ' + p); return ctx.EXDATA[p]; },
+    existsSync: (p) => p in ctx.EXDATA || Object.keys(ctx.EXDATA).some((k) => k.startsWith(p + '/')),
+    readdirSync: (p) => Object.keys(ctx.EXDATA).filter((k) => k.startsWith(p + '/')).map((k) => k.slice(p.length + 1)),
+  };
+  ctx.EXMODULES = { fs: fakeFs, path: path.posix, worker_threads: {
+    workerData: { appDir: '/app', dataRoot: '/datos' },
+    parentPort: { on: (_, f) => { handler = f; }, postMessage: (m) => { if (m.type === 'reply') replies.get(m.id)(m); } }
+  } };
+  ctx.EXREADY = Promise.resolve();
+  load('js/motor.js'); await ctx.EXREADY; await Promise.resolve();
+  const call = (method, args) => new Promise((resolve, reject) => {
+    const n = ++id; replies.set(n, (m) => m.error ? reject(Error(m.error)) : resolve(m.result));
+    handler({ type: 'call', id: n, method, args });
+  });
+  const academic = await call('lists');
+  assert.equal(academic.preverbios.length, 120);
+  assert.equal(academic.prefijos.length, 287); // 286 fuente + Ultrapuertos histórico
+  assert.equal(academic.evolucion.length, 20);
+  assert.equal(academic.latinismos.length, 87);
+  // Las listas guardadas por el profesor prevalecen sobre las de fábrica.
+  const userFile = '/datos/listas/latinismos.json';
+  const customLatin = [{ termino: 'locución personal', expl: 'docente' }];
+  ctx.EXDATA[userFile] = JSON.stringify(customLatin);
+  assert.equal((await call('lists')).latinismos[0].termino, 'locución personal');
+  delete ctx.EXDATA[userFile];
+  assert.equal((await call('lists')).latinismos[0].termino, 'a posteriori');
+  const catalog = await call('catalog');
+  assert.equal(new Set(catalog.map((w) => w.urn)).size, catalog.length, 'No duplicate catalog entries');
+  const caesar = catalog.filter((w) => w.author === 'Julio César');
+  assert.equal(caesar.length, 2);
+  assert.equal(caesar.map((w) => w.latin).sort().join('|'), 'De bello Gallico|De bello civili');
+  for (const w of catalog.filter((w) => w.builtin)) {
+    assert.ok(w.have);
+    const work = await call('work', { urn: w.urn });
+    assert.ok(work.lines.length > 100, w.latin + ' has a complete text');
+  }
+  const aeneid = await call('work', { urn: 'phi0690.phi003.perseus-lat2' });
+  const book4 = aeneid.lines.filter((l) => l.c.startsWith('4.') && l.k === 'l');
+  assert.equal(book4.length, 705); assert.equal(book4[0].c, '4.1'); assert.equal(book4.at(-1).c, '4.705');
+  const heroides = await call('work', { urn: 'phi0959.phi002.perseus-lat2' });
+  const first = heroides.lines.filter((l) => l.c.startsWith('1.') && l.k === 'l');
+  assert.equal(first.length, 116); assert.match(first[0].t, /Haec tua Penelope/);
+  const tokens = await call('analyze', { text: 'Gallia est omnis divisa in partes tres.' });
+  assert.ok(tokens.every((t) => t.sel));
+  const verbTokens = await call('analyze', { text: 'Capio et ago.' });
+  assert.ok(verbTokens.some((t) => t.sel && t.cat === 'v' && Array.isArray(t.rows) && t.rows.length),
+    'Los verbos del texto siguen vinculados al banco de modificación preverbial');
+  const storage = new Map();
+  ctx.localStorage = { getItem: (k) => storage.get(k) ?? null, setItem: (k, v) => storage.set(k, v) };
+  load('js/util.js'); load('js/vocabulario.js'); load('js/render.js'); load('lib/jszip.min.js');
+  ctx.M.call = call; ctx.M.S = { tokens }; ctx.M.Propose = { prefDisplay: (s) => s };
+  const V = ctx.M.Vocabulary;
+  const custom = V.parse('Gallia, -ae\tGalia preferente\tGalliam|Galliae');
+  ctx.M.store.set('vocabulario', custom);
+  const gallia = tokens.find((t) => t.lplain === 'gallia');
+  const sum = tokens.find((t) => t.lplain === 'sum');
+  const entries = await ctx.M.vocabEntries({ lids: [gallia.sel.lid, sum.sel.lid], mode: 'ninguna' });
+  assert.equal(entries[0].trad, 'Galia preferente'); assert.ok(entries[0].preferred);
+  assert.ok(entries[1].trad); assert.ok(!entries[1].preferred, 'Unlisted word uses existing dictionary');
+  assert.equal(V.find(['Galliam'], true).trad, 'Galia preferente');
+
+  // La grafía ligada procede sólo del lematizador automático y se refleja
+  // igual en la vista previa, el PDF (HTML) y el documento de Word.
+  const poetaLookup = (await call('lookup', { word: 'poeta' }))[0];
+  const proeliumLookup = (await call('lookup', { word: 'proelium' }))[0];
+  assert.ok(poetaLookup && proeliumLookup);
+  const [poetEntry, battleEntry] = await ctx.M.vocabEntries({
+    lids: [poetaLookup.lid, proeliumLookup.lid], mode: 'modelo'
+  });
+  assert.equal(poetEntry.head, 'poeta, –æ');
+  assert.match(battleEntry.head, /^prœlĭum/);
+  const ligatedExam = {
+    texto: 'Poeta proelium narrat.', vocabItems: [
+      { head: poetEntry.head, trad: 'poeta', on: true },
+      { head: battleEntry.head, trad: 'combate', on: true }
+    ], literatura: {}, qty: 'modelo', tamano: 10.5, hueco: 2.6
+  };
+  const alphabetical = Array.from(ctx.M.Exam.vocabList({
+    vocabItems: [
+      { head: 'prœlium', on: true },
+      { head: 'poeta', on: true },
+      { head: 'aer', on: true },
+      { head: 'æquus', on: true },
+      { head: 'aetas', on: true }
+    ]
+  }), (x) => x.head);
+  assert.deepEqual(alphabetical, ['æquus', 'aer', 'aetas', 'poeta', 'prœlium'],
+    'Las ligaduras no deben romper el orden alfabético del vocabulario');
+  const ligatedHTML = ctx.M.Exam.html(ligatedExam);
+  assert.ok(ligatedHTML.includes('poeta, –æ'));
+  assert.ok(ligatedHTML.includes('prœlĭum'));
+  assert.ok(ligatedHTML.includes('Poeta proelium narrat.'), 'No cambiar el texto latino');
+  const ligatedDocx = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(ligatedExam), { base64: true });
+  const ligatedXml = await ligatedDocx.file('word/document.xml').async('string');
+  assert.ok(ligatedXml.includes('prœlĭum'));
+  assert.ok(ligatedXml.includes('poeta, –æ'));
+  assert.ok(ligatedXml.includes('Poeta proelium narrat.'));
+
+  // Una preferencia o corrección docente mantiene EXACTAMENTE lo escrito.
+  ctx.M.store.set('vocabulario', V.parse('poeta, -ae\tpoeta del profesor'));
+  ctx.M.S.tokens = [{ sel: { lid: poetaLookup.lid }, lplain: 'poeta', lemma: poetaLookup.lemma }];
+  const personal = await ctx.M.vocabEntries({ lids: [poetaLookup.lid], mode: 'modelo' });
+  assert.equal(personal[0].head, 'poeta, -ae');
+  assert.equal(personal[0].trad, 'poeta del profesor');
+  ctx.M.store.set('vocabulario', custom);
+  ctx.M.S.tokens = tokens;
+
+  assert.throws(() => V.parse('sin traducción'));
+  assert.throws(() => V.parse('amo\tamar\namo\tquerer'));
+  const S = { texto: 'Gallia est omnis divisa in partes tres.', tokens, fuente: 'Palatino', tamano: 10.5, espacioPreguntas: 0, hueco: 0,
+    literatura: { texto: 'At regina gravi\nvolnus alit', traduccion: '', autor: 'Virgilio', obra: 'Aeneis', cita: 'IV 1–2' } };
+  const css = ctx.M.Exam.pageCss(S);
+  assert.match(css, /font-size: 10.5pt/); assert.match(css, /margin: 0 0 0cm/); assert.match(css, /margin-bottom: 0cm/);
+  const html = ctx.M.Exam.html(S);
+  assert.match(html, /At regina gravi\nvolnus alit/);
+  assert.match(html, /<li class="literatureQuestion">Literatura\. Indique el autor y obra/);
+  assert.match(html, /<table class="litTable"><tbody><tr>/);
+  assert.match(html, /<td class="litTranslation"><\/td>/);
+  assert.doesNotMatch(html, /Virgilio|Aeneis|IV 1–2|<b>Traducción<\/b>/,
+    'La quinta pregunta no revela los datos que debe identificar el alumno.');
+  const sameOutput = ctx.M.Exam.html({ ...S, evolNormas: ['N07'],
+    latinFilter: { desde: 20, hasta: 50, paridad: 'impares', activo: true } });
+  assert.equal(sameOutput, html, 'Los filtros del sorteo nunca modifican el documento exportado');
+  assert.ok(ctx.M.Exam.questionList({ documento: 'repaso' }).every((q) => !/\(\d+p/.test(q)));
+  const zip = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(S), { base64: true });
+  const styles = await zip.file('word/styles.xml').async('string');
+  const doc = await zip.file('word/document.xml').async('string');
+  assert.match(styles, /w:sz w:val="21"/); assert.match(styles, /w:ascii="Palatino"/);
+  assert.match(doc, /w:after="0"/);
+  assert.match(doc, /At regina gravi/);
+  assert.match(doc, /Indique el autor y obra a que pertenece el siguiente texto/);
+  assert.doesNotMatch(doc, /Virgilio|Aeneis|IV 1–2/,
+    'El Word tampoco debe revelar autor, obra ni referencia de literatura.');
+  // Interlineado latino editable en puntos, consistente en CSS (vista/PDF) y DOCX.
+  assert.equal(ctx.M.Exam.exactLatinLineSpacingPt({ interlineadoPuntos: 33.5 }), 33.5);
+  assert.equal(ctx.M.Exam.exactLatinLineSpacingPt({ interlineadoPuntos: 'x' }), null);
+  assert.equal(ctx.M.Exam.exactLatinLineSpacingPt({ interlineadoPuntos: 150 }), null);
+  assert.equal(ctx.M.Exam.latinLineSpacingPt({ tamano: 11, interlineado: 3 }), 33);
+  const withVocab = { ...S, vocabItems: [{ head: 'Gallia, -ae', trad: 'Galia', on: true }] };
+  for (const pt of [12, 24.5, 36, 48, 72]) {
+    const spaced = { ...withVocab, interlineadoPuntos: pt };
+    const cssSpaced = ctx.M.Exam.pageCss(spaced);
+    assert.ok(cssSpaced.includes('line-height: ' + pt + 'pt; margin: 12pt 0 6pt'),
+      'HTML/PDF: interlineado exacto de ' + pt + ' puntos');
+    assert.ok(cssSpaced.includes('.page .txt.hasVocab + .voc { margin-top: ' + pt + 'pt; }'),
+      'HTML/PDF: la distancia al vocabulario sigue los ' + pt + ' puntos');
+    const zipped = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(spaced), { base64: true });
+    const documentXml = await zipped.file('word/document.xml').async('string');
+    const twips = Math.round(pt * 20);
+    assert.ok(documentXml.includes('<w:spacing w:before="240" w:after="' + twips +
+      '" w:line="' + twips + '" w:lineRule="exact"/>'),
+      'Word: interlineado exacto y separación del vocabulario de ' + pt + ' puntos');
+  }
+  assert.equal(ctx.M.Exam.vocabGapPt({ interlineadoPuntos: 36 }), 36, 'Sin dato prevalece la distancia proporcional');
+  assert.equal(ctx.M.Exam.vocabGapPt({ interlineadoPuntos: 36, espacioVocabularioPuntos: null }), 36);
+  assert.equal(ctx.M.Exam.vocabGapPt({ interlineadoPuntos: 36, espacioVocabularioPuntos: 0 }), 0, '0 pt manual es válido');
+  assert.equal(ctx.M.Exam.vocabGapPt({ interlineadoPuntos: 36, espacioVocabularioPuntos: 160 }), 36, 'Valor inválido no llega al CSS');
+  assert.equal(ctx.M.Exam.recommendedLatinSpacingPt({ tamano: 10.5 }), 17);
+  assert.match(ctx.M.Exam.latinSpacingWarning({ tamano: 10.5, interlineadoPuntos: 12 }), /macrones y breves/);
+  assert.equal(ctx.M.Exam.latinSpacingWarning({ tamano: 10.5, interlineadoPuntos: 24 }), '');
+  for (const gap of [0, 8.5, 24, 60, 144]) {
+    const adjusted = { ...withVocab, interlineadoPuntos: 36, espacioVocabularioPuntos: gap };
+    const cssGap = ctx.M.Exam.pageCss(adjusted);
+    assert.ok(cssGap.includes('.page .txt.hasVocab + .voc { margin-top: ' + gap + 'pt; }'));
+    assert.ok(cssGap.includes('.page .txt.hasVocab { margin-bottom: 0; }'),
+      'La separación manual no debe añadir los 6 pt del margen latino al elegir 0');
+    assert.match(ctx.M.Exam.html(adjusted), /class="txt hasVocab"/);
+    const wordGap = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(adjusted), { base64: true });
+    const wordGapXml = await wordGap.file('word/document.xml').async('string');
+    assert.ok(wordGapXml.includes('<w:spacing w:before="240" w:after="' +
+      Math.round(gap * 20) + '" w:line="720" w:lineRule="exact"/>'),
+      'Word conserva la separación manual ' + gap + 'pt independiente de las líneas');
+  }
+  const legacyManual = { ...withVocab, interlineado: 2.5, espacioVocabularioPuntos: 18 };
+  const legacyManualZip = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(legacyManual), { base64: true });
+  assert.match(await legacyManualZip.file('word/document.xml').async('string'),
+    /w:after="360" w:line="600" w:lineRule="auto"/,
+    'Examen heredado puede ajustar solamente el vocabulario sin convertir su interlineado');
+  const noVocab = { ...S, interlineadoPuntos: 48, vocabItems: [] };
+  const noVocabZip = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(noVocab), { base64: true });
+  const noVocabXml = await noVocabZip.file('word/document.xml').async('string');
+  assert.match(noVocabXml, /<w:spacing w:before="240" w:after="120" w:line="960" w:lineRule="exact"\/>/,
+    'Sin vocabulario, conservar el espacio habitual anterior a las preguntas');
+  const legacy = { ...withVocab, interlineado: 2.5 };
+  const legacyZip = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(legacy), { base64: true });
+  const legacyXml = await legacyZip.file('word/document.xml').async('string');
+  assert.match(legacyXml, /w:line="600" w:lineRule="auto"/,
+    'Los .examen antiguos mantienen su interlineado multiplicador en Word');
+  assert.ok(ctx.M.Exam.pageCss(legacy).includes('line-height: 2.5;'),
+    'Los .examen antiguos mantienen su interlineado multiplicador en HTML');
+  const settingsSource = fs.readFileSync(path.join(root, 'js/start.js'), 'utf8');
+  assert.match(settingsSource, /id="latinSpacingPt" class="si" type="number"/);
+  assert.match(settingsSource, /S\.interlineadoPuntos = n/);
+  assert.match(settingsSource, /M\.store\.set\('interlineadoPuntos', n\)/);
+  assert.match(settingsSource, /restoreExam\(saved\)/);
+  assert.match(settingsSource, /id="vocabGapMode"/);
+  assert.match(settingsSource, /id="vocabGapPt"/);
+  assert.match(settingsSource, /espacioVocabularioPuntos = null/);
+  assert.match(settingsSource, /setLatinSpacing\(e.target\)/);
+  assert.match(fs.readFileSync(path.join(root, 'index.html'), 'utf8'), /id="previewLatinSpacing"/);
+
+  // Espaciado de pregunta 4: compatibilidad de los valores anteriores y
+  // conversión precisa a twips en Word (1 cm ~= 567 twips).
+  assert.equal(ctx.M.Exam.q4Space({}), 2.6);
+  assert.equal(ctx.M.Exam.q4Space({ hueco: 1.8 }), 1.8);
+  assert.equal(ctx.M.Exam.q4Space({ hueco: -3 }), 2.6);
+  assert.equal(ctx.M.Exam.q4Space({ hueco: 50 }), 2.6);
+  assert.equal(ctx.M.Exam.q4Space({ hueco: 'incorrecto' }), 2.6);
+  for (const cm of [0, 0.05, 1.25, 2.6, 3.5, 10]) {
+    const spaced = { ...S, hueco: cm };
+    const cssSpaced = ctx.M.Exam.pageCss(spaced);
+    assert.ok(cssSpaced.includes('margin-bottom: ' + cm + 'cm;'), 'Vista previa y PDF: ' + cm + ' cm');
+    assert.ok(cssSpaced.includes('> ol.s { padding-bottom: ' + cm + 'cm; }'),
+      'El intervalo latinismos → Literatura utiliza la distancia interna de pregunta 4: ' + cm + ' cm');
+    assert.ok(ctx.M.Exam.html(spaced).includes('class="q4BeforeLiterature"'),
+      'La pregunta 4 marca su separación con la quinta solo si hay Literatura');
+    const word = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(spaced), { base64: true });
+    const xml = await word.file('word/document.xml').async('string');
+    const after = [...xml.matchAll(/<w:spacing w:before="0" w:after="(\d+)"\/><w:ind w:left="1134"/g)].map((x) => Number(x[1]));
+    assert.deepEqual(after, Array(4).fill(Math.round(cm * 567)),
+      'Word: d) latinismos → pregunta 5 debe tener el mismo intervalo que a)–d): ' + cm + ' cm');
+    const noLit = { ...spaced, literatura: { texto: '', traduccion: '' } };
+    const noLitWord = await ctx.JSZip.loadAsync(await ctx.M.Exam.docx(noLit), { base64: true });
+    const noLitXml = await noLitWord.file('word/document.xml').async('string');
+    const noLitAfter = [...noLitXml.matchAll(/<w:spacing w:before="0" w:after="(\d+)"\/><w:ind w:left="1134"/g)].map((x) => Number(x[1]));
+
+    assert.deepEqual(noLitAfter, [Math.round(cm * 567), Math.round(cm * 567), Math.round(cm * 567), 0],
+      'Word sin Literatura: el espacio final de la pregunta 4 no debe cambiar');
+    assert.ok(!ctx.M.Exam.html(noLit).includes('q4BeforeLiterature'),
+      'Sin literatura no se añade espacio nuevo');
+  }
+  assert.match(fs.readFileSync(path.join(root, 'js/start.js'), 'utf8'), /class="sh" type="number" min="0" max="10" step="0\.05"/);
+
+  console.log('OK: syntax, offline texts, catalog, literature, vocabulary preference/fallback, preview, review mode and DOCX.');
+})().catch((e) => { console.error(e); throw e; });
