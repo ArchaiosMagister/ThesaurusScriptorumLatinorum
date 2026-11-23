@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cuaderno de textos latinos</title>
+  <script>
+    const query = new URLSearchParams(location.search);
+    const previousView = ['biblioteca', 'classic', 'nuevo'].some(key => query.get(key) === '1');
+    location.replace(previousView
+      ? './cuaderno-clasico.html' + location.search + location.hash
+      : './prueba-cuaderno-examinator/examinator-cuadernos/');
+  </script>
+</head>
+<body>
+  <h1>Cuaderno de textos latinos</h1>
+  <p><a href="./prueba-cuaderno-examinator/examinator-cuadernos/">Abrir el Cuaderno</a></p>
+  <p><a href="./cuaderno-clasico.html">Abrir la versión anterior y sus cuadernos</a></p>
+</body>
+</html>

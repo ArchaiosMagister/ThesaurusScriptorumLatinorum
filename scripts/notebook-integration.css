@@ -675,3 +675,10 @@
   }
   #editor .cuaderno-editor-overview .cuaderno-context-switch { width: 100%; }
 }
+
+/* Tarjeta de lectura: añadir o sustituir uno de los cuatro subrayados. */
+.edition-lexical-actions { display: grid; gap: .45rem; padding: .75rem; border-bottom: 1px solid var(--border, #b8c4c9); }
+.edition-lexical-actions .edition-lexical-note { margin: 0; font-size: .86rem; line-height: 1.35; }
+.edition-lexical-actions .edition-lexical-replacement { width: 100%; min-width: 0; padding: .42rem; border-radius: .35rem; background: var(--surface, #fff); color: var(--text, #202020); }
+.edition-lexical-actions .edition-lexical-underline { padding: .55rem .65rem; border-radius: .4rem; border: 1px solid currentColor; background: transparent; color: inherit; font: inherit; font-weight: 600; cursor: pointer; }
+.edition-lexical-actions .edition-lexical-underline:disabled { opacity: .5; cursor: not-allowed; }

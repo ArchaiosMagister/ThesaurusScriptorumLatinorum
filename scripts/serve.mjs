@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const base = '/AdministratorTextorumLatinorum/';
+const base = '/ThesaurusScriptorumLatinorum/';
 const root = fileURLToPath(new URL('../dist', import.meta.url));
 const mime = {
   '.html': 'text/html; charset=utf-8',

@@ -1,0 +1,31 @@
+name: Comprobaciones
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  calidad:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v4
+      - name: Instalar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar TypeScript (versión fijada en package.json)
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Validar tipos, contratos y compilación
+        run: npm run check
+      - name: Instalar motor WebKit para la prueba de interfaz
+        run: |
+          bash scripts/prepare-ubuntu-playwright.sh
+          npx playwright install --with-deps webkit
+      - name: Probar guardado, exportación y restauración en WebKit
+        run: npm run test:e2e

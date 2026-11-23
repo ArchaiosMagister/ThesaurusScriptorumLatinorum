@@ -1,0 +1,746 @@
+name: Validar y publicar el Cuaderno oficial
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 32
+    steps:
+      - name: Obtener la revisión candidata
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Instalar dependencias declaradas
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Compilar y ejecutar pruebas de tipos y contratos
+        run: npm run check
+      - name: Instalar WebKit para compatibilidad con iPad Safari
+        run: |
+          bash scripts/prepare-ubuntu-playwright.sh
+          npx playwright install --with-deps webkit
+      - name: Probar exportación, edición, guardado y restauración
+        run: npm run test:e2e
+      - name: Preparar una copia limpia para el Cuaderno oficial y /prueba/
+        run: cp -a dist "$RUNNER_TEMP/cuaderno-prueba"
+      - name: Mantener una vía segura para descargar datos creados en /prueba/
+        run: |
+          test -f dist/storage/workspace-repository.js
+          test -f dist/storage/indexeddb-corpus-repository.js
+          test -f dist/storage/workspace-backup.js
+          test -f dist/core/backup.js
+          mkdir -p dist/recuperar-prueba
+          cp static/recuperar-prueba/index.html dist/recuperar-prueba/index.html
+          # La aplicación experimental ya no forma parte del despliegue.
+          test ! -e dist/prueba
+      - name: Verificar en WebKit que ambas copias JSON de /prueba/ son recuperables
+        run: node scripts/smoke-recovery.mjs
+      - name: Preparar la portada oficial y conservar la vista clásica
+        run: |
+          cp dist/index.html dist/cuaderno-clasico.html
+          cp static/portada-oficial.html dist/index.html
+          node scripts/build-sw.mjs
+      - name: Agregar /prueba/ preservando la web estable y copias de la prueba anterior
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib, os, shutil
+
+          root=Path('dist')
+          source=Path(os.environ['RUNNER_TEMP'])/'cuaderno-prueba'
+          preview=root/'prueba'
+          assert (root/'recuperar-prueba/index.html').is_file(), 'Falta recuperación de PR10'
+          assert not preview.exists(), 'La web estable contiene /prueba/ inesperadamente'
+          originals={p.relative_to(root):hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in root.rglob('*') if p.is_file()}
+          shutil.copytree(source,preview)
+
+          html=preview/'index.html'
+          contents=html.read_text()
+          assert contents.count('<body>')==1
+          notice=(
+            '<div role="note" style="font:14px system-ui;'
+            'padding:10px 14px;background:#fff3ce;color:#332700;'
+            'border-bottom:1px solid #ba9941">'
+            '<strong>VISTA DE PRUEBA — REDISEÑO DE CUADERNOS</strong>'
+            ' · La web definitiva está en la dirección sin /prueba/.'
+            ' Guarda una copia JSON de los cuadernos que crees aquí.'
+            '</div>'
+          )
+          contents=contents.replace('<body>','<body>\n'+notice,1)
+          contents=contents.replace('<head>','<head>\n<meta name="robots" content="noindex, nofollow">',1)
+          html.write_text(contents)
+
+          db_map={
+            'storage/indexeddb-corpus-repository.js':(
+              "'cuaderno-textos-latinos'",
+              "'cuaderno-textos-latinos-prueba-pr14'"
+            ),
+            'storage/workspace-repository.js':(
+              "'cuaderno-textos-latinos-workspace'",
+              "'cuaderno-textos-latinos-workspace-prueba-pr14'"
+            ),
+          }
+          for rel,(before,after) in db_map.items():
+            file=preview/rel
+            code=file.read_text()
+            assert code.count(before)==1, 'No se pudo aislar IndexedDB: '+rel
+            file.write_text(code.replace(before,after,1))
+          sw=preview/'service-worker.js'
+          code=sw.read_text()
+          assert code.count('cuaderno-textos-')>=2
+          sw.write_text(code.replace('cuaderno-textos-','cuaderno-preview-pr14-'))
+
+          for rel,digest in originals.items():
+            assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==digest, (
+              'Cambió la app estable: '+str(rel)
+            )
+          css=(preview/'styles.css').read_text()
+          assert '.edition-preview-stack' in css
+          assert '.simple-tabs' in css
+          assert '.notebook-first' in css
+          assert '.simple-prepare-layout' in css
+          # El puente Cuadernos -> editor debe estar en la copia publicada.
+          editor=(preview/'ui/edition-app.js').read_text()
+          assert 'importLegacyNotebook' in editor
+          assert 'Preparar cuaderno seleccionado' in editor
+          library=(preview/'ui/library-app.js').read_text()
+          assert 'Cuaderno terminado' in library
+          assert 'Etiquetas gramaticales' in library
+          assert 'Filtrar por etiquetas gramaticales' in library
+          simple=(preview/'ui/simple-app.js').read_text()
+          assert 'Preparar cuaderno' in simple
+          assert 'Buscar autores' in simple
+          assert 'simple-grammar-summary' in simple
+          assert 'openSourceText' in editor
+          assert 'prepareFromIds' in editor
+          assert 'removeWorkingSource' in editor
+          assert 'applyVocabularyAutomatically' in editor
+          controls=(preview/'ui/academic-controls.js').read_text()
+          assert 'Dos verbos de partida' in controls
+          assert 'Generar ' in controls
+          assert 'commitPlanDirect' in controls
+          assert (preview/'core/preverb-selection.js').is_file()
+          assert (preview/'core/vocabulary-format.js').is_file()
+          assert (preview/'export/notebook-documents.js').is_file()
+          assert 'removeSourceText' in simple
+          counts=(preview/'core/notebook-selection.js').read_text()
+          assert 'summarizeSelection' in counts
+          assert 'mountSimpleApp' in (preview/'main.js').read_text()
+          assert 'mountNotebookApp' in (preview/'main.js').read_text()
+          assert (preview/'ui/notebook-app.js').is_file()
+          assert (preview/'core/notebook-overview.js').is_file()
+          assert (preview/'core/online-sources.js').is_file()
+          assert 'addSourceToNotebook' in (preview/'ui/edition-app.js').read_text()
+          tags=(preview/'core/grammar-tags.js').read_text()
+          assert 'gram.inf.perfecto' in tags
+          assert 'gram.inf.pasivo' in tags
+          assert 'gram.agente' in tags
+          assert 'gram.relativo.enlace' in tags
+          assert 'min-height:0!important;height:auto!important' in css
+          print('OK: /prueba/ creada, IndexedDB y SW independientes.')
+          print('OK: '+str(len(originals))+' archivos estables byte a byte idénticos.')
+          PY
+      - name: Obtener la revisión verificada de PR25 sin fusionarla
+        uses: actions/checkout@v4
+        with:
+          repository: ArchaiosMagister/CuadernoTextosLatinos
+          ref: 4b557ab860613f9b0b7aecf6be411c14d3de5ad8
+          path: evaluation
+          persist-credentials: false
+      - name: Compilar y comprobar selector de Examinator2 para iPad
+        working-directory: evaluation
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run check
+      - name: Crear segunda vista experimental sin tocar estable ni primera prueba
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY2'
+          from pathlib import Path
+          import hashlib, json, shutil
+
+          root=Path('dist')
+          preview=root/'prueba-examinator2'
+          assert not preview.exists()
+          assert (root/'prueba/index.html').is_file()
+          assert (root/'recuperar-prueba/index.html').is_file()
+          originals={p.relative_to(root):hashlib.sha256(p.read_bytes()).hexdigest()
+                     for p in root.rglob('*') if p.is_file()}
+          shutil.copytree('evaluation/dist',preview)
+
+          html=preview/'index.html'
+          data=html.read_text()
+          assert data.count('<body>')==1
+          notice=(
+            '<div role="note" style="font:14px system-ui;'
+            'padding:10px 14px;background:#fff3ce;color:#332700;'
+            'border-bottom:1px solid #ba9941">'
+            '<strong>PRUEBA AISLADA · BIBLIOTECA EXAMINATOR2 (PR25)</strong>'
+            ' · Datos independientes de la versión habitual y de /prueba/.'
+            ' Exporta copias JSON de lo que hagas aquí.'
+            '</div>')
+          data=data.replace('<body>','<body>\n'+notice,1)
+          data=data.replace('<head>','<head>\n<meta name="robots" content="noindex, nofollow">',1)
+          html.write_text(data)
+
+          databases={
+            'storage/indexeddb-corpus-repository.js':(
+              "'cuaderno-textos-latinos'",
+              "'cuaderno-textos-latinos-prueba-examinator2'"),
+            'storage/workspace-repository.js':(
+              "'cuaderno-textos-latinos-workspace'",
+              "'cuaderno-textos-latinos-workspace-prueba-examinator2'"),
+            'storage/downloaded-works.js':(
+              "'cuaderno-textos-latinos-biblioteca-examinator2'",
+              "'cuaderno-textos-latinos-biblioteca-examinator2-prueba'")
+          }
+          for rel,(before,after) in databases.items():
+            target=preview/rel
+            contents=target.read_text()
+            assert contents.count(before)==1, 'No se ha aislado '+rel
+            target.write_text(contents.replace(before,after,1))
+
+          sw=preview/'service-worker.js'
+          contents=sw.read_text()
+          assert contents.count('cuaderno-textos-')>=2
+          sw.write_text(contents.replace('cuaderno-textos-','cuaderno-preview-examinator2-'))
+          for rel,digest in originals.items():
+            assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==digest,(
+              'Se ha alterado la aplicación estable o la primera prueba: '+str(rel))
+          catalog=json.loads((preview/'library/examinator-catalog.json').read_text())
+          assert len(catalog['entries'])>=25, 'Catálogo original incompleto'
+          assert (preview/'core/examinator-library.js').is_file()
+          assert (preview/'ui/notebook-app.js').is_file()
+          assert '.exlib-catalog' in (preview/'styles.css').read_text()
+          print('OK: web estable, recuperación y /prueba/ intactas.')
+          print('OK: caché offline, bases de datos y service worker separados.')
+          print('OK: obras del catálogo Examinator2:',len(catalog['entries']))
+          PY2
+      - name: Obtener Examinator2 original en revisión inmutable
+        uses: actions/checkout@v4
+        with:
+          repository: ArchaiosMagister/examinator2
+          ref: 4ca31b4b2852f6b3ac0dc28c3f6ff3f2ad15d4a8
+          path: original-examinator
+          persist-credentials: false
+      - name: Incorporar Examinator2 intacto como referencia funcional separada
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'ORIGINAL'
+          from pathlib import Path
+          import hashlib, shutil
+
+          root=Path('dist')
+          source=Path('original-examinator')
+          destination=root/'examinator2-original'
+          assert not destination.exists(), 'La copia original no debe estar en el build estable'
+          assert (root/'prueba-examinator2/index.html').is_file()
+          assert (root/'prueba/index.html').is_file()
+          original_hashes={p.relative_to(root):hashlib.sha256(p.read_bytes()).hexdigest()
+                           for p in root.rglob('*') if p.is_file()}
+          for name in ['index.html','styles.css','fonts.css','icon.png','FUENTES.md']:
+            destination.mkdir(parents=True,exist_ok=True)
+            shutil.copy2(source/name,destination/name)
+          for name in ['js','lib','fonts']:
+            shutil.copytree(source/name,destination/name)
+          every={p.relative_to(destination):hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in destination.rglob('*') if p.is_file()}
+          for rel,digest in every.items():
+            assert hashlib.sha256((source/rel).read_bytes()).hexdigest()==digest, str(rel)
+          for rel,digest in original_hashes.items():
+            assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==digest,(
+              'La referencia ha alterado otra aplicación: '+str(rel))
+          html=(destination/'index.html').read_text()
+          css=(destination/'styles.css').read_text()
+          assert '<span class="brand">Examinator</span>' in html
+          assert '#lib { position: fixed;' in css
+          assert (destination/'js/shim.js').is_file()
+          assert (destination/'js/datos.js').stat().st_size>9_000_000
+          assert (destination/'js/incluidos.js').stat().st_size>2_000_000
+          print('OK: referencia Examinator2 100% original:',len(every),'archivos.')
+          print('OK: '+str(len(original_hashes))+' archivos del cuaderno y pruebas byte a byte idénticos.')
+          ORIGINAL
+      - name: Preparar el Cuaderno oficial conservando las bases de los usuarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'CUADERNOS'
+          from pathlib import Path
+          import hashlib, json, os, shutil
+
+          root=Path('dist')
+          destination=root/'prueba-cuaderno-examinator'
+          source=Path(os.environ['RUNNER_TEMP'])/'cuaderno-prueba'
+          assert (source/'examinator-cuadernos/index.html').is_file()
+          assert (source/'examinator-cuadernos/js/library.js').is_file()
+          worker=(source/'examinator-cuadernos/collatinus/worker.js').read_text()
+          assert 'analyzeSentences' in worker and '__COLLATINUS_VERSION__' not in worker
+          assert (root/'examinator2-original/index.html').is_file()
+          assert not destination.exists()
+          hashes={p.relative_to(root):hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in root.rglob('*') if p.is_file()}
+          shutil.copytree(source,destination)
+          app=(destination/'ui/examinator-notebook-app.js').read_text()
+          assert (destination/'core/text-duplicates.js').is_file(), 'Falta detector de duplicados'
+          assert 'findPossibleDuplicates' in app, 'Faltan avisos de pasajes repetidos'
+          assert 'openBankTextEditor' in app and 'Editar ficha' in app, 'Falta edición del banco'
+          assert 'Auditar textos repetidos' in app, 'Falta acceso a la auditoría global'
+          assert 'auditLibraryDuplicates' in (destination/'core/text-duplicates.js').read_text(), 'Falta motor de auditoría'
+          assert 'cuaderno-duplicate-audit' in (destination/'examinator-cuadernos/bridge.css').read_text(), 'Falta estilo móvil de auditoría'
+          assert (destination/'core/cover-photos.js').is_file(), 'Falta catálogo de portadas'
+          assert 'renderNotebookCover' in (destination/'ui/edition-app.js').read_text(), 'Falta vista de portada'
+          assert 'prepareWordCoverImage' in (destination/'ui/edition-app.js').read_text(), 'Falta preparación de Word'
+          assert 'wordCover' in (destination/'export/notebook-documents.js').read_text(), 'Falta portada DOCX'
+          assert 'edition-cover-photo' in (destination/'examinator-cuadernos/bridge.css').read_text(), 'Falta estilo de portada'
+          for feature in ('Mis cuadernos', 'Banco de textos propios',
+                          'Pegar en el banco', 'Importar Word al banco',
+                          'Analizar con Collatinus', 'Quitar filtros de etiquetas',
+                          'Quitar seleccionados', 'Etiquetas de este texto'):
+            assert feature in app, 'Falta una función del rediseño experimental: '+feature
+          editor=(destination/'ui/edition-app.js').read_text()
+          assert 'Organizar el cuaderno' in editor
+          assert 'Etiquetas gramaticales de este texto' in editor
+          assert '✓ Guardado' in editor, 'Falta el nuevo estado del vocabulario'
+          assert 'cuaderno-ui-save' in editor, 'Faltan estilos semánticos en el editor'
+          academic=(destination/'ui/academic-controls.js').read_text()
+          assert 'morphologyOccurrencesFreshFirst' in academic
+          assert 'cuaderno-ui-regen' in academic, 'Falta color de regeneración'
+          assert 'cuaderno-context-current' in app, 'Falta el título contextual del cuaderno'
+          assert 'cuaderno-context-count' in app, 'Falta el contador de textos'
+          assert 'cuaderno-theme-select' in app, 'Falta el selector de apariencia'
+          # Safari/iPhone: la edición previa recupera los cuadernos guardados
+          # antes de que el banco de etiquetas esté listo. No repetir ese fallo.
+          assert 'await composer.open()' in app and 'await reload()' in app
+          assert app.rfind('await reload()') < app.rfind('await composer.open()'), (
+            'Safari: el editor se abre antes de cargar corpus.tags')
+          assert 'tagLabel:' in app and 'allGrammarTags(corpus)' in app, (
+            'Falta resolver etiquetas guardadas en la versión experimental')
+          assert 'btnCuadernoTheme' in app and 'OLED' in app, 'Falta opción OLED'
+          assert 'cuaderno-header-nav' in app, 'Falta nueva cabecera'
+          assert 'cuaderno-add-primary' in app, 'Falta agrupación de Añadir textos'
+          assert 'cuaderno-add-secondary' in app, 'Faltan acciones secundarias'
+          assert 'edition-vocab-section' in editor, 'Faltan los tres bloques de vocabulario'
+          for feature in ('edition-bibliography','edition-question-fold',
+                          'edition-format-group','edition-organize-primary',
+                          'edition-organize-review','Título y orden de los textos'):
+            assert feature in editor, 'Falta menú de segunda fase: '+feature
+          for feature in ('edition-statement-row','edition-option-advanced',
+                          'edition-question-advanced','edition-qword-row',
+                          'edition-option-rows','editingQuestionStatements',
+                          'editingOptionStatements','expandedAcademicOptions'):
+            assert feature in editor, 'Falta rediseño compacto de preguntas: '+feature
+          assert 'edition-slot-regenerate' in academic, 'Falta regeneración individual compacta'
+          assert 'Proponer solo esta palabra' in academic, 'Falta acción individual accesible'
+          bridge=(destination/'examinator-cuadernos/bridge.css').read_text()
+          for selector in ('cuaderno-ui-word','cuaderno-ui-pdf',
+                           'cuaderno-ui-add','cuaderno-ui-remove',
+                           "edition-menu-nav .btn[aria-current='page']"):
+            assert selector in bridge, 'Falta diseño experimental: '+selector
+          assert "data-cuaderno-theme='oled'" in bridge, 'Falta CSS OLED'
+          assert '--paper:#000' in bridge, 'OLED no es negro puro'
+          assert 'cuaderno-context-top' in bridge, 'Faltan los estilos de la cabecera'
+          assert 'cuaderno-theme-select' in bridge, 'Faltan estilos de apariencia'
+          assert 'edition-vocab-analysis' in bridge, 'Falta organización del vocabulario'
+          assert 'minmax(84px,1fr)' in bridge, 'Falta navegación táctil de pestañas'
+          for selector in ('edition-statement-edit','edition-qword-row',
+                           'edition-option-advanced','edition-question-advanced',
+                           'edition-academic-morph-row'):
+            assert selector in bridge, 'Falta presentación compacta: '+selector
+          for selector in ('edition-bibliography-fields','edition-question-fold',
+                           'edition-format-group-fields','edition-organize-review'):
+            assert selector in bridge, 'Falta estilo de la segunda fase: '+selector
+          assert (destination/'core/academic-repetition.js').is_file()
+          engine=(destination/'core/academic-engine.js').read_text()
+          assert "q.enabled && q.kind === 'choice'" in engine, 'Los ejercicios inactivos agotan el repertorio'
+          control=(destination/'ui/academic-controls.js').read_text()
+          assert 'Revisar análisis' in control, 'Falta revisión morfológica visible'
+          assert 'No hay análisis verificados disponibles' in control, 'Falta aviso si no hay análisis'
+          assert 'Completar hasta cuatro tipos' in control, 'Falta selección de cuatro categorías'
+          assert (destination/'core/morph-categories.js').is_file(), 'Falta clasificador de siete tipos'
+          assert (destination/'core/morph-selection-collatinus.js').is_file(), 'Falta selección contextual'
+          card_source=(destination/'ui/latin-reading-card.js').read_text()
+          assert 'attachLatinReadingCards' in card_source, 'Falta tarjeta de Collatinus'
+          card_css=(destination/'examinator-cuadernos/bridge.css').read_text()
+          assert '.edition-lexical-card' in card_css, 'Faltan estilos del lector'
+
+
+
+          def replace(rel,before,after):
+            target=destination/rel
+            content=target.read_text()
+            assert content.count(before)==1, 'No está aislado '+str(target)
+            target.write_text(content.replace(before,after,1))
+
+          replace('storage/workspace-repository.js',
+            "'cuaderno-textos-latinos-workspace'",
+            "'cuaderno-textos-latinos-workspace-examinator-prueba'")
+          replace('storage/indexeddb-corpus-repository.js',
+            "'cuaderno-textos-latinos'",
+            "'cuaderno-textos-latinos-examinator-prueba'")
+          replace('storage/downloaded-works.js',
+            "'cuaderno-textos-latinos-biblioteca-examinator2'",
+            "'cuaderno-textos-latinos-biblioteca-examinator2-pr28'")
+          replace('ui/examinator-notebook-app.js',
+            "'cuaderno-original-examinator2-obras'",
+            "'cuaderno-original-examinator2-obras-prueba'")
+          replace('examinator-cuadernos/collatinus/shim.js',
+            "'cuaderno-collatinus-examinator-v1'",
+            "'cuaderno-collatinus-examinator-v1-prueba'")
+          replace('examinator-cuadernos/collatinus/shim.js',
+            "'cuaderno-collatinus-examinator-v1.fs:'",
+            "'cuaderno-collatinus-examinator-v1-prueba.fs:'")
+          replace('examinator-cuadernos/index.html',
+            '../examinator2-original/icon.png',
+            '../../examinator2-original/icon.png')
+          replace('examinator-cuadernos/fonts.css',
+            '../examinator2-original/fonts.css',
+            '../../examinator2-original/fonts.css')
+
+          sw=destination/'service-worker.js'
+          if sw.is_file():
+            before=sw.read_text()
+            assert 'cuaderno-textos-' in before
+            sw.write_text(before.replace('cuaderno-textos-','cuaderno-examinator-original-prueba-'))
+          for rel,digest in hashes.items():
+            assert hashlib.sha256((root/rel).read_bytes()).hexdigest()==digest,(
+              'Se ha alterado algún archivo estable o prueba: '+str(rel))
+          catalog=json.loads((destination/'library/examinator-catalog.json').read_text())
+          assert len(catalog['entries'])>=25
+          print('OK: Cuaderno oficial disponible en /prueba-cuaderno-examinator/examinator-cuadernos/')
+          print('OK: 3 IndexedDB y caché de obras aisladas; '+str(len(catalog['entries']))+' obras Perseus')
+          print('OK: estable y todas las pruebas previas byte a byte intactas.')
+          CUADERNOS
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Empaquetar estable, recuperación y rediseño provisional
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - name: Publicar estable y ruta experimental separada
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+
+  verificar-vista-publica:
+    needs: deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    permissions:
+      contents: read
+    env:
+      ROOT: https://archaiosmagister.github.io/CuadernoTextosLatinos/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Comprobar HTTPS, bases aisladas y web estable intacta
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in index.html cuaderno-clasico.html main.js styles.css recuperar-prueba/index.html prueba/index.html prueba/styles.css prueba/main.js prueba/core/preverb-selection.js prueba/core/vocabulary-format.js prueba/ui/academic-controls.js prueba-cuaderno-examinator/examinator-cuadernos/index.html prueba-cuaderno-examinator/examinator-cuadernos/manifest.webmanifest prueba-cuaderno-examinator/examinator-cuadernos/icons/icon-192.png prueba-cuaderno-examinator/examinator-cuadernos/icons/icon-512.png prueba-cuaderno-examinator/examinator-cuadernos/icons/icon-maskable-512.png prueba-cuaderno-examinator/examinator-cuadernos/icons/apple-touch-icon.png prueba-cuaderno-examinator/examinator-cuadernos/service-worker.js prueba-cuaderno-examinator/ui/pwa-controls.js prueba-cuaderno-examinator/examinator-cuadernos/styles.css prueba-cuaderno-examinator/examinator-cuadernos/js/library.js prueba-cuaderno-examinator/examinator-cuadernos/collatinus/motor.js prueba-cuaderno-examinator/examinator-cuadernos/collatinus/worker.js prueba-cuaderno-examinator/examinator-cuadernos/collatinus/shim.js prueba-cuaderno-examinator/examinator-cuadernos/collatinus/datos.js prueba-cuaderno-examinator/ui/examinator-notebook-app.js prueba-cuaderno-examinator/storage/workspace-repository.js prueba-cuaderno-examinator/library/examinator-catalog.json examinator2-original/index.html examinator2-original/styles.css examinator2-original/fonts.css examinator2-original/js/library.js examinator2-original/js/shim.js examinator2-original/js/datos.js examinator2-original/js/incluidos.js examinator2-original/lib/jszip.min.js prueba-examinator2/index.html prueba-examinator2/main.js prueba-examinator2/styles.css prueba-examinator2/ui/notebook-app.js prueba-examinator2/core/examinator-library.js prueba-examinator2/library/examinator-catalog.json prueba-examinator2/storage/workspace-repository.js prueba-examinator2/storage/indexeddb-corpus-repository.js prueba-examinator2/storage/downloaded-works.js prueba-examinator2/service-worker.js prueba/ui/notebook-app.js prueba/core/notebook-overview.js prueba/core/online-sources.js prueba/core/notebook-selection.js prueba/core/grammar-tags.js prueba/ui/simple-app.js prueba/ui/library-app.js prueba/storage/workspace-repository.js prueba/storage/indexeddb-corpus-repository.js prueba/service-worker.js; do
+            url="$ROOT$f"
+            echo "Verificando $url"
+            curl --fail --location --retry 6 --retry-delay 3 --silent --show-error \
+              -o /tmp/cuaderno-public "$url"
+            test -s /tmp/cuaderno-public
+            case "$f" in
+              "index.html")
+                grep -q 'prueba-cuaderno-examinator/examinator-cuadernos/' /tmp/cuaderno-public ;;
+              "cuaderno-clasico.html")
+                grep -q './main.js' /tmp/cuaderno-public ;;
+              "recuperar-prueba/index.html")
+                grep -q 'cuaderno-textos-latinos-workspace-prueba-pr10' /tmp/cuaderno-public ;;
+              "prueba/index.html")
+                grep -q 'VISTA DE PRUEBA — REDISEÑO DE CUADERNOS' /tmp/cuaderno-public ;;
+              "prueba/styles.css")
+                grep -q 'edition-preview-stack' /tmp/cuaderno-public
+                grep -q 'min-height:0!important;height:auto!important' /tmp/cuaderno-public ;;
+              "prueba/core/grammar-tags.js")
+                grep -q 'gram.inf.pasivo' /tmp/cuaderno-public
+                grep -q 'gram.agente' /tmp/cuaderno-public ;;
+              "prueba/ui/library-app.js")
+                grep -q 'Cuaderno terminado' /tmp/cuaderno-public
+                grep -q 'Etiquetas gramaticales' /tmp/cuaderno-public ;;
+              "prueba/ui/simple-app.js")
+                grep -q 'Preparar cuaderno' /tmp/cuaderno-public
+                grep -q 'Buscar autores' /tmp/cuaderno-public ;;
+              "prueba/core/notebook-selection.js")
+                grep -q 'summarizeSelection' /tmp/cuaderno-public ;;
+              "prueba/core/preverb-selection.js")
+                grep -q 'choosePreverbBases' /tmp/cuaderno-public ;;
+              "prueba/ui/academic-controls.js")
+                grep -q 'Dos verbos de partida' /tmp/cuaderno-public ;;
+              "prueba/storage/workspace-repository.js")
+                grep -q "'cuaderno-textos-latinos-workspace-prueba-pr14'" /tmp/cuaderno-public ;;
+              "prueba/storage/indexeddb-corpus-repository.js")
+                grep -q "'cuaderno-textos-latinos-prueba-pr14'" /tmp/cuaderno-public ;;
+              "prueba/service-worker.js")
+                grep -q 'cuaderno-preview-pr14-' /tmp/cuaderno-public ;;
+              "prueba/ui/notebook-app.js")
+                grep -q 'mountNotebookApp' /tmp/cuaderno-public ;;
+              "prueba/core/notebook-overview.js")
+                grep -q 'summarizeNotebook' /tmp/cuaderno-public ;;
+              "prueba/core/online-sources.js")
+                grep -q 'onlineSearchUrl' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/index.html")
+                grep -q '<title>Cuaderno de textos latinos</title>' /tmp/cuaderno-public
+                grep -q '<span class="brand">Cuadernos Latinos</span>' /tmp/cuaderno-public
+                grep -q 'rel="manifest" href="./manifest.webmanifest"' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/manifest.webmanifest")
+                grep -q '"name": "Cuaderno de textos latinos"' /tmp/cuaderno-public
+                grep -q '"display": "standalone"' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/icons/"*.png)
+                test "$(wc -c < /tmp/cuaderno-public)" -gt 1000 ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/service-worker.js")
+                grep -q 'MANUAL_UPDATES = true' /tmp/cuaderno-public
+                grep -q 'APPLY_UPDATE' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/ui/pwa-controls.js")
+                grep -q 'Buscar actualizaciones' /tmp/cuaderno-public
+                grep -q 'Aplicar actualización' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/styles.css")
+                grep -q '#lib { position: fixed;' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/js/library.js")
+                grep -q 'M.openLibrary' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/collatinus/worker.js")
+                grep -q 'analyzeSentences' /tmp/cuaderno-public
+                ! grep -q '__COLLATINUS_VERSION__' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/collatinus/shim.js")
+                grep -q 'cuaderno-collatinus-examinator-v1-prueba' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/examinator-cuadernos/collatinus/datos.js")
+                test $(wc -c < /tmp/cuaderno-public) -gt 9000000 ;;
+              "prueba-cuaderno-examinator/ui/examinator-notebook-app.js")
+                grep -q 'cuaderno-original-examinator2-obras-prueba' /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/storage/workspace-repository.js")
+                grep -q "'cuaderno-textos-latinos-workspace-examinator-prueba'" /tmp/cuaderno-public ;;
+              "prueba-cuaderno-examinator/library/examinator-catalog.json")
+                grep -q 'Perseus Digital Library' /tmp/cuaderno-public ;;
+              "examinator2-original/index.html")
+                grep -q '<span class="brand">Examinator</span>' /tmp/cuaderno-public ;;
+              "examinator2-original/styles.css")
+                grep -q '#lib { position: fixed;' /tmp/cuaderno-public ;;
+              "examinator2-original/js/library.js")
+                grep -q 'M.openLibrary' /tmp/cuaderno-public ;;
+              "examinator2-original/js/shim.js")
+                grep -q 'window.api =' /tmp/cuaderno-public ;;
+              "examinator2-original/js/datos.js")
+                test $(wc -c < /tmp/cuaderno-public) -gt 9000000 ;;
+              "examinator2-original/js/incluidos.js")
+                test $(wc -c < /tmp/cuaderno-public) -gt 2000000 ;;
+              "prueba-examinator2/index.html")
+                grep -q 'PRUEBA AISLADA · BIBLIOTECA EXAMINATOR2' /tmp/cuaderno-public ;;
+              "prueba-examinator2/styles.css")
+                grep -q 'exlib-catalog' /tmp/cuaderno-public ;;
+              "prueba-examinator2/ui/notebook-app.js")
+                grep -q 'searchExaminatorWorks' /tmp/cuaderno-public ;;
+              "prueba-examinator2/core/examinator-library.js")
+                grep -q 'searchExaminatorWorks' /tmp/cuaderno-public ;;
+              "prueba-examinator2/storage/workspace-repository.js")
+                grep -q "'cuaderno-textos-latinos-workspace-prueba-examinator2'" /tmp/cuaderno-public ;;
+              "prueba-examinator2/storage/indexeddb-corpus-repository.js")
+                grep -q "'cuaderno-textos-latinos-prueba-examinator2'" /tmp/cuaderno-public ;;
+              "prueba-examinator2/storage/downloaded-works.js")
+                grep -q "'cuaderno-textos-latinos-biblioteca-examinator2-prueba'" /tmp/cuaderno-public ;;
+              "prueba-examinator2/service-worker.js")
+                grep -q 'cuaderno-preview-examinator2-' /tmp/cuaderno-public ;;
+              "prueba-examinator2/library/examinator-catalog.json")
+                grep -q 'Perseus Digital Library' /tmp/cuaderno-public ;;
+              "prueba/main.js")
+                grep -q 'mountNotebookApp' /tmp/cuaderno-public
+                grep -q 'mountSimpleApp' /tmp/cuaderno-public
+                grep -q 'mountLibraryApp' /tmp/cuaderno-public ;;
+            esac
+          done
+      - name: Instalar Safari/WebKit
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          bash scripts/prepare-ubuntu-playwright.sh
+          npx playwright install --with-deps webkit
+      - name: Abrir prueba publicada en WebKit iPad
+        run: |
+          node --input-type=module <<'JS'
+          import {webkit} from '@playwright/test';
+          const browser=await webkit.launch({headless:true});
+          try {
+            const page=await browser.newPage({
+              viewport:{width:820,height:1180},isMobile:true,hasTouch:true,deviceScaleFactor:2
+            });
+            const errors=[];
+            page.on('pageerror',e=>errors.push(e.message));
+            await page.goto(process.env.ROOT);
+            await page.waitForURL('**/prueba-cuaderno-examinator/examinator-cuadernos/');
+            await page.getByRole('heading',{name:'Mis cuadernos'}).waitFor();
+            const url=process.env.ROOT+'prueba/';
+            const res=await page.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+            await page.getByRole('navigation',{name:'Navegación principal'})
+              .getByRole('button').first().waitFor({state:'visible',timeout:40000});
+            const tabs=page.getByRole('navigation',{name:'Navegación principal'});
+            if(await tabs.getByRole('button').count()!==2)throw Error('La interfaz debe tener dos apartados');
+            if(!(await page.locator('body').innerText()).includes('VISTA DE PRUEBA — REDISEÑO DE CUADERNOS'))
+              throw Error('Falta marca provisional');
+            await page.getByRole('button',{name:'Buscar autores',exact:true}).click();
+            await page.locator('.simple-work-item').first().waitFor();
+            await page.locator('.simple-work-item').first().click();
+            await page.locator('.simple-reader-line').first().waitFor();
+            await page.locator('.simple-reader-line').first().click();
+            await page.locator('.edition-paper').first().waitFor({state:'visible'});
+            await page.locator('.edition-preview-stack .edition-navigation').waitFor();
+            await page.locator('.edition-question-panel').first().waitFor();
+            await page.getByRole('button',{name:'Preparar cuaderno',exact:true}).click();
+            await page.locator('.simple-grammar-summary').waitFor();
+            await page.screenshot({path:'preview-redisenio-ipad.png',fullPage:false});
+            await page.goto(url+'?classic=1',{waitUntil:'domcontentloaded'});
+            await page.getByRole('button',{name:'Biblioteca',exact:true}).waitFor();
+            const beta=await page.goto(url+'?nuevo=1',{waitUntil:'domcontentloaded'});
+            await page.getByRole('button',{name:'+ Crear cuaderno'}).waitFor({state:'visible',timeout:40000});
+            if(beta?.status()!==200)throw Error('No carga el editor nuevo en la prueba aislada');
+            const second=process.env.ROOT+'prueba-examinator2/?nuevo=1';
+            const response=await page.goto(second,{waitUntil:'domcontentloaded',timeout:45000});
+            if(response?.status()!==200)throw Error('La nueva biblioteca no carga');
+            await page.getByRole('button',{name:'+ Crear cuaderno'}).waitFor({state:'visible',timeout:40000});
+            page.once('dialog',d=>d.accept('Comprobación de selector en iPad'));
+            await page.getByRole('button',{name:'+ Crear cuaderno'}).click();
+            await page.locator('.exlib-catalog').waitFor({state:'visible'});
+            await page.locator('.exlib-reading').waitFor({state:'visible'});
+            await page.getByRole('searchbox',{name:'Autor u obra'}).fill('Eutropio');
+            await page.locator('.exlib-row.available .exlib-item').first().click();
+            await page.locator('.exlib-reader-lines .simple-reader-line').first().waitFor();
+            const fit=await page.locator('.exlib').evaluate(box=>{
+              const viewport=box.getBoundingClientRect();
+              const bar=box.querySelector('.exlib-appbar').getBoundingClientRect();
+              const catalog=box.querySelector('.exlib-catalog').getBoundingClientRect();
+              const reading=box.querySelector('.exlib-reading').getBoundingClientRect();
+              return {top:viewport.top,width:viewport.width,bar:bar.height,
+                column:catalog.width,reading:reading.width};
+            });
+            if(fit.top!==0||fit.width!==820||fit.bar!==48||
+               fit.column!==440||fit.reading<350)
+              throw Error('La biblioteca ya no reproduce el diseño original: '+JSON.stringify(fit));
+            await page.screenshot({path:'biblioteca-examinator2-ipad.png',fullPage:false});
+            const exact=await browser.newPage({
+              viewport:{width:820,height:1180},isMobile:true,hasTouch:true,deviceScaleFactor:2
+            });
+            const originalErrors=[];
+            exact.on('pageerror',error=>originalErrors.push(error.message));
+            const originalUrl=process.env.ROOT+'examinator2-original/';
+            const originalResponse=await exact.goto(originalUrl,{
+              waitUntil:'domcontentloaded',timeout:60000});
+            if(originalResponse?.status()!==200)
+              throw Error('No se abre Examinator2 original');
+            await exact.waitForFunction(()=>Boolean(window.M?.S&&
+              document.querySelector('#btnLib')?.onclick),undefined,{timeout:120000});
+            await exact.getByRole('button',{name:'Biblioteca',exact:true}).click();
+            await exact.locator('#lib .lhead').waitFor({state:'visible',timeout:30000});
+            await exact.locator('#lib .lrow').first().waitFor({state:'visible',timeout:90000});
+            await exact.locator('#lib .lf').fill('Eutropio');
+            // El filtro original usa debounce. Esperar una fila de Eutropio:
+            // «.lrow.have:first» podía clicar otra obra antes de aplicar el filtro.
+            const originalEutropio=exact.locator('#lib .lrow.have')
+              .filter({hasText:'Eutropio'}).first();
+            await originalEutropio.waitFor({state:'visible',timeout:30000});
+            await originalEutropio.click();
+            await exact.locator('#lib .rtext .rl').first().waitFor({state:'visible',timeout:60000});
+            await exact.screenshot({path:'examinator2-original-ipad.png',fullPage:false});
+            if(originalErrors.length)throw Error('Examinator2 original falló: '+originalErrors.join('; '));
+            const adapted=await browser.newPage({
+              viewport:{width:820,height:1180},isMobile:true,hasTouch:true,deviceScaleFactor:2
+            });
+            const adaptedErrors=[];
+            adapted.on('pageerror',error=>adaptedErrors.push(error.message));
+            const adaptedUrl=process.env.ROOT+
+              'prueba-cuaderno-examinator/examinator-cuadernos/';
+            const adaptedResponse=await adapted.goto(adaptedUrl,{
+              waitUntil:'domcontentloaded',timeout:60000});
+            if(adaptedResponse?.status()!==200)
+              throw Error('No se ha publicado la adaptación a cuadernos.');
+            await adapted.locator('#editor .card h3').waitFor({state:'visible',timeout:120000});
+            if((await adapted.locator('header .brand').textContent())?.trim()!=='Cuadernos Latinos')
+              throw Error('La cabecera del Cuaderno debe mostrar «Cuadernos Latinos».');
+            adapted.once('dialog',d=>d.accept('Cuaderno prueba fidelidad'));
+            await adapted.locator('#btnNew').click();
+            await adapted.locator('#btnLib').click();
+            await adapted.locator('#lib .lf').fill('Eutropio');
+            const eutropio=adapted.locator('#lib .lrow.have')
+              .filter({hasText:'Eutropio'}).first();
+            await eutropio.waitFor({state:'visible'});
+            await eutropio.click();
+            await adapted.locator('#lib .rtext .rl').first().waitFor({state:'visible'});
+            await adapted.locator('#lib .rtext .rl').first().click();
+            await adapted.locator('#lib [data-act=use]').click();
+            await adapted.locator('.edition-counter').filter({hasText:'Texto 1 de 1'}).waitFor({state:'visible'});
+            // El editor puede reconstruir la hoja al terminar la generación
+            // automática. Consultar un nodo todavía desconectado devuelve
+            // display="" en WebKit móvil. Esperar al DOM conectado y estable.
+            await adapted.waitForFunction(()=>{
+              const node=document.querySelector('.edition-paper-head');
+              return node?.isConnected&&getComputedStyle(node).display==='block'&&
+                node.querySelector('.edition-paper-title')?.textContent==='Texto 1'&&
+                node.querySelector('.edition-paper-source')?.textContent?.includes('Eutropio');
+            },undefined,{timeout:30000});
+            const headline=await adapted.locator('.edition-paper-head').first().evaluate(node=>({
+              title:node.querySelector('.edition-paper-title')?.textContent,
+              source:node.querySelector('.edition-paper-source')?.textContent
+            }));
+            console.log('Separación bibliográfica verificada:',JSON.stringify(headline));
+            await adapted.locator('.edition-menu-nav').waitFor({state:'visible'});
+            await adapted.getByRole('button',{name:'Pegar texto',exact:true}).click();
+            const paste=adapted.locator('.modal').last();
+            await paste.getByRole('textbox',{name:'Texto latino',exact:true}).waitFor({state:'visible'});
+            await paste.getByRole('button',{name:'Cancelar',exact:true}).click();
+            await adapted.screenshot({path:'cuaderno-examinator-original-adaptado-ipad.png',
+              fullPage:false});
+            if(adaptedErrors.length)
+              throw Error('Fallos JS en adaptación iPad: '+adaptedErrors.join('; '));
+            console.log('Cuaderno original adaptado:',adaptedResponse.status(),
+              'selección y guardado habilitados; sin fallos JS.');
+            await adapted.close();
+            console.log('Examinator2 original:',originalResponse.status(),
+              'biblioteca, Eutropio y lector originales operativos en iPad.');
+            await exact.close();
+            console.log('Examinator2 preview:',response.status(),'lector y búsqueda disponibles en iPad');
+            console.log('Preview HTTP:',res?.status(),'2 apartados, editor A4 y vista clásica. Errores JS:',errors);
+            if(res?.status()!==200||errors.length)throw Error('Fallo carga Safari WebKit');
+          } finally {await browser.close();}
+          JS
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vista-redisenio-ipad-cuadernos
+          path: |
+            preview-redisenio-ipad.png
+            biblioteca-examinator2-ipad.png
+            examinator2-original-ipad.png
+            cuaderno-examinator-original-adaptado-ipad.png
+          if-no-files-found: ignore
+          retention-days: 7

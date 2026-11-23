@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'node scripts/serve.mjs',
-    url: 'http://127.0.0.1:8123/AdministratorTextorumLatinorum/',
+    url: 'http://127.0.0.1:8123/ThesaurusScriptorumLatinorum/',
     reuseExistingServer: !process.env.CI
   }
 });

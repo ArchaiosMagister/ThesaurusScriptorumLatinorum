@@ -80,12 +80,14 @@ export function integrateManualNotebookUnderline(source) {
     .replace("import { validateEdition } from '../core/edition-validation.js';",
       "import { validateEdition, fingerprintForMark } from '../core/edition-validation.js';")
     .replace('    function renderTextSelect(p, area) {', `    function markSelectedWord(target, replaceId) {
-        void withSaved(async state => {
+        return withSaved(async state => {
             const p = state.edition.placements.find(item => item.id === target.placementId);
             const q = p?.questions.find(item => item.kind === 'morphology');
             if (!q || !safeToken(p.text.latin, target.start, target.end))
                 throw new Error('Selecciona exactamente una palabra latina completa.');
             const latin = p.text.latin;
+            if (target.latin !== undefined && target.latin !== latin)
+                throw new Error('El texto ha cambiado. Vuelve a seleccionar la palabra en la vista previa.');
             const removed = q.words.find(word => word.id === replaceId);
             if (replaceId && (!removed || removed.locked))
                 throw new Error('El subrayado que quieres sustituir está protegido o ya no existe.');
@@ -111,7 +113,8 @@ export function integrateManualNotebookUnderline(source) {
                 { command: 'ui.underline-selected-word', targetId: p.id, timestamp }, original => ({
                     ...original, updatedAt: timestamp, placements: original.placements.map(item => item.id !== p.id ? item : {
                         ...item, text: { ...item.text, markup: [...marks, mark].sort((a, b) => a.startUtf16 - b.startUtf16) },
-                        questions: item.questions.map(question => question.id !== q.id ? question : { ...question, words: [...words, word] })
+                        questions: item.questions.map(question => question.id !== q.id ? question : { ...question, words: removed
+                            ? q.words.map(item => item.id === removed.id ? word : item) : [...words, word] })
                     })
                 }));
             bind.saved(saved);
@@ -142,5 +145,6 @@ export function integrateManualNotebookUnderline(source) {
         });
         row.append(label);
         if (replaceWord) row.append(replaceWord);
-        row.append(add);`);
+        row.append(add);`)
+    .replace(/renderPaperSelect,\s*savePaperSelection,/u, 'renderPaperSelect,savePaperSelection,markSelectedWord,');
 }

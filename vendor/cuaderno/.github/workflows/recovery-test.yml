@@ -1,0 +1,47 @@
+name: Verificar recuperación de la prueba antes de retirar /prueba/
+
+on:
+  pull_request:
+    paths:
+      - 'static/recuperar-prueba/**'
+      - 'scripts/smoke-recovery.mjs'
+      - '.github/workflows/deploy-pages.yml'
+      - '.github/workflows/recovery-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  recuperar:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 16
+    steps:
+      - name: Obtener la PR de publicación
+        uses: actions/checkout@v4
+      - name: Obtener la versión editorial objeto de publicación
+        uses: actions/checkout@v4
+        with:
+          ref: feat/interfaz-editorial-primera-iteracion
+          path: experimental
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Compilar el motor editorial
+        working-directory: experimental
+        run: |
+          npm install --ignore-scripts --no-audit --no-fund
+          npm run check
+      - name: Preparar recuperación sin modificar archivos del editor
+        run: |
+          mkdir -p experimental/dist/recuperar-prueba
+          cp static/recuperar-prueba/index.html experimental/dist/recuperar-prueba/
+          cp scripts/smoke-recovery.mjs experimental/scripts/smoke-recovery.mjs
+      - name: Instalar WebKit
+        working-directory: experimental
+        run: |
+          bash ../scripts/prepare-ubuntu-playwright.sh
+          npx playwright install --with-deps webkit
+      - name: Probar ambas descargas JSON desde Safari/WebKit
+        working-directory: experimental
+        run: node scripts/smoke-recovery.mjs

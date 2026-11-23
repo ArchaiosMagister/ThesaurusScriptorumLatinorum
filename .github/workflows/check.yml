@@ -4,6 +4,10 @@ on:
   push:
     branches: ['fase-*/**']
 
+concurrency:
+  group: integrated-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -18,10 +22,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
       - run: npm run build
-      - run: npm run check
-        working-directory: .upstream/cuaderno
+      - run: npm test && npm run test:ipad-selection && node tests/collatinus-grammar-integration.mjs
+        working-directory: vendor/cuaderno
       - run: npx playwright install --with-deps webkit
+      - run: npm run test:webkit -- -g 'la ficha Collatinus'
       - run: npm run test:webkit

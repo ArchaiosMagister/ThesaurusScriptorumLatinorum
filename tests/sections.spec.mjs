@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const path = '/AdministratorTextorumLatinorum/';
+const path = '/ThesaurusScriptorumLatinorum/';
 
 test('arrancan los tres módulos reales y se conserva el editor al cambiar de pestaña', async ({ page }) => {
   const errors = [];
@@ -230,7 +230,7 @@ test('Examinator importa una copia del texto y mantiene el acceso a Perseus', as
   await page.getByRole('tab', { name: 'Examinator' }).click();
   await expect(exam.locator('[data-k="texto"]')).toHaveValue('Secunda lux orta est.');
   await expect.poll(() => exam.locator('html').evaluate(() =>
-    navigator.serviceWorker.controller?.scriptURL.endsWith('/AdministratorTextorumLatinorum/sw.js'))).toBe(true);
+    navigator.serviceWorker.controller?.scriptURL.endsWith('/ThesaurusScriptorumLatinorum/sw.js'))).toBe(true);
   await page.context().setOffline(true);
   try {
     await exam.getByRole('button', { name: 'Banco de textos…' }).click();
@@ -1012,12 +1012,14 @@ test('Cuadernos regenera términos de léxico conservando los demás', async ({ 
     expect(terms).toEqual([...terms].sort(alphabetical.compare));
   }
 
-  for (const [name, minimum] of [[/Evolución fonética/i, 4], [/Prefijos/i, 4], [/Latinismos/i, 4]]) {
+  for (const [name, minimum, previewIndex] of [[/Evolución fonética/i, 4, 1], [/Prefijos/i, 4, 2], [/Latinismos/i, 4, 3]]) {
     const option = notebook.locator('.edition-option').filter({ has: notebook.locator('.edition-option-head strong').filter({ hasText: name }) });
     const inputs = option.locator('.edition-option-rows input');
     await expect(inputs).toHaveCount(4);
     await checkLexicalVariation(option.locator('.edition-slot-regenerate').first(),
       () => inputs.evaluateAll(rows => rows.map(input => input.value)), minimum);
+    const sortedTerms = await docRows.nth(previewIndex).locator('em').allTextContents();
+    expect(sortedTerms).toEqual([...sortedTerms].sort(alphabetical.compare));
   }
 });
 
@@ -1031,6 +1033,10 @@ test('Examinator regenera términos de las cuatro opciones de léxico conservand
   for (const [kind, action, minimum] of [['prev', 'prevOne', 3], ['evol', 'evolOne', 4], ['pref', 'prefOne', 4], ['latin', 'latOne', 4]]) {
     await checkLexicalVariation(exam.locator(`[data-act="${action}"][data-k="0"]`),
       () => exam.locator(`[data-q="${kind}"]`).evaluateAll(rows => rows.map(input => input.value)), minimum);
+    const alphabetic = await exam.locator('html').evaluate(() => window.M.Exam.q4(window.M.S)
+      .slice(1).map(row => row.filter(part => part.i).map(part => part.t)));
+    const collator = new Intl.Collator('es', { sensitivity: 'base' });
+    for (const words of alphabetic) expect(words).toEqual([...words].sort(collator.compare));
   }
 });
 
@@ -1410,4 +1416,73 @@ test('las copias de Cuadernos abren un diálogo sin mover el botón', async ({ p
   expect((await download).suggestedFilename()).toMatch(/^copia-cuaderno/);
   await modal.getByRole('button', { name: 'Cerrar', exact: true }).click();
   await expect(trigger).toBeFocused();
+});
+
+
+test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y actualiza morfología sin cambiar otras preguntas', async ({ page }) => {
+  const latin = lexicalPassage + ' Zorvalix Zorvalix.';
+  await page.goto(path);
+  await page.getByRole('tab', { name: 'Cuadernos' }).click();
+  const notebook = page.frameLocator('#panel-cuaderno iframe');
+  page.once('dialog', dialog => dialog.accept('Subrayado desde Collatinus'));
+  await notebook.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
+  await notebook.getByRole('button', { name: 'Pegar texto', exact: true }).click();
+  const paste = notebook.locator('.original-paste');
+  await paste.getByRole('textbox', { name: 'Texto latino' }).fill(latin);
+  await paste.getByRole('button', { name: 'Añadir al cuaderno' }).click();
+  await expect(paste).toBeHidden();
+  const snapshot = () => notebookSnapshot(notebook, 'Subrayado desde Collatinus');
+  await expect.poll(async () => Boolean((await snapshot())?.edition?.placements?.length)).toBe(true);
+  const before = (await snapshot()).edition.placements[0];
+  const priorMorph = before.questions.find(question => question.kind === 'morphology').words;
+  const otherQuestions = before.questions.filter(question => question.kind !== 'morphology');
+  const targetStart = latin.lastIndexOf('Zorvalix');
+  const previewTab = notebook.locator('.edition-mobile-switch').getByRole('button', { name: 'Vista previa' });
+  if (await previewTab.isVisible()) await previewTab.click();
+  const paragraph = notebook.locator('.edition-paper .edition-latin').first();
+  await expect(paragraph).toBeVisible();
+  await paragraph.scrollIntoViewIfNeeded();
+  const point = await paragraph.evaluate((element, start) => {
+    const end = start + 'Zorvalix'.length;
+    const walk = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    let text, offset = 0, first = null, last = null, left = 0, right = 0;
+    while ((text = walk.nextNode())) {
+      const limit = offset + text.textContent.length;
+      if (first === null && start >= offset && start < limit) { first = text; left = start - offset; }
+      if (end > offset && end <= limit) { last = text; right = end - offset; break; }
+      offset = limit;
+    }
+    if (!first || !last) throw Error('No se encontró la aparición exacta');
+    const range = document.createRange();
+    range.setStart(first, left); range.setEnd(last, right);
+    const word = range.getBoundingClientRect();
+    return { x: word.left + word.width / 2, y: word.top + word.height / 2 };
+  }, targetStart);
+  const frameBox = await page.locator('#panel-cuaderno iframe').boundingBox();
+  expect(frameBox).not.toBeNull();
+  await page.mouse.click(frameBox.x + point.x, frameBox.y + point.y);
+  const card = notebook.locator('.edition-lexical-card');
+  await expect(card).toBeVisible();
+  await expect(card).toContainText('Zorvalix');
+  const add = card.getByRole('button', { name: 'Subrayar para análisis morfológico' });
+  await expect(add).toBeVisible();
+  expect(priorMorph).toHaveLength(4);
+  const select = card.getByRole('combobox', { name: 'Palabra subrayada que se sustituirá' });
+  await expect(select).toBeVisible();
+  await expect(add).toBeDisabled();
+  const [removedId] = await select.selectOption({ index: 1 });
+  await expect(add).toBeEnabled();
+  await add.click();
+  await expect.poll(async () => (await snapshot()).edition.placements[0].text.markup
+    .some(mark => mark.kind === 'morph-underline' && mark.startUtf16 === targetStart && mark.exact === 'Zorvalix')).toBe(true);
+  const after = (await snapshot()).edition.placements[0];
+  expect(after.questions.filter(question => question.kind !== 'morphology')).toEqual(otherQuestions);
+  const updatedMorph = after.questions.find(question => question.kind === 'morphology').words;
+  expect(updatedMorph).toHaveLength(4);
+  const newWord = updatedMorph[priorMorph.findIndex(word => word.id === removedId)];
+  expect(newWord.surface).toBe('Zorvalix');
+  expect(updatedMorph.filter(word => word.id !== newWord.id)).toEqual(priorMorph.filter(word => word.id !== removedId));
+  const configTab = notebook.locator('.edition-mobile-switch').getByRole('button', { name: 'Configurar' });
+  if (await configTab.isVisible()) await configTab.click();
+  await expect(notebook.locator('.edition-academic-morph-row').filter({ hasText: 'Zorvalix' })).toBeVisible();
 });

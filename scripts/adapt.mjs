@@ -2,6 +2,7 @@ import { simplifyNotebookOrganization, simplifyNotebookHeader, stableNotebookOve
 import { modernizeBank } from './bank-interface.mjs';
 import { sharedExamEditorStyle, alignNotebookEditorMarkup } from './exam-editor-style.mjs';
 import { integrateExamMorphology } from './exam-morphology-integration.mjs';
+import { integrateLatinReadingCard, integrateReadingCardPreview } from './reading-card-integration.mjs';
 import { organizeNotebookEditor, completeNotebookVocabulary } from './notebook-editor.mjs';
 import { varyPreverbControls, varyPreverbSelection } from './preverb-regeneration.mjs';
 import { groupLibraryAuthors, integrateNotebookLibrary, libraryStyles } from './library-integration.mjs';
@@ -138,7 +139,11 @@ export function lexicalValuesForDocument(option) {
       .replace("button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks");
     await writeFile(join(directory, 'ui', 'atl-repertorios.js'), integrated);
     const edition = simplifyNotebookOrganization(alignNotebookEditorMarkup(organizeNotebookEditor(integrateMorphologyEdition(integrateEditionSourceRefresh(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8'))))));
-    await writeFile(join(directory, 'ui', 'atl-edition.js'), edition
+    const readingCardFile = join(directory, 'ui', 'latin-reading-card.js');
+    const readingCard = integrateLatinReadingCard(await readFile(readingCardFile, 'utf8'));
+    await writeFile(readingCardFile, readingCard);
+    const editionWithCards = integrateReadingCardPreview(edition);
+    await writeFile(join(directory, 'ui', 'atl-edition.js'), editionWithCards
       .replace('import { displayedAcademicSlotValue }', 'import { displayedAcademicSlotValue, lexicalValuesForDocument }')
       .replace('option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {')
       .replace('displayedAcademicSlotValue(option.kind, slot)', 'value'));
@@ -180,6 +185,7 @@ export function lexicalValuesForDocument(option) {
     notebookRevision = createHash('sha256').update(integrated).update(notebookStyles)
       .update(library).update(utilities).update(pwa).update(catalogue).update(bankReview).update(bankVocabulary).update(edition)
       .update(academicRevision).update(usage).update(personalAcademic).update(academicControls).update(teacherSource)
+       .update(readingCard).update(editionWithCards)
       .digest('hex').slice(0, 12);
   } else {
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');

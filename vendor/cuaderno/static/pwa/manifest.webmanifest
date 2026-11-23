@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Cuaderno de textos latinos",
+  "short_name": "Cuaderno Latín",
+  "description": "Banco de textos latinos y creación de cuadernos con preguntas, vocabulario y exportación Word/PDF.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#173f4a",
+  "theme_color": "#173f4a",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"},
+    {"src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any"}
+  ]
+}
