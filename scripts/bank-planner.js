@@ -281,7 +281,7 @@ export function showBankPlanner({ read, match, create, modal }) {
     preview.replaceChildren();
     hasWarnings = false;
     for (const group of plan.groups) {
-      if (!group.size && group.review) continue;
+      if (!group.size) continue;
       const info = plan.coverage(group);
       const details = node('details');
       details.open = open.has(group.period);
@@ -289,18 +289,21 @@ export function showBankPlanner({ read, match, create, modal }) {
       const list = node('ol');
       for (const [index, row] of group.entries.entries()) {
         const item = node('li');
-        item.append(node('span', [row.text.title, row.text.source.author, difficultyText(row.level)].filter(Boolean).join(' · ')));
+        item.append(node('span', [row.text.title, row.text.source.author || 'Autor sin indicar', difficultyText(row.level)].filter(Boolean).join(' · ')));
         if (row.tags.length) item.append(node('p', tagLabels(row.tags)));
         const controls = node('span');
         controls.className = 'atl-bank-action-group';
         const replace = action('Sustituir', () => {
-          if (plan.replace(group, index)) redraw();
+          if (plan.replace(group, index)) redraw(group.period, index);
           else status.textContent = 'No quedan alternativas compatibles para «' + row.text.title + '».';
         });
         replace.setAttribute('aria-label', 'Sustituir «' + row.text.title + '»');
         controls.append(replace);
         for (const [name, direction] of [['Subir', -1], ['Bajar', 1]]) {
-          const button = action(name, () => { move(group.entries, index, index + direction); redraw(); });
+          const button = action(name, () => {
+            move(group.entries, index, index + direction);
+            redraw(group.period, index + direction, direction < 0 ? 1 : 2);
+          });
           button.setAttribute('aria-label', name + ' «' + row.text.title + '»');
           button.disabled = !group.entries[index + direction];
           controls.append(button);
@@ -324,9 +327,13 @@ export function showBankPlanner({ read, match, create, modal }) {
     updateButton();
   }
 
-  function redraw() {
+  function redraw(period, index, control = 0) {
     partial.checked = false;
     renderPreview(new Set([...preview.querySelectorAll('details[open]')].map(section => section.dataset.period)));
+    const group = [...preview.children].find(section => section.dataset.period === period);
+    const buttons = group?.querySelector('ol')?.children[index]?.querySelectorAll('button');
+    const target = buttons?.[control]?.disabled ? buttons[0] : buttons?.[control];
+    target?.focus();
   }
 
   function readSettings() {

@@ -26,7 +26,7 @@ export function subsetCorpus(corpus, texts, extraTags = []) {
   return validateCorpus({ ...emptyCorpus(), texts, tags: [...tags.values()] });
 }
 
-export function mergeBank(local, deposits, incoming, equal) {
+export function mergeBank(local, deposits, incoming, equal, catalogue = allGrammarTags(local)) {
   const added = [];
   const conflicts = [];
   const indexed = new Map(deposits.map(text => [text.id, text]));
@@ -45,7 +45,7 @@ export function mergeBank(local, deposits, incoming, equal) {
     indexed.set(text.id, text);
   }
   const needed = subsetCorpus(incoming, added);
-  const known = new Map(allGrammarTags(local).map(tag => [tag.id, tag]));
+  const known = new Map(catalogue.map(tag => [tag.id, tag]));
   const tags = new Map(local.tags.map(tag => [tag.id, tag]));
   for (const tag of needed.tags) {
     if (known.has(tag.id) && !equal(known.get(tag.id), tag))

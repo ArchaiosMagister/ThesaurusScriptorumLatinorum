@@ -682,10 +682,12 @@ function notebookImport(stores, incoming, historical, editorial) {
     changed++;
   }
   const incomingCorpus = incoming.corpus[0]?.[1]?.corpus ?? emptyCorpus();
-  const deps = mergeBank(editorial, combineNotebookCorpora(editorial, historical).texts, incomingCorpus, equal);
+  const combined = combineNotebookCorpora(editorial, historical);
+  const catalogue = allGrammarTags(combined);
+  const deps = mergeBank(editorial, combined.texts, incomingCorpus, equal, catalogue);
   conflicts.push(...deps.conflicts);
   const tags = new Map(deps.corpus.tags.map(tag => [tag.id, tag]));
-  const all = new Map(allGrammarTags(combineNotebookCorpora(editorial, historical)).map(tag => [tag.id, tag]));
+  const all = new Map(catalogue.map(tag => [tag.id, tag]));
   for (const tag of incomingCorpus.tags) {
     if (all.has(tag.id) && !equal(all.get(tag.id), tag)) conflicts.push(tag.label + ' · definición incompatible');
     else tags.set(tag.id, tag);
@@ -735,7 +737,7 @@ export async function planPartial(envelope, { removeCustom = false, selected = n
     }
     changes = Object.keys(preferences).length;
   } else if (type === 'bank') {
-    const result = mergeBank(historical, combined.texts, payload.corpus, equal);
+    const result = mergeBank(historical, combined.texts, payload.corpus, equal, allGrammarTags(combined));
     conflicts = result.conflicts;
     changes = result.added.length;
     if (changes) replace(corpusName, withCorpus(data.databases[corpusName], result.corpus));
