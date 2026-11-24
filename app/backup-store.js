@@ -300,7 +300,9 @@ async function replaceDatabase(name, before, after) {
     const checks = Object.entries(before).map(async ([store, rows]) => {
       const collection = tx.objectStore(store);
       const [keys, values] = await Promise.all([request(collection.getAllKeys()), request(collection.getAll())]);
-      if (!equal(keys.map((key, i) => [key, values[i]]), rows)) {
+      const expected = new Map(rows.map(([key, value]) => [JSON.stringify(key), value]));
+      if (keys.length !== expected.size || keys.some((key, i) =>
+        !expected.has(JSON.stringify(key)) || !equal(values[i], expected.get(JSON.stringify(key))))) {
         tx.abort();
         throw new Error('Hay cambios locales en otra pestaña. Vuelve a comparar la copia.');
       }
@@ -804,14 +806,15 @@ export async function restorePartial(envelope, expected, options) {
       saved.push(key);
     }
   } catch (error) {
-    for (const key of saved.reverse()) {
-      const { before, after } = next.preferences[key];
-      if (localStorage.getItem(key) !== after) continue;
-      if (before === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, before);
-    }
-    const reverted = await Promise.allSettled(committed.reverse().map(name =>
-      replaceDatabase(name, next.banks[name].after, next.banks[name].before)));
+    const reverted = await Promise.allSettled([
+      ...committed.reverse().map(name => replaceDatabase(name, next.banks[name].after, next.banks[name].before)),
+      ...saved.reverse().map(async key => {
+        const { before, after } = next.preferences[key];
+        if (localStorage.getItem(key) !== after) throw Error('Cambió una preferencia durante la reversión.');
+        if (before === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, before);
+      })
+    ]);
     if (reverted.some(result => result.status === 'rejected'))
       throw Error('Otra pestaña modificó los datos durante la importación. No se pudo verificar la reversión.');
     throw error;
