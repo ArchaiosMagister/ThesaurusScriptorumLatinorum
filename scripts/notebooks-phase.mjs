@@ -48,15 +48,12 @@ export function integrateNotebookWorkflow(source) {
             if (panel.isConnected) populate();
         }
     }`);
-  source = replaceOnce(source, '  const availableTexts=corpus.texts.filter(t=>!alreadyUsed(t));',
-    `  const excludedCourse = composer.activeEdition()?.excludedCourse;
-  const availableTexts = corpus.texts.filter(t => !alreadyUsed(t) &&
-    !(t.courseIds ?? []).includes(excludedCourse));`);
-  source = replaceOnce(source, '  const alreadyCount=corpus.texts.length-availableTexts.length;',
-    `  const alreadyCount = corpus.texts.filter(alreadyUsed).length;
-  const excludedCount = corpus.texts.length - alreadyCount - availableTexts.length;
-  if (excludedCount) panel.append(el('p','small muted',
-    excludedCount + ' textos ocultos por el curso excluido del cuaderno.'));`);
+  const availableTexts = /const\s+availableTexts\s*=\s*corpus\.texts\.filter\(\s*t\s*=>\s*!alreadyUsed\(t\)\s*\)\s*;/u;
+  if (!availableTexts.test(source)) throw Error('Revisar la selección por curso en Cuadernos.');
+  source = source.replace(availableTexts, () => "const excludedCourse = composer.activeEdition()?.excludedCourse;\n    const availableTexts = corpus.texts.filter(t => !alreadyUsed(t) &&\n      !(t.courseIds ?? []).includes(excludedCourse));");
+  const alreadyCount = /const\s+alreadyCount\s*=\s*corpus\.texts\.length\s*-\s*availableTexts\.length\s*;/u;
+  if (!alreadyCount.test(source)) throw Error('Revisar la contabilización de cursos de Cuadernos.');
+  source = source.replace(alreadyCount, () => "const alreadyCount = corpus.texts.filter(alreadyUsed).length;\n    const excludedCount = corpus.texts.length - alreadyCount - availableTexts.length;\n    if (excludedCount) panel.append(el('p','small muted',\n      excludedCount + ' textos ocultos por el curso excluido del cuaderno.'));");
   source = replaceOnce(source, "    const alreadyUsed = (text) => usedIds.has(text.id) || placements.some(p =>",
     "    const alreadyUsed = (text) => usedIds.has(text.id) || (!text.teacherDocx && placements.some(p => !p.source.sourceId &&");
   source = replaceOnce(source, 'p.text.reference === text.source.reference);', 'p.text.reference === text.source.reference));');
