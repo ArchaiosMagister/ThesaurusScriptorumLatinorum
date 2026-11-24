@@ -1251,8 +1251,8 @@
   #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk,
   #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk:not([open]),
   #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk[open] {
-    width:100%; min-width:0; box-sizing:border-box; margin:0;
-    padding:.25rem .45rem; flex-basis:auto;
+    display:block; width:100%; min-width:0; box-sizing:border-box; margin:0;
+    padding:.25rem .45rem;
   }
   #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk > summary,
   #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk:not([open]) > summary {
