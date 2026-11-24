@@ -1057,7 +1057,8 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
     await expect(restored.locator('#app-status')).toHaveText('Copia recuperada y verificada.');
     await expect(recoveredExam.locator('[data-k="titulo"]')).toHaveValue('Examen de la copia');
     await restored.getByRole('button', { name: 'Copias de seguridad' }).click();
-    await restored.getByText('Historial de recuperación de este dispositivo').click();
+    await expect(restored.locator('#backup-dialog')).toBeVisible();
+    await restored.locator('#backup-history > summary').press('Enter');
     await expect(restored.locator('#backup-history-list')).toContainText('Antes de sustituir el espacio local');
   } finally {
     await fresh.close();
