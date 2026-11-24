@@ -19,8 +19,9 @@ function citation(s) {
   const inner = clean(s).replace(/^\(/u,'').replace(/\)\s*$/u,'');
   const match = /^(.+?)(?:,\s*|\.\s+)(.+?)\s+((?:[IVXLCDM]+\s+)?\d[\d,\s.–-]*)$/u.exec(inner);
   if (!match) throw Error('Referencia bibliográfica no reconocida: '+s);
-  const authors = {Caes:'César',Sall:'Salustio',Cic:'Cicerón',Verg:'Virgilio',Liv:'Tito Livio',Nep:'Cornelio Nepote'};
-  return {author:authors[match[1]]??match[1],work:match[2].trim(),reference:match[3].trim()};
+  const authors = {Caes:'Julio César',Sall:'Salustio',Cic:'Cicerón',Verg:'Virgilio',Liv:'Tito Livio',Nep:'Cornelio Nepote'};
+  const author=authors[match[1]]??match[1];
+  return {author:/^c[eé]sar$/iu.test(author.trim())?'Julio César':author,work:match[2].trim(),reference:match[3].trim()};
 }
 function lexicalParts(rows) {
   const start=rows.findIndex(r=>/^PREGUNTA\s+3\s*$/iu.test(r.text));

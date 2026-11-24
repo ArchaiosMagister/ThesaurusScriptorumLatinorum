@@ -4,6 +4,12 @@ test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',
  const frame=page.frameLocator('#panel-cuaderno iframe');
  const bank=frame.getByRole('region',{name:'Banco de textos propios'});
  await expect(bank.getByText('Mostrando 88 de 88 textos', {exact:true})).toBeVisible({timeout:30000});
+ const author=bank.getByRole('combobox',{name:'Filtrar textos por autor'});
+ await expect(author.locator('option').filter({hasText:/^Julio César$/})).toHaveCount(1);
+ await expect(author.locator('option').filter({hasText:/^César$/})).toHaveCount(0);
+ await author.selectOption({label:'Julio César'});
+ await expect(bank.getByText('Mostrando 43 de 88 textos',{exact:true})).toBeVisible();
+ await author.selectOption('all');
  await bank.getByRole('combobox',{name:'Filtrar textos por curso'}).selectOption('2bach');
  await expect(bank.getByText('Mostrando 88 de 88 textos', {exact:true})).toBeVisible();
  await bank.getByRole('searchbox',{name:/Buscar/}).first().fill('CATÓN RECIBE EL GOBIERNO');
@@ -23,4 +29,23 @@ test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',
  await expect(modal).toBeHidden();
  await page.reload();
  await expect(bank.getByText('Mostrando 87 de 87 textos',{exact:true})).toBeVisible();
+});
+
+test('una ficha PAU guardada con el nombre anterior se normaliza sin perder datos',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await expect(bank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+ const result=await frame.locator('html').evaluate(async()=>{
+  const {IndexedDbCorpusRepository}=await import('../storage/indexeddb-corpus-repository.js');
+  const {validateCorpus}=await import('../core/validation.js');
+  const {corpus}=await new IndexedDbCorpusRepository().load();
+  const text=corpus.texts.find(t=>t.source.author==='Julio César');
+  const old={...text,source:{...text.source,author:'César'},teacherDocx:{...text.teacherDocx,author:'César'}};
+  const next=validateCorpus({...corpus,texts:[old]}).texts[0];
+  const own={...old};delete own.selectividad;delete own.teacherDocx;
+  const personal=validateCorpus({...corpus,texts:[own]}).texts[0];
+  return {author:next.source.author,doc:next.teacherDocx.author,same:JSON.stringify(next)===JSON.stringify(text),personal:personal.source.author};
+ });
+ expect(result).toEqual({author:'Julio César',doc:'Julio César',same:true,personal:'César'});
 });
