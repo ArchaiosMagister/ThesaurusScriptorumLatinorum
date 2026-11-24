@@ -380,7 +380,7 @@ test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramati
   await expect(bank.getByRole('checkbox', { name: /^Demostrativo / })).toHaveCount(3);
 });
 
-test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y repaso', async ({ page }) => {
+test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente', async ({ page }) => {
   await page.goto(path);
   const frame = page.frameLocator('#panel-cuaderno iframe');
   const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
@@ -394,7 +394,7 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
     let corpus = before.corpus;
     for (let i = 0; i < 50; i++) {
       const id = 'plan.' + i;
-      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est.', author: 'César',
+      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est ' + i + '.', author: 'César',
         reference: String(i), work: 'Bellum Gallicum', difficulty: 1 + Math.floor(i / 10) }, id, '2026-11-22T09:00:00.000Z');
       corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.subjuntivo' : 'gram.ablativo.absoluto']);
     }
@@ -404,24 +404,29 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
   await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
   const panel = frame.locator('.atl-bank-planner');
   const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
-  await expect(panel.getByText(/^Sin ejemplos en la selección/)).toBeVisible();
-  await expect(create).toBeDisabled();
-  await panel.getByRole('checkbox', { name: 'Limitar a etiquetas presentes en la selección' }).check();
-  await expect(panel.getByRole('status')).toContainText('50 de 50 textos');
-  await expect(panel.getByText('Tercer trimestre · 15 textos')).toBeVisible();
-  await expect(panel.getByText('Repaso y refuerzo · 5 textos')).toBeVisible();
+  await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
+  const first = panel.getByRole('combobox', { name: 'Etiqueta para primer trimestre' });
+  await first.selectOption('gram.ablativo.absoluto');
+  await first.selectOption('gram.subjuntivo');
+  await panel.getByRole('button', { name: /^Subir Subjuntivo/i }).click();
+  await expect(panel.locator('details').first().locator('li').first()).toContainText(/subjuntivo/i);
+  await panel.getByRole('button', { name: /^Quitar Subjuntivo/i }).click();
+  const second = panel.getByRole('combobox', { name: 'Etiqueta para segundo trimestre' });
+  await panel.getByText('Segundo trimestre', { exact: true }).click();
+  await second.selectOption('gram.subjuntivo');
+  await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
+  await expect(panel.getByText('Refuerzo del primer trimestre · 2/2 · 25 candidatos')).toBeVisible();
+  const third = panel.locator('[data-period="trimestre-3"]');
+  await third.locator('summary').click();
+  await third.getByRole('button', { name: /^Bajar «/ }).first().click();
   await create.click();
   await expect(frame.locator('.atl-organize-main')).toContainText('Textos del cuaderno (50)');
   const { edition } = await notebookSnapshot(frame, 'Lecturas por trimestres');
   expect(new Set(edition.placements.map(item => item.source.sourceId)).size).toBe(50);
   expect(edition.placements.map(item => item.period)).toEqual([
     ...Array(15).fill('trimestre-1'), ...Array(15).fill('trimestre-2'),
-    ...Array(15).fill('trimestre-3'), ...Array(5).fill('repaso')
+    ...Array(15).fill('trimestre-3'), 'refuerzo-1', 'refuerzo-1', 'refuerzo-2', 'refuerzo-2', 'refuerzo-3'
   ]);
-  const level = item => 1 + Math.floor(Number(item.source.sourceId.split('.')[1]) / 10);
-  const teaching = edition.placements.slice(0, 45).map(level);
-  expect(teaching).toEqual([...teaching].sort((a, b) => a - b));
-  expect(edition.placements.slice(45).map(level)).toEqual([1, 2, 3, 4, 5]);
   expect(edition.placements.flatMap(item => item.grammaticalTagIds)).toEqual(
     expect.arrayContaining(['gram.subjuntivo', 'gram.ablativo.absoluto'])
   );
@@ -430,7 +435,7 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
     return new TextDecoder().decode(createNotebookDocx(edition));
   }, edition);
   expect(word).toContain('Primer trimestre');
-  expect(word).toContain('Repaso y refuerzo');
+  expect(word).toContain('Refuerzo del primer trimestre');
 });
 
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {

@@ -2,7 +2,10 @@ export const periods = [
   ['trimestre-1', 'Primer trimestre'],
   ['trimestre-2', 'Segundo trimestre'],
   ['trimestre-3', 'Tercer trimestre'],
-  ['repaso', 'Repaso y refuerzo']
+  ['repaso', 'Repaso y refuerzo'],
+  ['refuerzo-1', 'Refuerzo del primer trimestre'],
+  ['refuerzo-2', 'Refuerzo del segundo trimestre'],
+  ['refuerzo-3', 'Refuerzo del tercer trimestre']
 ];
 
 export const communities = [
@@ -175,10 +178,103 @@ export function buildCurriculum(rows, requested, sizes) {
   }
   const core = chosen.filter(row => !review.has(row));
   let cursor = 0;
-  const groups = periods.map(([period, label], index) => {
+  const groups = periods.slice(0, 4).map(([period, label], index) => {
     const entries = index === 3 ? [...review].sort(byDifficulty) : core.slice(cursor, cursor + sizes[index]);
     cursor += sizes[index];
     return { period, label, entries };
   });
   return { groups, missing, uncovered: [...remaining], count: chosen.length, capacity };
+}
+
+export function planCurriculum(rows, settings, equivalent) {
+  const { terms, progression, exam, excludedCourses } = settings;
+  const available = [...new Map(rows.filter(({ text }) => {
+    const courses = text.courseIds ?? [];
+    return matchesSelectividad(text, '', '', exam === 'only', exam === 'exclude') &&
+      !courses.some(course => excludedCourses.includes(course)) &&
+      (courses.length > 0 || !excludedCourses.includes('unassigned'));
+  }).map(row => [row.text.id, row])).values()].sort(byDifficulty);
+  const groups = [];
+  const introduced = new Set();
+  const specifications = terms.map(({ tags }, index) => {
+    for (const tag of tags) introduced.add(tag);
+    return {
+      requested: tags,
+      applicable: progression === 'specific' ? tags : [...new Set([...tags, ...introduced])],
+      later: [...new Set(terms.slice(index + 1).flatMap(term => term.tags).filter(tag => !introduced.has(tag)))]
+    };
+  });
+  function candidates(group) {
+    return available.filter(row => !group.applicable.length || row.tags.some(tag => group.applicable.includes(tag)));
+  }
+  function choose(group, omitted) {
+    const entries = groups.flatMap(section => section.entries).filter(row => row !== omitted);
+    const covered = new Set(group.entries.filter(row => row !== omitted).flatMap(row => row.tags));
+    const authors = new Map();
+    const origins = new Map();
+    for (const { text } of entries) {
+      const author = text.source.author;
+      const origin = text.origin?.kind;
+      authors.set(author, (authors.get(author) ?? 0) + 1);
+      origins.set(origin, (origins.get(origin) ?? 0) + 1);
+    }
+    let best;
+    let bestScore = -Infinity;
+    for (const row of candidates(group)) {
+      if (row === omitted || entries.some(used => used === row || equivalent(used.text, row.text))) continue;
+      const gains = group.requested.filter(tag => row.tags.includes(tag) && !covered.has(tag));
+      const later = group.later.some(tag => row.tags.includes(tag));
+      const target = group.review ? 1 + 4 * (group.entries.length % 5) / 4 : 1 + 2 * group.term;
+      const score = gains.length * 100 + Number(!later) * 50 +
+        group.requested.filter(tag => row.tags.includes(tag)).length * 5 -
+        Math.abs(levelOf(row) - target) -
+        Math.min(authors.get(row.text.source.author) ?? 0, 8) / 2 -
+        Math.min(origins.get(row.text.origin?.kind) ?? 0, 8) / 10;
+      if (score > bestScore) {
+        best = row;
+        bestScore = score;
+      }
+    }
+    return best;
+  }
+  for (const review of [false, true]) {
+    terms.forEach((term, index) => {
+      const [period, label] = periods[review ? index + 4 : index];
+      groups.push({ period, label, review, term: index, size: review ? term.review : term.count,
+        ...specifications[index], entries: [] });
+    });
+  }
+  const allocationOrder = groups.filter(group => group.size).map(group => [group, candidates(group).length])
+    .sort(([a, aCount], [b, bCount]) => aCount - bCount ||
+      b.requested.length - a.requested.length || a.term - b.term || Number(a.review) - Number(b.review));
+  for (const [group] of allocationOrder) {
+    while (group.entries.length < group.size) {
+      const row = choose(group);
+      if (!row) break;
+      group.entries.push(row);
+    }
+    const order = row => group.applicable.findIndex(tag => row.tags.includes(tag));
+    group.entries.sort((a, b) => (order(a) < 0 ? Infinity : order(a)) -
+      (order(b) < 0 ? Infinity : order(b)) || byDifficulty(a, b));
+  }
+  return {
+    groups,
+    coverage(group) {
+      const covered = new Set(group.entries.flatMap(row => row.tags));
+      return {
+        candidates: candidates(group).length,
+        covered: group.requested.filter(tag => covered.has(tag)),
+        uncovered: group.requested.filter(tag => !covered.has(tag)),
+        later: group.later.filter(tag => covered.has(tag))
+      };
+    },
+    replace(group, index) {
+      const previous = group.entries[index];
+      if (!previous) return false;
+      const replacement = choose(group, previous);
+      if (!replacement) return false;
+      group.entries[index] = replacement;
+      return true;
+    }
+  };
 }

@@ -15,7 +15,7 @@ export function integratePeriodValidation(source) {
   source = source.replace(editionDateCheck, match =>
     "if(d.notebookCourse!==undefined)e.notebookCourse=str(d.notebookCourse,'edition.notebookCourse',100,true);\n  if(d.academicYear!==undefined)e.academicYear=str(d.academicYear,'edition.academicYear',20,true);\n  " + match);
   return required(source, "text: sourceText,\n        questions: array(d.questions", `text: sourceText,
-        ...(d.period === undefined ? {} : { period: choice(d.period, path + '.period', ['trimestre-1', 'trimestre-2', 'trimestre-3', 'repaso']) }),
+        ...(d.period === undefined ? {} : { period: choice(d.period, path + '.period', ['trimestre-1', 'trimestre-2', 'trimestre-3', 'repaso', 'refuerzo-1', 'refuerzo-2', 'refuerzo-3']) }),
         ...(d.pauCv === undefined ? {} : { pauCv: str(d.pauCv, path + '.pauCv', 120) }),
         questions: array(d.questions`);
 }
