@@ -396,17 +396,27 @@ function bankDecisions(record) {
     Array.isArray(row) && row.length === 2 && row.every(value => typeof value === 'string'))
     .sort(([a], [b]) => a.localeCompare(b));
   const keys = new Set([...rejected, ...corrected.map(([key]) => key)]);
-  const pending = (record?.pending ?? []).filter(row => row && keys.has(decisionKey(row)))
-    .map(({ start, end, tagId }) => ({ start, end, tagId, evidence: [], alternatives: [] }))
-    .sort((a, b) => decisionKey(a).localeCompare(decisionKey(b)));
-  return { rejected, corrected, pending };
+  // Sincronizar la clasificación automática además de las decisiones humanas.
+  // Las explicaciones del motor son recuperables y se omiten para ahorrar espacio.
+  const version = Number.isSafeInteger(record?.version) && record.version >= 0
+    ? record.version : undefined;
+  const pending = (record?.pending ?? []).filter(row =>
+    row && Number.isSafeInteger(row.start) && Number.isSafeInteger(row.end) &&
+    row.end > row.start && typeof row.tagId === 'string' &&
+    (version || keys.has(decisionKey(row))))
+    .map(({ start, end, tagId, state, syntaxReview }) => ({
+      start, end, tagId, state: state === 'automatic' ? 'automatic' : 'pending',
+      ...(syntaxReview && { syntaxReview: true }), evidence: [], alternatives: []
+    })).sort((a, b) => decisionKey(a).localeCompare(decisionKey(b)));
+  return { rejected, corrected, pending, ...(version !== undefined && { version }) };
 }
 
 function localBankDecisions() {
   return Object.keys(localStorage).filter(key => bankReviewPattern.test(key)).sort().flatMap(key => {
     try {
       const decision = bankDecisions(JSON.parse(localStorage.getItem(key)));
-      return decision.rejected.length || decision.corrected.length ? [[key, decision]] : [];
+      return decision.rejected.length || decision.corrected.length || decision.version !== undefined
+        ? [[key, decision]] : [];
     } catch {
       return [];
     }
@@ -487,8 +497,15 @@ export async function applySyncData(data, before) {
       const original = localStorage.getItem(key);
       const cached = JSON.parse(original ?? '{}') ?? {};
       const decision = next.get(key) ?? { rejected: [], corrected: [], pending: [] };
-      const known = new Set((cached.pending ?? []).map(decisionKey));
-      const pending = [...(cached.pending ?? []), ...decision.pending.filter(row => !known.has(decisionKey(row)))];
+      const existing = new Map((cached.pending ?? []).map(row => [decisionKey(row), row]));
+      const pending = decision.version
+        ? decision.pending.map(row => {
+            const old = cached.version === decision.version ? existing.get(decisionKey(row)) : null;
+            return old && old.state === row.state
+              ? { ...row, evidence: old.evidence ?? [], alternatives: old.alternatives ?? [] }
+              : row;
+          })
+        : [...(cached.pending ?? []), ...decision.pending.filter(row => !existing.has(decisionKey(row)))];
       localStorage.setItem(key, JSON.stringify({ ...cached, ...decision, pending }));
       savedReviews.push([key, original]);
     }

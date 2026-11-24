@@ -82,7 +82,8 @@ export function modernizeBank(source) {
     filterToggle.setAttribute('aria-expanded', String(!moreFilters.hidden));
     const filterFields = el('div', 'atl-bank-more-fields');
     filterFields.append(bankField('Autor', authorSelect, ''), bankField('Obra', filters.work, ''),
-        bankField('Referencia', filters.reference, ''), bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
+        bankField('Referencia', filters.reference, ''), bankField('Curso', filters.course, ''),
+        bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
     const examFields = el('div', 'atl-bank-more-fields');
     examFields.append(filters.examLabel, bankField('Año de Selectividad', filters.examYear, ''),
         bankField('Comunidad autónoma', filters.examCommunity, ''));

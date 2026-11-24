@@ -253,7 +253,20 @@ export async function setupDropbox(prepareReload, setStatus) {
   const appKey = document.getElementById('dropbox-app-key');
   const message = document.getElementById('dropbox-status');
   let busy = false;
-  function report(text) { message.textContent = text; setStatus(text); }
+  let completionTimer = null;
+  function report(text) {
+    if (completionTimer !== null) clearTimeout(completionTimer);
+    completionTimer = null;
+    message.textContent = text;
+    setStatus(text);
+    if (text === 'Sincronización con Dropbox completada.') {
+      completionTimer = setTimeout(() => {
+        completionTimer = null;
+        if (message.textContent === text) message.textContent = '';
+        if (document.getElementById('app-status')?.textContent === text) setStatus('');
+      }, 5000);
+    }
+  }
   function paint() {
     const connected = Boolean(read(localStorage, 'connection'));
     dialog.dataset.connected = String(connected);

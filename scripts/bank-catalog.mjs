@@ -44,6 +44,12 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     new Option('Biblioteca latina', 'library'), new Option('Sin procedencia registrada', 'unknown'));
   origin.value = state.origin;
   origin.addEventListener('change', onChange);
+  const course = element('select');
+  course.setAttribute('aria-label', 'Filtrar textos por curso');
+  course.append(new Option('Ambos cursos', ''), new Option('1.º Bachillerato', '1bach'),
+    new Option('2.º Bachillerato', '2bach'));
+  course.value = ['1bach', '2bach'].includes(state.course) ? state.course : '';
+  course.addEventListener('change', onChange);
   const usage = element('select');
   usage.setAttribute('aria-label', 'Filtrar textos por uso');
   usage.append(new Option('Cualquier uso', ''), new Option('Usados', 'used'), new Option('Sin uso registrado', 'unused'));
@@ -130,13 +136,14 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
     if (infinitive.checked) tags.push(infinitiveId);
     return { infTime: infTime.value, infVoice: infVoice.value, work: work.value, reference: reference.value, origin: origin.value,
-      usage: usage.value, exam: exam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
+      course: course.value, usage: usage.value, exam: exam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
   }
   function reset() {
     work.value = '';
     reference.value = '';
     origin.value = '';
     usage.value = '';
+    course.value = '';
     exam.checked = false;
     examYear.value = '';
     examCommunity.value = '';
@@ -173,7 +180,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const voice = second || (infinitiveVoices.includes(first) ? first : '');
     return infinitive.checked && infTime.value === tense && infVoice.value === voice;
   }
-  return { panel, work, reference, origin, usage, examLabel, examYear, examCommunity, read, reset, toggleTag, isActive };
+  return { panel, work, reference, origin, course, usage, examLabel, examYear, examCommunity, read, reset, toggleTag, isActive };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {
@@ -322,6 +329,10 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
       (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
     latin.textContent = text.latin;
     tags.replaceChildren();
+    for (const course of text.courseIds ?? []) {
+      const label = course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato';
+      tags.append(element('span', { className: 'grammar-chip', textContent: label }));
+    }
     for (const id of text.tagIds) {
       if (!labels.has(id) || !bankTagAssignable(id)) continue;
       const chip = element('span', { className: 'grammar-chip', textContent: labels.get(id) });

@@ -4,6 +4,9 @@ function required(source, old, next) {
 }
 
 export function integratePeriodValidation(source) {
+  source = required(source, "['cover']);", "['cover', 'excludedCourse']);");
+  source = required(source, "...(d.cover===undefined?{}:{cover:coverData(d.cover)})",
+    "...(d.cover===undefined?{}:{cover:coverData(d.cover)}),...(d.excludedCourse===undefined?{}:{excludedCourse:choice(d.excludedCourse,'edition.excludedCourse',['1bach','2bach'])})");
   source = required(source, "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode']);",
     "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode', 'period']);");
   return required(source, "text: sourceText,\n        questions: array(d.questions", `text: sourceText,

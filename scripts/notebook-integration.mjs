@@ -43,7 +43,7 @@ export function integrateNotebook(source) {
   replace('    const bank = el(\'section\', \'cuaderno-home-bank\');', `    return home;
 }
 
-const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', usage: '', exam: false, examYear: '', examCommunity: '', mode: 'all', tags: [], includePending: false };
+const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', course: '', usage: '', exam: false, examYear: '', examCommunity: '', mode: 'all', tags: [], includePending: false };
 let refreshBankProposals = () => {};
 let bankAutomaticTags = () => [];
 let refreshBankUses = () => {};
@@ -180,7 +180,19 @@ window.addEventListener('atl-view', () => {
     "        reference: source.source.reference ?? '', latin: source.latin, notes: source.notes ?? '',");
   replace("        ['title', 'Título didáctico'], ['author', 'Autor'], ['work', 'Obra'],\n        ['reference', 'Referencia'], ['latin', 'Texto latino'],",
     "        ['title', 'Título didáctico'], ['author', 'Autor'], ['work', 'Obra'],\n        ['reference', 'Referencia'], ['latin', 'Texto latino'], ['notes', 'Notas de la ficha'],");
-  replace("    if (source.teacherDocx)\n        form.append(", `    const difficulty = el('select');
+  replace("    if (source.teacherDocx)\n        form.append(", `    const courseField = el('fieldset', 'atl-bank-courses');
+    courseField.append(el('legend', '', 'Cursos para los que es apto el texto'));
+    const courseChecks = new Map();
+    for (const [id, label] of [['1bach', '1.º Bachillerato'], ['2bach', '2.º Bachillerato']]) {
+        const check = el('input');
+        check.type = 'checkbox';
+        check.checked = (source.courseIds ?? []).includes(id);
+        courseChecks.set(id, check);
+        const row = el('label', 'atl-tag-option');
+        row.append(check, el('span', '', label));
+        courseField.append(row);
+    }
+    const difficulty = el('select');
     difficulty.setAttribute('aria-label', 'Dificultad docente');
     difficulty.append(new Option('Automática', ''));
     for (let level = 1; level <= 5; level++) difficulty.append(new Option(difficultyText(level), String(level)));
@@ -199,13 +211,13 @@ window.addEventListener('atl-view', () => {
     inputs.get('latin').addEventListener('input', updateEstimate);
     updateEstimate();
     const exam = selectividadEditor(source.selectividad);
-    form.append(difficultyField, exam.container);
+    form.append(courseField, difficultyField, exam.container);
     const glossary = vocabularyEditor(source);
     form.append(glossary.section);
     if (source.teacherDocx)
         form.append(`);
   replace("        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin') };",
-    "        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin'), notes: value('notes'), difficulty: difficulty.value ? Number(difficulty.value) : null, selectividad: exam.read() };");
+    "        const data = { title: value('title'), author: value('author'), work: value('work'),\n            reference: value('reference'), latin: value('latin'), notes: value('notes'), difficulty: difficulty.value ? Number(difficulty.value) : null, selectividad: exam.read(), courseIds: [...courseChecks].filter(([, check]) => check.checked).map(([id]) => id) };");
   replace('            const loaded = await repo.load();\n            const current = loaded.corpus.texts.find(t => t.id === source.id);',
     `            await writeSource(async () => {
             const historical = await repo.load();
@@ -213,9 +225,14 @@ window.addEventListener('atl-view', () => {
             const loaded = primary ? historical : await workspace.loadCorpus();
             const current = loaded.corpus.texts.find(t => t.id === source.id);
             const vocabulary = glossary.read();`);
-  replace('            if (same) {', '            if (same && data.difficulty === (current.difficulty ?? null) && JSON.stringify(data.selectividad) === JSON.stringify(current.selectividad ?? null)) {');
+  replace('            if (same) {', '            if (same && data.difficulty === (current.difficulty ?? null) && JSON.stringify(data.selectividad) === JSON.stringify(current.selectividad ?? null) &&
+                JSON.stringify(data.courseIds) === JSON.stringify(current.courseIds ?? [])) {');
   replace('const saveCopy = linked || (changedLatin && Boolean(current.teacherDocx));',
-    'const saveCopy = (linked && !same) || (changedLatin && Boolean(current.teacherDocx));');
+    `const saveCopy = linked && !same && !current.teacherDocx;
+            if (changedLatin && current.teacherDocx &&
+                !window.confirm('Vas a modificar el texto latino importado de Word en esta misma ficha. ' +
+                    'Las marcas y el vocabulario originales del DOCX dejarán de estar vinculados ' +
+                    'a la nueva versión del texto. Los cuadernos ya creados conservarán su copia. ¿Continuar?')) return;`);
   replace("                data.reference === (current.source.reference ?? '');",
     "                data.reference === (current.source.reference ?? '') && data.notes === (current.notes ?? '') &&\n                (vocabulary === undefined || JSON.stringify(vocabulary) === JSON.stringify(current.teacherDocx?.vocabulary ?? current.vocabulary ?? []));");
   replace('            if (!confirmPossibleDuplicates(loaded.corpus, data, current.id))\n                return;',
@@ -374,12 +391,13 @@ window.addEventListener('atl-view', () => {
   replace('    bank.append(bankToolbar);', '    bank.append(bankToolbar, filters.panel);');
   replace("        viewSelect.value = 'all';\n        populate();", "        difficultySelect.value = '';\n        filters.reset();\n        populate();");
   replace('    function currentResults() {', `    function currentResults() {
-        const { work, reference, origin, usage, mode, tags, exam, examYear, examCommunity, infTime, infVoice } = filters.read();
+        const { work, reference, origin, course, usage, mode, tags, exam, examYear, examCommunity, infTime, infVoice } = filters.read();
         const referenceNeedle = foldLatin(reference);`);
   replace("            const author = t.source.author?.trim() ?? '';", `            const author = t.source.author?.trim() ?? '';
             if (difficultySelect.value && String(difficultyFor(t).level) !== difficultySelect.value) return false;
             if (!matchesSelectividad(t, examYear, examCommunity, exam)) return false;
             if (work && t.source.work?.trim() !== work) return false;
+            if (course && !(t.courseIds ?? []).includes(course)) return false;
             if (referenceNeedle && !foldLatin(t.source.reference ?? '').includes(referenceNeedle)) return false;
             if (origin && (t.origin?.kind ?? 'unknown') !== origin) return false;
             if (usage && usedSourceIds.has(t.id) !== (usage === 'used')) return false;
@@ -402,7 +420,7 @@ window.addEventListener('atl-view', () => {
             return authorOrder || workOrder || referenceOrder || titleOrder || compare(a.id, b.id);`);
   replace("        const isFiltered = Boolean(search.value.trim()) || authorSelect.value !== 'all';", `        const criteria = filters.read();
         Object.assign(bankState, criteria, { query: search.value, author: authorSelect.value, sort: sortSelect.value, difficulty: difficultySelect.value });
-        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage || criteria.exam || criteria.examYear || criteria.examCommunity ||
+        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage || criteria.course || criteria.exam || criteria.examYear || criteria.examCommunity ||
             criteria.tags.length || criteria.includePending) || authorSelect.value !== 'all';
         if (criteria.usage && !usesReady) {
             bankResultCount.textContent = usesUnavailable ? 'No se pudo consultar el historial de usos.' : 'Consultando los usos registrados…';
@@ -451,6 +469,9 @@ window.addEventListener('atl-view', () => {
   const end = source.indexOf(inlineEnd, start);
   if (start < 0 || end < 0) throw new Error('Revisar las tarjetas del banco.');
   source = source.slice(0, start) + `            const chips = el('div', 'grammar-chips cuaderno-bank-row-tags');
+            for (const course of text.courseIds ?? []) {
+                chips.append(el('span', 'grammar-chip', course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato'));
+            }
             const chosenTags = text.tagIds.filter(bankTagAssignable).sort((a, b) => Number(b.startsWith('custom.')) - Number(a.startsWith('custom.')));
             for (const id of chosenTags.slice(0, 2)) {
                 const item = catalogue.find(tag => tag.id === id);

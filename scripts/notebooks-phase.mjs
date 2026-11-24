@@ -26,6 +26,10 @@ export function integrateNotebookWorkflow(source) {
             await writeSource(async () => {
                 for (const id of ids) {
                     if (!active() || currentId !== editionId) throw Error('Vuelve al cuaderno donde elegiste los textos.');
+                    const original = corpus.texts.find(text => text.id === id);
+                    if (original && composer.activeEdition()?.excludedCourse &&
+                        (original.courseIds ?? []).includes(composer.activeEdition().excludedCourse))
+                        throw Error('El curso de este texto está excluido del cuaderno.');
                     if (!await composer.addSourceToNotebook(id)) throw Error('No se ha podido añadir un texto. Los anteriores se han guardado.');
                     marked.delete(id);
                     incorporated.add(id);
@@ -44,6 +48,15 @@ export function integrateNotebookWorkflow(source) {
             if (panel.isConnected) populate();
         }
     }`);
+  source = replaceOnce(source, '  const availableTexts=corpus.texts.filter(t=>!alreadyUsed(t));',
+    `  const excludedCourse = composer.activeEdition()?.excludedCourse;
+  const availableTexts = corpus.texts.filter(t => !alreadyUsed(t) &&
+    !(t.courseIds ?? []).includes(excludedCourse));`);
+  source = replaceOnce(source, '  const alreadyCount=corpus.texts.length-availableTexts.length;',
+    `  const alreadyCount = corpus.texts.filter(alreadyUsed).length;
+  const excludedCount = corpus.texts.length - alreadyCount - availableTexts.length;
+  if (excludedCount) panel.append(el('p','small muted',
+    excludedCount + ' textos ocultos por el curso excluido del cuaderno.'));`);
   source = replaceOnce(source, "    const alreadyUsed = (text) => usedIds.has(text.id) || placements.some(p =>",
     "    const alreadyUsed = (text) => usedIds.has(text.id) || (!text.teacherDocx && placements.some(p => !p.source.sourceId &&");
   source = replaceOnce(source, 'p.text.reference === text.source.reference);', 'p.text.reference === text.source.reference));');
