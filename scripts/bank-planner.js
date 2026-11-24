@@ -84,7 +84,7 @@ export function plannerTagGroup(tag, catalogue) {
   if (finite) {
     const [, tense, , voice] = finite;
     const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
-      /^(perfecto|pluscuamperfecto|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
+      /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
     if (theme && voice !== 'deponente') return theme + ' · ' + (voice === 'activo' ? 'activa' : 'pasiva');
     if (voice === 'deponente') return 'Verbos deponentes';
   }
