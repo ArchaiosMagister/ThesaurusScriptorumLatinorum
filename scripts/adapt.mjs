@@ -254,8 +254,18 @@ export function lexicalValuesForDocument(option) {
     const wordEntry = '  E.docx = async function (S) {';
     if (originalRender.split(wordEntry).length !== 2)
       throw new Error('Revisar el punto de exportación Word de Examinator.');
+    // Preserve the complete underline (including whitespace inside a
+    // compound form), not just the separate word tokens.
+    const compoundGap = '      if (t.s > pos) runs.push({ t: text.slice(pos, t.s) });';
+    if (originalRender.split(compoundGap).length !== 2) throw Error('Revisar subrayados compuestos en la exportación.');
     await writeFile(renderFileWord, originalRender.replace(wordEntry,
-      wordEntry + '\n    await window.atlLoadWordExporter();'));
+      wordEntry + '\n    await window.atlLoadWordExporter();')
+      .replace(compoundGap, "      if (t.s > pos) {\n" +
+        "        const gap = text.slice(pos, t.s);\n" +
+        "        const previous = toks.find(token => token.e === pos);\n" +
+        "        const together = previous && /^\\s+$/u.test(gap) && (S.subr || []).some(mark => mark.toks.includes(previous.i) && mark.toks.includes(t.i));\n" +
+        "        runs.push({ t: gap, u: Boolean(together) });\n" +
+        "      }"));
     await writeFile(join(directory, 'js', 'atl-word-loader.js'),
       await readFile(new URL('./lazy-word-loader.js', import.meta.url), 'utf8'));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
@@ -274,16 +284,23 @@ export function lexicalValuesForDocument(option) {
       S.titulo = d.bank.title;
       S.atlBankSource = { id: d.bank.id, updatedAt: d.bank.updatedAt };
       delete S.atlPauMorph;
+      if (S.atlPauLexical && !d.bank.pau) {
+        delete S.atlPauLexical;
+        S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+        P.evol(S); P.pref(S); P.latin(S);
+      }
       if (d.bank.pau) {
         const doc = d.bank.pau;
         S.subr = [];
         S.atlPauMorph = { text: d.text, underlines: doc.underlines };
         if (doc.preverbBases) {
+          S.atlPauLexical = true;
           S.prev = doc.preverbBases.map((txt, index) => ({ txt, n: index === 0 ? 3 : 2, rows: [], lplain: '' }));
           S.evol = doc.lexical.phonetics.map(w => ({ w, g: '' }));
           S.pref = [...doc.lexical.prefix];
           S.latin = [...doc.lexical.latinism];
         } else {
+          delete S.atlPauLexical;
           S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
           P.evol(S); P.pref(S); P.latin(S);
         }
@@ -291,6 +308,11 @@ export function lexicalValuesForDocument(option) {
     } else {
       delete S.atlPauMorph;
       delete S.atlBankSource;
+      if (S.atlPauLexical) {
+        delete S.atlPauLexical;
+        S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+        P.evol(S); P.pref(S); P.latin(S);
+      }
     }
 ` + copy)
       .replace('  async function onClick(e) {', `  M.refreshFromBank = function (d) {
