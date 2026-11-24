@@ -1,0 +1,4352 @@
+[
+  {
+    "year": 2006,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 1,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2006 · Opción A · p. 1 de la recopilación.\nCursus honorum de Catón hasta llegar al consulado.\nEscipión no consigue su propósito. 1. nactus: part. de perf. de nanciscor, concertado con Cato: “habiendo obtenido …”.",
+    "doc": {
+      "title": "CATÓN RECIBE EL GOBIERNO DE LA HISPANIA CITERIOR",
+      "author": "Nepote",
+      "work": "Cato",
+      "reference": "2",
+      "latin": "[Cato] consulatum gessit cum L. Valerio Flacco, sorte provinciam nactus Hispaniam citeriorem, exque ea triumphum deportavit. Ibi cum diutius moraretur, P. Scipio Africanus, consul iterum, cuius in priori consulatu quaestor fuerat, voluit eum de provincia depellere.",
+      "underlines": [
+        {
+          "startUtf16": 82,
+          "endUtf16": 92,
+          "exact": "citeriorem"
+        },
+        {
+          "startUtf16": 100,
+          "endUtf16": 102,
+          "exact": "ea"
+        },
+        {
+          "startUtf16": 141,
+          "endUtf16": 150,
+          "exact": "moraretur"
+        },
+        {
+          "startUtf16": 214,
+          "endUtf16": 222,
+          "exact": "quaestor"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2006 JUNIO / A"
+    }
+  },
+  {
+    "year": 2006,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 1,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2006 · Opción B · p. 1 de la recopilación.\nDestrucción de Sagunto. 1.- agens: part. pres. de ago, concertado con is; annum agens vicesimum aetatis = “con diecinueve años”.",
+    "doc": {
+      "title": "COMIENZO DE LA SEGUNDA GUERRA PÚNICA Y ASEDIO DE SAGUNTO",
+      "author": "Eutropio",
+      "work": "Breviarium ab urbe condita",
+      "reference": "III 7",
+      "latin": "Eodem anno bellum Punicum secundum Romanis inlatum est per Hannibalem, Carthaginiensium ducem; is Saguntum, Hispaniae civitatem Romanis amicam, obpugnare adgressus est, annum agens vicesimum aetatis, copiis congregatis CL milium. Huic Romani per legatos denuntiaverunt ut bello abstineret.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 5,
+          "exact": "Eodem"
+        },
+        {
+          "startUtf16": 26,
+          "endUtf16": 34,
+          "exact": "secundum"
+        },
+        {
+          "startUtf16": 118,
+          "endUtf16": 127,
+          "exact": "civitatem"
+        },
+        {
+          "startUtf16": 154,
+          "endUtf16": 167,
+          "exact": "adgressus est"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2006 JUNIO / B"
+    }
+  },
+  {
+    "year": 2006,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 2,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2006 · Opción A · p. 2 de la recopilación.\nCésar ha recibido una carta con noticias de la peligrosa situación de parte de su ejército.\nCésar acude en ayuda de sus soldados.",
+    "doc": {
+      "title": "CÉSAR ORDENA REUNIR SUS TROPAS",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 46",
+      "latin": "Caesar, acceptis litteris hora circiter undecima diei, statim nuntium in Bellovacos ad M. Crassum quaestorem mittit, cuius hiberna aberant ab eo milia passuum XXV; iubet media nocte legionem proficisci celeriterque ad se venire.",
+      "underlines": [
+        {
+          "startUtf16": 98,
+          "endUtf16": 108,
+          "exact": "quaestorem"
+        },
+        {
+          "startUtf16": 117,
+          "endUtf16": 122,
+          "exact": "cuius"
+        },
+        {
+          "startUtf16": 164,
+          "endUtf16": 169,
+          "exact": "iubet"
+        },
+        {
+          "startUtf16": 170,
+          "endUtf16": 175,
+          "exact": "media"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2006 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2006,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 2,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2006 · Opción B · p. 2 de la recopilación.\nEl autor comienza a referir las campañas militares de César.\nEl autor continúa con las victorias de César sobre los Germanos. 1.- ad bis et tricies centum milia passuum = “de aproximadamente 3.200 millas”. 2.- meritas: part. de perf. de mereor, concertado con civitates; bene meritas = “que habían prestado buenos servicios”.",
+    "doc": {
+      "title": "CÉSAR CONQUISTA LA GALIA",
+      "author": "Suetonio",
+      "work": "C. Iulius Caesar",
+      "reference": "25",
+      "latin": "[Caesar] gessit autem novem annis, quibus in imperio fuit, haec fere. Omnem Galliam, quae saltu Pyrenaeo Alpibusque et monte Cebenna, fluminibus Rheno ac Rhodano continetur patetque circuitu ad bis et tricies centum milia passuum, praeter socias ac bene meritas civitates in provinciae formam redegit.",
+      "underlines": [
+        {
+          "startUtf16": 70,
+          "endUtf16": 75,
+          "exact": "Omnem"
+        },
+        {
+          "startUtf16": 85,
+          "endUtf16": 89,
+          "exact": "quae"
+        },
+        {
+          "startUtf16": 90,
+          "endUtf16": 95,
+          "exact": "saltu"
+        },
+        {
+          "startUtf16": 293,
+          "endUtf16": 300,
+          "exact": "redegit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2006 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2007,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 3,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2007 · Opción A · p. 3 de la recopilación.\nAl llegarle noticias preocupantes del continente, César pasará el invierno en Galia. Da órdenes de que le entreguen rehenes y haya una situación pacífica entre los líderes tribales; dispone todo para cruzar el estrecho.\nSe cumplieron todas las previsiones de César y pudo cruzar sin problemas a Galia.",
+    "doc": {
+      "title": "CÉSAR REALIZA LAS DISPOSICIONES OPORTUNAS PARA HIBERNAR TRAS LA CAMPAÑA DE BRITANIA.",
+      "author": "César",
+      "work": "Guerra de las Galias",
+      "reference": "V, 22, 5 – 23, 1-3",
+      "latin": "Caesar interdicit atque imperat Cassivellauno, ne Mandubracio noceat. Obsidibus acceptis, exercitum reducit ad mare, naves invenit refectas. His deductis, quod et captivorum magnum numerum habebat et nonnullae tempestate deperierant naves, duobus commeatibus exercitum reportare instituit.",
+      "underlines": [
+        {
+          "startUtf16": 62,
+          "endUtf16": 68,
+          "exact": "noceat"
+        },
+        {
+          "startUtf16": 131,
+          "endUtf16": 139,
+          "exact": "refectas"
+        },
+        {
+          "startUtf16": 200,
+          "endUtf16": 209,
+          "exact": "nonnullae"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 246,
+          "exact": "duobus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2007 JUNIO / A"
+    }
+  },
+  {
+    "year": 2007,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 3,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2007 · Opción B · p. 3 de la recopilación.\nPlinio el viejo describe las características del delfín y algunas de las razones por las que apreciarlo.\nIncluye en su descripción que poseen mamas, que viven en pareja y se preocupan por sus crías; que disponen de una voz peculiar.",
+    "doc": {
+      "title": "CARACTERÍSTICAS QUE DEFINEN AL DELFÍN.",
+      "author": "Plinio",
+      "work": "Historia Natural",
+      "reference": "IX, 20 y 24",
+      "latin": "Velocissimus omnium animalium, non solum marinorum, est delphinus, ocior volucre, acrior telo, ac, nisi multum infra rostrum os illi esset medio paene in ventre, nullus piscium celeritatem eius evaderet. (…). Delphinus non homini tantum amicus est, verum et musicae arti.",
+      "underlines": [
+        {
+          "startUtf16": 82,
+          "endUtf16": 88,
+          "exact": "acrior"
+        },
+        {
+          "startUtf16": 133,
+          "endUtf16": 138,
+          "exact": "esset"
+        },
+        {
+          "startUtf16": 169,
+          "endUtf16": 176,
+          "exact": "piscium"
+        },
+        {
+          "startUtf16": 258,
+          "endUtf16": 265,
+          "exact": "musicae"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2007 JUNIO / B"
+    }
+  },
+  {
+    "year": 2007,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 4,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2007 · Opción A · p. 4 de la recopilación.\nAntes había hablado César de las divinidades de los germanos.\nSigue describiendo costumbres.",
+    "doc": {
+      "title": "COSTUMBRES DE LOS GERMANOS",
+      "author": "César",
+      "work": "Guerra de las Galias",
+      "reference": "VI, 21",
+      "latin": "Vita omnis in venationibus atque in studiis rei militaris consistit; a parvis labori ac duritiae student. Qui diutissime impuberes permanserunt maximam inter suos ferunt laudem: hoc ali staturam, ali vires nervosque confirmari putant.",
+      "underlines": [
+        {
+          "startUtf16": 5,
+          "endUtf16": 10,
+          "exact": "omnis"
+        },
+        {
+          "startUtf16": 44,
+          "endUtf16": 47,
+          "exact": "rei"
+        },
+        {
+          "startUtf16": 131,
+          "endUtf16": 143,
+          "exact": "permanserunt"
+        },
+        {
+          "startUtf16": 178,
+          "endUtf16": 181,
+          "exact": "hoc"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2007 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2007,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 4,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2007 · Opción B · p. 4 de la recopilación.\nCurcio anota las diferencias entre los ejércitos del rey persa Darío y del de Alejandro.\nAlusión a la distancia entre Lidia y Cilicia, dos regiones de Asia Menor. * petens : part. de pres. concertado de peto : “dirigiéndose”, “encaminándose”.",
+    "doc": {
+      "title": "ALEJANDRO DE MACEDONIA LLEGA AL LUGAR DENOMINADO “CAMPAMENTO DE CIRO”",
+      "author": "Curcio",
+      "work": "Vida de Alejandro",
+      "reference": "III, 4, 1",
+      "latin": "Interea Alexander, Abistamene Cappadociae praeposito, Ciliciam petens cum omnibus copiis, regionem, quae castra Cyri appellatur, pervenerat; stativa ibi habuerat Cyrus, cum adversum Croesum in Lidiam duceret.",
+      "underlines": [
+        {
+          "startUtf16": 74,
+          "endUtf16": 81,
+          "exact": "omnibus"
+        },
+        {
+          "startUtf16": 100,
+          "endUtf16": 104,
+          "exact": "quae"
+        },
+        {
+          "startUtf16": 105,
+          "endUtf16": 111,
+          "exact": "castra"
+        },
+        {
+          "startUtf16": 129,
+          "endUtf16": 139,
+          "exact": "pervenerat"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2007 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2008,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 5,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2008 · Opción A · p. 5 de la recopilación.\nDespués de un ataque frustrado, los enemigos se retiran.\nEl ejército romano cruza el río y embiste con energía al enemigo. 1atque hoc aegre = “y aún por éste con dificultad”",
+    "doc": {
+      "title": "CÉSAR LLEGA AL TÁMESIS Y ADVIERTE LA PRESENCIA DE TROPAS ENEMIGAS",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 18",
+      "latin": "Caesar, cognito consilio eorum, ad flumen Tamesim in fines Cassivellauni exercitum duxit; quod flumen uno omnino loco pedibus, atque hoc aegre, transiri potest. Eo cum venisset, animadvertit ad alteram fluminis ripam magnas esse copias hostium instructas.",
+      "underlines": [
+        {
+          "startUtf16": 25,
+          "endUtf16": 30,
+          "exact": "eorum"
+        },
+        {
+          "startUtf16": 118,
+          "endUtf16": 125,
+          "exact": "pedibus"
+        },
+        {
+          "startUtf16": 168,
+          "endUtf16": 176,
+          "exact": "venisset"
+        },
+        {
+          "startUtf16": 217,
+          "endUtf16": 223,
+          "exact": "magnas"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2008 JUNIO / A"
+    }
+  },
+  {
+    "year": 2008,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 5,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2008 · Opción B · p. 5 de la recopilación.\nEl cónsul Fabricio comunica el hecho al senado. 1 pugnasset = pugnavisset 2 si de praemio conveniret= “si llegaban a un acuerdo”",
+    "doc": {
+      "title": "UN AMIGO DEL REY PIRRO SE OFRECE A TRAICIONARLO",
+      "author": "Gelio",
+      "work": "Noctes Atticae",
+      "reference": "III 8",
+      "latin": "Cum Pyrrus rex in terra Italia esset et unam atque alteram pugnas prospere pugnasset, quidam Timochares, regis Pyrri amicus, ad C. Fabricium consulem furtim venit ac praemium petivit et, si de praemio conveniret, promisit regem venenis necare.",
+      "underlines": [
+        {
+          "startUtf16": 31,
+          "endUtf16": 36,
+          "exact": "esset"
+        },
+        {
+          "startUtf16": 51,
+          "endUtf16": 58,
+          "exact": "alteram"
+        },
+        {
+          "startUtf16": 86,
+          "endUtf16": 92,
+          "exact": "quidam"
+        },
+        {
+          "startUtf16": 105,
+          "endUtf16": 110,
+          "exact": "regis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2008 JUNIO / B"
+    }
+  },
+  {
+    "year": 2008,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 6,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2008 · Opción A · p. 6 de la recopilación.\nEl ejército enemigo ha sufrido una dura derrota.\nLas naves llegan incólumes a tierra firme.",
+    "doc": {
+      "title": "CÉSAR EXIGE LA ENTREGA DE REHENES",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "IV 36",
+      "latin": "Eodem die legati, ab hostibus missi, ad Caesarem de pace venerunt. His Caesar numerum obsidum quem ante imperaverat duplicavit eosque in continentem adduci iussit. […]. Ipse, idoneam tempestatem nactus, paulo post mediam noctem naves solvit.",
+      "underlines": [
+        {
+          "startUtf16": 67,
+          "endUtf16": 70,
+          "exact": "His"
+        },
+        {
+          "startUtf16": 86,
+          "endUtf16": 93,
+          "exact": "obsidum"
+        },
+        {
+          "startUtf16": 104,
+          "endUtf16": 115,
+          "exact": "imperaverat"
+        },
+        {
+          "startUtf16": 214,
+          "endUtf16": 220,
+          "exact": "mediam"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2008 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2008,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 6,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2008 · Opción B · p. 6 de la recopilación.\nEl autor narra cómo siglos atrás en Segesta una estatua de Diana fue expoliada por los Cartagineses.\nEl autor realiza una descripción de la estatua.\nRevisión morfológica: Revisar ocurrencia de haec (repetida en el texto).",
+    "doc": {
+      "title": "LA DIOSA DIANA ES DEVUELTA AL SANTUARIO DE SEGESTA",
+      "author": "Cicerón",
+      "work": "In Verrem",
+      "reference": "IV 34",
+      "latin": "Illo tempore Segestanis maxima cum cura haec ipsa Diana, de qua dicimus, redditur; reportatur Segestam; in suis antiquis sedibus summa cum gratulatione civium et laetitia reponitur. Haec erat posita Segestae sane excelsa in basi.",
+      "underlines": [
+        {
+          "startUtf16": 24,
+          "endUtf16": 30,
+          "exact": "maxima"
+        },
+        {
+          "startUtf16": 40,
+          "endUtf16": 44,
+          "exact": "haec"
+        },
+        {
+          "startUtf16": 73,
+          "endUtf16": 81,
+          "exact": "redditur"
+        },
+        {
+          "startUtf16": 199,
+          "endUtf16": 207,
+          "exact": "Segestae"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de haec (repetida en el texto)."
+      ],
+      "pauCv": "2008 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2009,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 7,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2009 · Opción A · p. 7 de la recopilación.\nAmbiórix ha derrotado al ejército romano en una cruenta batalla.\nAmbiórix persuade a los nervios y juntos preparan un nuevo ataque.\nRevisión morfológica: La pregunta original pide peditatum; en el pasaje figura peditatumque.",
+    "doc": {
+      "title": "AMBIÓRIX RECORRE LOS TERRITORIOS VECINOS INCITÁNDOLOS A LA REBELIÓN",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 38",
+      "latin": "Hac victoria sublatus Ambiorix statim cum equitatu in Advatucos, qui erant eius regno finitimi, proficiscitur; neque noctem neque diem intermittit peditatumque subsequi iubet. Re demonstrata Advatucisque concitatis, postero die in Nervios pervenit.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 3,
+          "exact": "Hac"
+        },
+        {
+          "startUtf16": 65,
+          "endUtf16": 68,
+          "exact": "qui"
+        },
+        {
+          "startUtf16": 96,
+          "endUtf16": 109,
+          "exact": "proficiscitur"
+        },
+        {
+          "startUtf16": 147,
+          "endUtf16": 156,
+          "exact": "peditatum"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "La pregunta original pide peditatum; en el pasaje figura peditatumque."
+      ],
+      "pauCv": "2009 JUNIO / A"
+    }
+  },
+  {
+    "year": 2009,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 7,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2009 · Opción B · p. 7 de la recopilación.\nEl pueblo alóbroge ha decidido no aliarse con Catilina.\nLos alóbroges simulan apoyar los planes de los conjurados.",
+    "doc": {
+      "title": "LOS ALÓBROGES REVELAN EL PLAN DE LA CONJURACIÓN DE CATILINA",
+      "author": "Salustio",
+      "work": "De coniuratione Catilinae",
+      "reference": "XLI 4",
+      "latin": "Allobroges Q. Fabio Sangae, cuius patrocinio civitas plurimum utebatur, rem omnem uti cognoverant aperiunt. Cicero, per Sangam consilio cognito, legatis praecipit ut studium coniurationis vehementer simulent, ceteros adeant, bene polliceantur.",
+      "underlines": [
+        {
+          "startUtf16": 28,
+          "endUtf16": 33,
+          "exact": "cuius"
+        },
+        {
+          "startUtf16": 76,
+          "endUtf16": 81,
+          "exact": "omnem"
+        },
+        {
+          "startUtf16": 145,
+          "endUtf16": 152,
+          "exact": "legatis"
+        },
+        {
+          "startUtf16": 230,
+          "endUtf16": 242,
+          "exact": "polliceantur"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2009 JUNIO / B"
+    }
+  },
+  {
+    "year": 2009,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 8,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2009 · Opción A · p. 8 de la recopilación.\nLos galos intentan romper el asedio de Alesia, donde Vercingetórix está sitiado.\nLos galos vuelven a intentar romper el asedio atacando por otro lugar. 1Quid es el nexo introductorio de una oración interrogativa subordinada (o indirecta) que constituye el complemento directo de consulunt: “qué hacer”.",
+    "doc": {
+      "title": "LOS GALOS, RECHAZADOS POR DOS VECES EN SU ATAQUE, BUSCAN ASESORAMIENTO EN QUIENES CONOCEN EL LUGAR",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "VII 83, 1-2",
+      "latin": "Bis cum magno detrimento repulsi Galli quid agant consulunt: locorum peritos adhibent; ex his superiorum castrorum situs munitionesque cognoscunt. Erat a septentrionibus collis quem propter magnitudinem circuitus opere circumplecti non potuerant nostri.",
+      "underlines": [
+        {
+          "startUtf16": 8,
+          "endUtf16": 13,
+          "exact": "magno"
+        },
+        {
+          "startUtf16": 90,
+          "endUtf16": 93,
+          "exact": "his"
+        },
+        {
+          "startUtf16": 203,
+          "endUtf16": 212,
+          "exact": "circuitus"
+        },
+        {
+          "startUtf16": 219,
+          "endUtf16": 231,
+          "exact": "circumplecti"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2009 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2009,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 8,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2009 · Opción B · p. 8 de la recopilación.\nCatilina busca la colaboración de gentes cargadas de deudas.\nCicerón ha conseguido enterarse de sus planes y pasa a la acción contra Catilina.",
+    "doc": {
+      "title": "CATILINA INTENTA HACERSE CON EL CONSULADO",
+      "author": "Salustio",
+      "work": "De coniuratione Catilinae",
+      "reference": "XXVI 1",
+      "latin": "His rebus comparatis, Catilina nihilo minus in proximum annum consulatum petebat; sperabat, si designatus foret, facile se ex voluntate Antonio usurum esse. Neque interea quietus erat, sed omnibus modis insidias parabat Ciceroni.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 3,
+          "exact": "His"
+        },
+        {
+          "startUtf16": 62,
+          "endUtf16": 72,
+          "exact": "consulatum"
+        },
+        {
+          "startUtf16": 144,
+          "endUtf16": 155,
+          "exact": "usurum esse"
+        },
+        {
+          "startUtf16": 171,
+          "endUtf16": 178,
+          "exact": "quietus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2009 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2010,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 9,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2010 · Opción A · p. 9 de la recopilación.\nCésar licencia en Hispania a las tropas enemigas una vez vencidas\nMarsella rodeada de mar sólo es accesible por una parte",
+    "doc": {
+      "title": "EL LEGADO GAYO TREBONIO ASEDIA MARSELLA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "2.1.1-2",
+      "latin": "C. Trebonius legatus, qui ad oppugnationem Massiliae relictus erat, duabus ex partibus aggerem, vineas turresque ad oppidum agere instituit. Una erat proxima portui navalibusque, altera ad portam qua est aditus ex Gallia atque Hispania.",
+      "underlines": [
+        {
+          "startUtf16": 22,
+          "endUtf16": 25,
+          "exact": "qui"
+        },
+        {
+          "startUtf16": 53,
+          "endUtf16": 66,
+          "exact": "relictus erat"
+        },
+        {
+          "startUtf16": 150,
+          "endUtf16": 157,
+          "exact": "proxima"
+        },
+        {
+          "startUtf16": 204,
+          "endUtf16": 210,
+          "exact": "aditus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2010 JUNIO / A"
+    }
+  },
+  {
+    "year": 2010,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 9,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2010 · Opción B · p. 9 de la recopilación.\nSe pide a gritos que se introduzca el caballo en la ciudad\nEl caballo se desliza amenazante hacia el centro de la ciudad 1armis: “hombres armados” 2sacra: “cánticos sagrados”",
+    "doc": {
+      "title": "LOS TROYANOS ABREN UNA BRECHA EN LA MURALLA Y DEJAN ENTRAR AL CABALLO QUE HABÍAN CONSTRUIDO LOS GRIEGOS",
+      "author": "Virgilio",
+      "work": "Aeneis",
+      "reference": "II, 234-239",
+      "latin": "Dividimus muros et moenia pandimus urbis. Accingunt omnes operi pedibusque rotarum subiciunt lapsus, et stuppea vincula collo intendunt; scandit fatalis machina muros feta armis. Pueri circum innuptaeque puellae sacra canunt funemque manu contingere gaudent.",
+      "underlines": [
+        {
+          "startUtf16": 58,
+          "endUtf16": 63,
+          "exact": "operi"
+        },
+        {
+          "startUtf16": 137,
+          "endUtf16": 144,
+          "exact": "scandit"
+        },
+        {
+          "startUtf16": 145,
+          "endUtf16": 152,
+          "exact": "fatalis"
+        },
+        {
+          "startUtf16": 234,
+          "endUtf16": 238,
+          "exact": "manu"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2010 JUNIO / B"
+    }
+  },
+  {
+    "year": 2010,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 10,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2010 · Opción A · p. 10 de la recopilación.\nLos enemigos disponían de toda clase de provisiones a la otra parte del río\nDesde la otra orilla los enemigos arrojan proyectiles",
+    "doc": {
+      "title": "CÉSAR NO PUEDE RECONSTRUIR LOS PUENTES DEBIDO A UNA TORMENTA QUE CAUSA UNA FUERTE CRECIDA EN EL RÍO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I, 50, 1-2",
+      "latin": "Hae permanserunt aquae dies complures. Conatus est Caesar reficere pontes, sed nec magnitudo fluminis permittebat neque ad ripam dispositae cohortes adversariorum perfici patiebantur; quod illis prohibere erat facile ipsius fluminis natura atque aquae magnitudine.",
+      "underlines": [
+        {
+          "startUtf16": 67,
+          "endUtf16": 73,
+          "exact": "pontes"
+        },
+        {
+          "startUtf16": 171,
+          "endUtf16": 182,
+          "exact": "patiebantur"
+        },
+        {
+          "startUtf16": 184,
+          "endUtf16": 188,
+          "exact": "quod"
+        },
+        {
+          "startUtf16": 210,
+          "endUtf16": 216,
+          "exact": "facile"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2010 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2010,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 10,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2010 · Opción B · p. 10 de la recopilación.\nYugurta no puede defender su propio terreno\nCaen la mayor parte de los romanos 2ignoratus = “a escondidas” 1ex copia = “de entre las (diferentes) posibilidades”",
+    "doc": {
+      "title": "YUGURTA ATACA A LOS ROMANOS DESPREVENIDOS",
+      "author": "Salustio",
+      "work": "Bellum Iugurthinum",
+      "reference": "54, 9-10",
+      "latin": "Tamen (Iugurtha) ex copia consilium, quod optimum videbatur, capit; exercitum plerumque in eisdem locis opperiri iubet, ipse cum delectis equitibus Metellum sequitur, nocturnis et aviis itineribus ignoratus Romanos palantes repente aggreditur. Eorum plerique inermes cadunt, multi capiuntur.",
+      "underlines": [
+        {
+          "startUtf16": 42,
+          "endUtf16": 49,
+          "exact": "optimum"
+        },
+        {
+          "startUtf16": 186,
+          "endUtf16": 196,
+          "exact": "itineribus"
+        },
+        {
+          "startUtf16": 244,
+          "endUtf16": 249,
+          "exact": "Eorum"
+        },
+        {
+          "startUtf16": 281,
+          "endUtf16": 290,
+          "exact": "capiuntur"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2010 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2011,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 11,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2011 · Opción A · p. 11 de la recopilación.\nTítulo y contexto traducidos del valenciano de la recopilación.\nLos galos han desistido de atacar el campamento romano.\nDurante todo el invierno llegan noticias sobre los planes de sublevación galos.\nRevisión morfológica: Revisar ocurrencia de ipse (repetida en el texto).",
+    "doc": {
+      "title": "CÉSAR SITÚA TRES LEGIONES JUNTO A SAMAROBRIVA PARA PASAR ALLÍ EL INVIERNO",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 53, 3",
+      "latin": "Caesar Fabium cum sua legione remittit in hiberna, ipse cum tribus legionibus circum Samarobrivam trinis hibernis hiemare constituit et, quod tanti motus Galliae exstiterant, totam hiemem ipse ad exercitum manere decrevit.",
+      "underlines": [
+        {
+          "startUtf16": 51,
+          "endUtf16": 55,
+          "exact": "ipse"
+        },
+        {
+          "startUtf16": 60,
+          "endUtf16": 66,
+          "exact": "tribus"
+        },
+        {
+          "startUtf16": 148,
+          "endUtf16": 153,
+          "exact": "motus"
+        },
+        {
+          "startUtf16": 213,
+          "endUtf16": 221,
+          "exact": "decrevit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de ipse (repetida en el texto)."
+      ],
+      "pauCv": "2011 JUNIO / A"
+    }
+  },
+  {
+    "year": 2011,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 11,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2011 · Opción B · p. 11 de la recopilación.\nTítulo y contexto traducidos del valenciano de la recopilación.\nCicerón es ya un reconocido abogado en Roma.\nCicerón recorre toda Asia.",
+    "doc": {
+      "title": "CICERÓN RECUERDA SUS ESTUDIOS DE FILOSOFÍA EN ATENAS",
+      "author": "Cicerón",
+      "work": "Brutus",
+      "reference": "315",
+      "latin": "Cum ego venissem Athenas, sex menses cum Antiocho veteris Academiae nobilissimo et prudentissimo philosopho fui studiumque philosophiae numquam intermissum a primaque adulescentia cultum et semper auctum hoc rursus summo auctore et doctore renovavi.",
+      "underlines": [
+        {
+          "startUtf16": 4,
+          "endUtf16": 7,
+          "exact": "ego"
+        },
+        {
+          "startUtf16": 30,
+          "endUtf16": 36,
+          "exact": "menses"
+        },
+        {
+          "startUtf16": 83,
+          "endUtf16": 96,
+          "exact": "prudentissimo"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 248,
+          "exact": "renovavi"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2011 JUNIO / B"
+    }
+  },
+  {
+    "year": 2011,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 12,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2011 · Opción A · p. 12 de la recopilación.\nAfranio y Petreyo han decidido retirarse de sus posiciones.\nAfranio y Petreyo comienzan la retirada.",
+    "doc": {
+      "title": "AFRANIO Y PETREYO ORDENAN LLEVAR TODAS LAS EMBARCACIONES A OTOBESA Y UTILIZARLAS COMO PUENTE",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 61, 5-6",
+      "latin": "Hoc inito consilio, [Afranius Petreiusque] toto flumine Hibero naves conquiri et Otobesam adduci iubent. Id erat oppidum positum ad Hiberum miliaque passuum a castris aberat XX. Ad eum locum fluminis, navibus iunctis, pontem imperant fieri.",
+      "underlines": [
+        {
+          "startUtf16": 43,
+          "endUtf16": 47,
+          "exact": "toto"
+        },
+        {
+          "startUtf16": 69,
+          "endUtf16": 77,
+          "exact": "conquiri"
+        },
+        {
+          "startUtf16": 105,
+          "endUtf16": 107,
+          "exact": "Id"
+        },
+        {
+          "startUtf16": 191,
+          "endUtf16": 199,
+          "exact": "fluminis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2011 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2011,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 12,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2011 · Opción B · p. 12 de la recopilación.\nAníbal ha derrotado a dos ejércitos consulares en un solo combate.\nNueva victoria de Aníbal.",
+    "doc": {
+      "title": "ENFRENTAMIENTO ENTRE LAS TROPAS CARTAGINESAS Y LAS ROMANAS",
+      "author": "Nepote",
+      "work": "Hannibal",
+      "reference": "V 1",
+      "latin": "Hac pugna pugnata, [Hannibal] Romam profectus est nullo resistente. In propinquis urbi montibus moratus est. Cum aliquot ibi dies castra habuisset et Capuam reverteretur, Q. Fabius Maximus, dictator Romanus, in agro Falerno ei se obiecit.",
+      "underlines": [
+        {
+          "startUtf16": 36,
+          "endUtf16": 49,
+          "exact": "profectus est"
+        },
+        {
+          "startUtf16": 71,
+          "endUtf16": 81,
+          "exact": "propinquis"
+        },
+        {
+          "startUtf16": 125,
+          "endUtf16": 129,
+          "exact": "dies"
+        },
+        {
+          "startUtf16": 224,
+          "endUtf16": 226,
+          "exact": "ei"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2011 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2012,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 13,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2012 · Opción A · p. 13 de la recopilación.\nCésar frustra el plan de Pompeyo y llega a Durazzo antes que él.\nPompeyo ordena concentrar en Petra el suministro de trigo.",
+    "doc": {
+      "title": "POMPEYO, AL NO SALIRLE BIEN EL PLAN ESTABLECIDO, SIGUE UN PLAN B Y LEVANTA SU CAMPAMENTO EN PETRA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III 42, 1-2",
+      "latin": "Pompeius interclusus Dyrrachio, ubi propositum tenere non potuit, secundo usus consilio edito loco qui appellatur Petra aditumque habet navibus mediocrem atque eas a quibusdam protegit ventis castra communit. Eo partem navium longarum convenire […] imperat.",
+      "underlines": [
+        {
+          "startUtf16": 58,
+          "endUtf16": 64,
+          "exact": "potuit"
+        },
+        {
+          "startUtf16": 136,
+          "endUtf16": 143,
+          "exact": "navibus"
+        },
+        {
+          "startUtf16": 144,
+          "endUtf16": 153,
+          "exact": "mediocrem"
+        },
+        {
+          "startUtf16": 160,
+          "endUtf16": 163,
+          "exact": "eas"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2012 JUNIO / A"
+    }
+  },
+  {
+    "year": 2012,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 13,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2012 · Opción B · p. 13 de la recopilación.\nClodio recluta abiertamente esclavos violentos para que le sirvan de escolta.\nClodio ha proferido amenazas de muerte contra Milón.",
+    "doc": {
+      "title": "CLODIO VE QUE, CON MILÓN COMO COLEGA EN EL CONSULADO, NO VA A PODER LOGRAR SUS PÉRFIDOS OBJETIVOS",
+      "author": "Cicerón",
+      "work": "Pro Milone",
+      "reference": "26",
+      "latin": "[Clodius] servos agrestes et barbaros, quibus silvas publicas depopulatus erat Etruriamque vexarat, ex Apennino deduxerat, quos videbatis. Res erat minime obscura. Etenim palam dictitabat consulatum Miloni eripi non posse, vitam posse.",
+      "underlines": [
+        {
+          "startUtf16": 17,
+          "endUtf16": 25,
+          "exact": "agrestes"
+        },
+        {
+          "startUtf16": 39,
+          "endUtf16": 45,
+          "exact": "quibus"
+        },
+        {
+          "startUtf16": 62,
+          "endUtf16": 78,
+          "exact": "depopulatus erat"
+        },
+        {
+          "startUtf16": 188,
+          "endUtf16": 198,
+          "exact": "consulatum"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2012 JUNIO / B"
+    }
+  },
+  {
+    "year": 2012,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 14,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2012 · Opción A · p. 14 de la recopilación.\nLos zapadores de César consiguen socavar los cimientos de una torre de la muralla.\nLas tropas de César aceptan la rendición de los sitiados y cesan en su ataque a la ciudad.",
+    "doc": {
+      "title": "LAS TROPAS DE CÉSAR SE DISPONEN A DERRIBAR LA MURALLA DE LA CIUDAD SITIADA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "II 11, 4",
+      "latin": "Compluribus lapidibus ex turri quae suberat subductis, repentina ruina pars eius turris concidit, pars reliqua consequens procumbebat, cum hostes urbis direptione perterriti cum infulis se porta foras proripiunt, ad legatos atque exercitum supplices manus tendunt.",
+      "underlines": [
+        {
+          "startUtf16": 12,
+          "endUtf16": 21,
+          "exact": "lapidibus"
+        },
+        {
+          "startUtf16": 76,
+          "endUtf16": 80,
+          "exact": "eius"
+        },
+        {
+          "startUtf16": 122,
+          "endUtf16": 133,
+          "exact": "procumbebat"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 249,
+          "exact": "supplices"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2012 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2012,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 14,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2012 · Opción B · p. 14 de la recopilación.\nMilón se dispone a viajar con total tranquilidad, sin buscar coincidir con Clodio en su trayecto.\nFue Clodio quien propició el encuentro, nada fortuito, para asesinar a Milón.\nRevisión morfológica: Revisar ocurrencia de eo (repetida en el texto).",
+    "doc": {
+      "title": "SE DISCUTE SI MILÓN PLANIFICÓ EL ENCUENTRO CON CLODIO PARA ASESINARLO",
+      "author": "Cicerón",
+      "work": "Pro Milone",
+      "reference": "28",
+      "latin": "Milo, cum in senatu fuisset eo die […], domum venit; calceos et vestimenta mutavit; paulisper, dum se uxor comparat, commoratus est; profectus est eo tempore cum iam Clodius, […], redire potuisset. Obviam fit ei Clodius.",
+      "underlines": [
+        {
+          "startUtf16": 28,
+          "endUtf16": 30,
+          "exact": "eo"
+        },
+        {
+          "startUtf16": 40,
+          "endUtf16": 45,
+          "exact": "domum"
+        },
+        {
+          "startUtf16": 117,
+          "endUtf16": 131,
+          "exact": "commoratus est"
+        },
+        {
+          "startUtf16": 150,
+          "endUtf16": 157,
+          "exact": "tempore"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de eo (repetida en el texto)."
+      ],
+      "pauCv": "2012 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2013,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 15,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2013 · Opción A · p. 15 de la recopilación.\nPompeyo acude confiado a la entrevista con Aquila y Septimio\n1Referido a Pompeyo 2El sujeto es Septimio Los enviados de Ptolomeo asesinan a Pompeyo y a su lugarteniente Lucio Léntulo",
+    "doc": {
+      "title": "POMPEYO CAE EN UNA EMBOSCADA Y ES ASESINADO A MANOS DE ANTIGUOS COMPAÑEROS",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III, 104, 3",
+      "latin": "Ab his liberaliter ipse appellatus et quadam notitia Septimi perductus, quod bello praedonum apud eum ordinem duxerat, naviculam parvulam conscendit cum paucis suis; ibi ab Septimio interficitur. Item L. Lentulus comprehenditur et in custodia necatur.",
+      "underlines": [
+        {
+          "startUtf16": 38,
+          "endUtf16": 44,
+          "exact": "quadam"
+        },
+        {
+          "startUtf16": 83,
+          "endUtf16": 92,
+          "exact": "praedonum"
+        },
+        {
+          "startUtf16": 110,
+          "endUtf16": 117,
+          "exact": "duxerat"
+        },
+        {
+          "startUtf16": 129,
+          "endUtf16": 137,
+          "exact": "parvulam"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2013 JUNIO / A"
+    }
+  },
+  {
+    "year": 2013,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 15,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2013 · Opción B · p. 15 de la recopilación.\nTanto los aliados como los pueblos conquistados claman justicia contra los funcionarios corruptos\nEn el juicio contra Verres, funcionario corrupto, se puede dictar una sentencia ejemplar que frene estos hechos",
+    "doc": {
+      "title": "NI LOS PUEBLOS A LOS QUE ROMA GOBIERNA NI SUS ALIADOS PUEDEN SOPORTAR TANTAS INJUSTICIAS POR PARTE DE LOS FUNCIONARIOS ROMANOS",
+      "author": "Cicerón",
+      "work": "In VerremII",
+      "reference": "III, 207",
+      "latin": "Lugent provinciae, queruntur liberi populi, regna omnia de nostris cupiditatibus et iniuriis expostulant; locus intra Oceanum iam nullus est neque tam longinquus neque tam reconditus quo non per haec tempora nostrorum hominum libido iniquitasque pervaserit.",
+      "underlines": [
+        {
+          "startUtf16": 29,
+          "endUtf16": 35,
+          "exact": "liberi"
+        },
+        {
+          "startUtf16": 195,
+          "endUtf16": 199,
+          "exact": "haec"
+        },
+        {
+          "startUtf16": 218,
+          "endUtf16": 225,
+          "exact": "hominum"
+        },
+        {
+          "startUtf16": 246,
+          "endUtf16": 256,
+          "exact": "pervaserit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2013 JUNIO / B"
+    }
+  },
+  {
+    "year": 2013,
+    "session": "JULIO",
+    "option": "A",
+    "page": 16,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2013 · Opción A · p. 16 de la recopilación.\nPtolomeo ha establecido en su testamento quiénes de sus hijos serán sus herederos\n1duabus filiabus es ablativo femenino plural. El testamento había sido enviado a Roma, y en él Ptolomeo pedía que Roma garantizara su cumplimiento\nRevisión morfológica: Revisar ocurrencia de quae (repetida en el texto).",
+    "doc": {
+      "title": "PTOLOMEO, REY DE EGIPTO, DEJA DICHO EN SU TESTAMENTO QUIÉN HEREDARÁ EL TRONO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III, 108, 4-5",
+      "latin": "In testamento Ptolomaei heredes erant scripti ex duobus filiis maior et ex duabus filiabus ea quae aetate antecedebat. Haec uti fierent, per omnes deos perque foedera, quae Romae fecisset, eodem testamento Ptolomaeus populum Romanum obtestabatur.",
+      "underlines": [
+        {
+          "startUtf16": 94,
+          "endUtf16": 98,
+          "exact": "quae"
+        },
+        {
+          "startUtf16": 141,
+          "endUtf16": 146,
+          "exact": "omnes"
+        },
+        {
+          "startUtf16": 159,
+          "endUtf16": 166,
+          "exact": "foedera"
+        },
+        {
+          "startUtf16": 179,
+          "endUtf16": 187,
+          "exact": "fecisset"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de quae (repetida en el texto)."
+      ],
+      "pauCv": "2013 JULIO / A"
+    }
+  },
+  {
+    "year": 2013,
+    "session": "JULIO",
+    "option": "B",
+    "page": 16,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2013 · Opción B · p. 16 de la recopilación.\nLolio, ya anciano, no puede acudir a declarar ante el tribunal. No importa: los hechos son conocidos\nLolio hijo prestará testimonio en lugar del padre",
+    "doc": {
+      "title": "A LOS OJOS DE CICERÓN, LOS DELITOS DE VERRES SON DE TODOS CONOCIDOS, SIN QUE SEA NECESARIO PRESENTAR TESTIGOS",
+      "author": "Cicerón",
+      "work": "In VerremII",
+      "reference": "III, 63",
+      "latin": "Quid opus est Lollio? Nemo hoc nescit, nemo tuorum amicorum, nemo abs te productus, nemo abs te interrogatus nunc se primum hoc dicet audire. M. Lollius, filius eius, adulescens lectissimus, praesto est: huius verba audietis.",
+      "underlines": [
+        {
+          "startUtf16": 51,
+          "endUtf16": 59,
+          "exact": "amicorum"
+        },
+        {
+          "startUtf16": 128,
+          "endUtf16": 133,
+          "exact": "dicet"
+        },
+        {
+          "startUtf16": 204,
+          "endUtf16": 209,
+          "exact": "huius"
+        },
+        {
+          "startUtf16": 210,
+          "endUtf16": 215,
+          "exact": "verba"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2013 JULIO / B"
+    }
+  },
+  {
+    "year": 2014,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 17,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2014 · Opción A · p. 17 de la recopilación.\nCésar y Afranio pugnan por ocupar unas montañas\nAfranio da orden a cuatro cohortes de dirigirse hacia un monte",
+    "doc": {
+      "title": "CÉSAR OCUPA UNA PLANICIE Y FORMA EN ORDEN DE BATALLA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 70, 3",
+      "latin": "Confecit prior iter Caesar atque ex magnis rupibus nactus planitiem in hac contra hostem aciem instruit. Afranius, cum ab equitatu novissimum agmen premeretur et ante se hostem videret, collem quemdam nactus ibi constitit.",
+      "underlines": [
+        {
+          "startUtf16": 71,
+          "endUtf16": 74,
+          "exact": "hac"
+        },
+        {
+          "startUtf16": 89,
+          "endUtf16": 94,
+          "exact": "aciem"
+        },
+        {
+          "startUtf16": 131,
+          "endUtf16": 141,
+          "exact": "novissimum"
+        },
+        {
+          "startUtf16": 177,
+          "endUtf16": 184,
+          "exact": "videret"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2014 JUNIO / A"
+    }
+  },
+  {
+    "year": 2014,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 17,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2014 · Opción B · p. 17 de la recopilación.\nLeónidas ha sido derrotado por Jerjes en las Termópilas\nTras el combate la flota griega se retira de Artemisio",
+    "doc": {
+      "title": "BATALLA NAVAL ENTRE SOLDADOS GRIEGOS Y PERSAS EN ARTEMISIO",
+      "author": "Nepote",
+      "work": "Themistocles",
+      "reference": "II 3, 2",
+      "latin": "At classis communis Graeciae trecentarum navium, in qua ducentae erant Atheniensium, primum apud Artemisium inter Euboeam continentemque terram cum classiariis regiis conflixit. Angustias enim Themistocles quaerebat, ne multitudine circuiretur.",
+      "underlines": [
+        {
+          "startUtf16": 11,
+          "endUtf16": 19,
+          "exact": "communis"
+        },
+        {
+          "startUtf16": 41,
+          "endUtf16": 47,
+          "exact": "navium"
+        },
+        {
+          "startUtf16": 52,
+          "endUtf16": 55,
+          "exact": "qua"
+        },
+        {
+          "startUtf16": 206,
+          "endUtf16": 215,
+          "exact": "quaerebat"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2014 JUNIO / B"
+    }
+  },
+  {
+    "year": 2014,
+    "session": "JULIO",
+    "option": "A",
+    "page": 18,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2014 · Opción A · p. 18 de la recopilación.\nLas cohortes de César atacan por la espalda el ala izquierda de los pompeyanos\nCésar comienza a percibir la victoria por las actuaciones de las cohortes de la cuarta línea",
+    "doc": {
+      "title": "LA TERCERA LÍNEA DEL EJÉRCITO DE CÉSAR ENTRA EN COMBATE Y POMPEYO SE RETIRA AL CAMPAMENTO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III 94,1",
+      "latin": "Eodem tempore tertiam aciem Caesar procurrere iussit. Ita cum recentes atque integri defessis successissent, alii autem a tergo adorirentur, sustinere Pompeiani non potuerunt atque universi terga verterunt. [...] Pompeius se in castra contulit.",
+      "underlines": [
+        {
+          "startUtf16": 22,
+          "endUtf16": 27,
+          "exact": "aciem"
+        },
+        {
+          "startUtf16": 62,
+          "endUtf16": 70,
+          "exact": "recentes"
+        },
+        {
+          "startUtf16": 94,
+          "endUtf16": 107,
+          "exact": "successissent"
+        },
+        {
+          "startUtf16": 222,
+          "endUtf16": 224,
+          "exact": "se"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2014 JULIO / A"
+    }
+  },
+  {
+    "year": 2014,
+    "session": "JULIO",
+    "option": "B",
+    "page": 18,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2014 · Opción B · p. 18 de la recopilación.\nLos troyanos creen que los griegos, ocultos en una isla, se han marchado\nUna parte se queda maravillada contemplando el caballo que habían construido los griegos",
+    "doc": {
+      "title": "LOS TROYANOS SALEN DE LA CIUDAD A VER LOS LUGARES DONDE SE HABÍAN INSTALADO LOS GRIEGOS DURANTE SU ASEDIO",
+      "author": "Virgilio",
+      "work": "Aeneis",
+      "reference": "II 26-30",
+      "latin": "Ergo omnis longo solvit se Teucria luctu; panduntur portae, iuvat ire et Dorica castra desertosque videre locos litusque relictum: hic Dolopum manus, hic saevus tendebat Achilles; classibus hic locus, hic acie certare solebant.",
+      "underlines": [
+        {
+          "startUtf16": 24,
+          "endUtf16": 26,
+          "exact": "se"
+        },
+        {
+          "startUtf16": 35,
+          "endUtf16": 40,
+          "exact": "luctu"
+        },
+        {
+          "startUtf16": 42,
+          "endUtf16": 51,
+          "exact": "panduntur"
+        },
+        {
+          "startUtf16": 154,
+          "endUtf16": 160,
+          "exact": "saevus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2014 JULIO / B"
+    }
+  },
+  {
+    "year": 2015,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 19,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2015 · Opción A · p. 19 de la recopilación.\nEl rey Juba envía tropas a Saburra, su comandante\n1 Suspicatus: sospechando que Curión cree que el ejército del rey Juba está en retirada\nRevisión morfológica: La pregunta original pide peditum; en el pasaje figura peditumque.",
+    "doc": {
+      "title": "LOS ENEMIGOS SIMULAN UNA RETIRADA ANTE EL EJÉRCITO DE CÉSAR",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "II 40, 1-2",
+      "latin": "Ipse cum reliquis copiis elephantisque LX lentius subsequitur. Suspicatus praemissis equitibus ipsum adesse Curionem, Saburra copias equitum peditumque instruit atque his imperat ut simulatione timoris paulatim cedant ac pedem referant.",
+      "underlines": [
+        {
+          "startUtf16": 9,
+          "endUtf16": 17,
+          "exact": "reliquis"
+        },
+        {
+          "startUtf16": 141,
+          "endUtf16": 148,
+          "exact": "peditum"
+        },
+        {
+          "startUtf16": 167,
+          "endUtf16": 170,
+          "exact": "his"
+        },
+        {
+          "startUtf16": 211,
+          "endUtf16": 217,
+          "exact": "cedant"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "La pregunta original pide peditum; en el pasaje figura peditumque."
+      ],
+      "pauCv": "2015 JUNIO / A"
+    }
+  },
+  {
+    "year": 2015,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 19,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2015 · Opción B · p. 19 de la recopilación.\nPompeyo añade al poder del pueblo romano toda Cilicia\nPompeyo concluye en poco tiempo la guerra contra los piratas",
+    "doc": {
+      "title": "POMPEYO HA VENCIDO A LOS PIRATAS Y EXIGE REHENES A LOS CRETENSES",
+      "author": "Cicerón",
+      "work": "Pro lege Manilia",
+      "reference": "35",
+      "latin": "Omnes qui ubique praedones fuerunt partim capti interfectique sunt, partim unius huius se imperio ac potestati dediderunt. Idem [Pompeius] Cretensibus, cum ad eum usque in Pamphyliam legatos deprecatoresque misissent, spem deditionis non ademit obsidesque imperavit.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 5,
+          "exact": "Omnes"
+        },
+        {
+          "startUtf16": 159,
+          "endUtf16": 162,
+          "exact": "eum"
+        },
+        {
+          "startUtf16": 223,
+          "endUtf16": 233,
+          "exact": "deditionis"
+        },
+        {
+          "startUtf16": 256,
+          "endUtf16": 265,
+          "exact": "imperavit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2015 JUNIO / B"
+    }
+  },
+  {
+    "year": 2015,
+    "session": "JULIO",
+    "option": "A",
+    "page": 20,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2015 · Opción A · p. 20 de la recopilación.\nCurión ordena la retirada hacia las colinas próximas\nCurión rechaza la oferta de Domicio y muere luchando",
+    "doc": {
+      "title": "EL EJÉRCITO DE CURIÓN ES DERROTADO. DOMICIO OFRECE LA SALVACIÓN A CURIÓN",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "II 42 2-3",
+      "latin": "Tum vero ad summam desperationem nostri perveniunt et partim fugientes ab equitatu interficiuntur, partim integri procumbunt. Hortatur Curionem Cn. Domitius, praefectus equitum, cum paucis equitibus cicumsistens, ut fuga salutem petat atque in castra contendat.",
+      "underlines": [
+        {
+          "startUtf16": 33,
+          "endUtf16": 39,
+          "exact": "nostri"
+        },
+        {
+          "startUtf16": 74,
+          "endUtf16": 82,
+          "exact": "equitatu"
+        },
+        {
+          "startUtf16": 182,
+          "endUtf16": 188,
+          "exact": "paucis"
+        },
+        {
+          "startUtf16": 229,
+          "endUtf16": 234,
+          "exact": "petat"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2015 JULIO / A"
+    }
+  },
+  {
+    "year": 2015,
+    "session": "JULIO",
+    "option": "B",
+    "page": 20,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2015 · Opción B · p. 20 de la recopilación.\nSe han apoderado de los bienes de Sexto Roscio con violencia\nSexto Roscio padre se consideraba un noble más",
+    "doc": {
+      "title": "SEXTO ROSCIO PADRE SIEMPRE HABÍA SIDO DEFENSOR DEL PARTIDO DE LOS NOBLES",
+      "author": "Cicerón",
+      "work": "Pro Sexto Roscio",
+      "reference": "16",
+      "latin": "Cum hic [Sext. Roscius] omni tempore nobilitatis fautor fuisset, tum hoc tumultu proximo [...] praeter ceteros in ea vicinitate eam partem causamque opera, studio, auctoritate defendit. Etenim rectum putabat pro eorum honestate se pugnare.",
+      "underlines": [
+        {
+          "startUtf16": 4,
+          "endUtf16": 7,
+          "exact": "hic"
+        },
+        {
+          "startUtf16": 24,
+          "endUtf16": 28,
+          "exact": "omni"
+        },
+        {
+          "startUtf16": 29,
+          "endUtf16": 36,
+          "exact": "tempore"
+        },
+        {
+          "startUtf16": 56,
+          "endUtf16": 63,
+          "exact": "fuisset"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2015 JULIO / B"
+    }
+  },
+  {
+    "year": 2016,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 21,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2016 · Opción A · p. 21 de la recopilación.\nLas tropas de César se retiran a los campamentos y es entonces cuando Ariovisto ataca\nAl día siguiente se produce un nuevo combate y Ariovisto es derrotado",
+    "doc": {
+      "title": "César ha fortificado los campamentos y dispone sus tropas en formación para trabar combate",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "I 50, 2-3",
+      "latin": "Tum demum Ariovistus partem suarum copiarum, ut castra minora oppugnaret, misit. Acriter utrimque usque ad vesperum pugnatum est. Solis occasu suas copias Ariovistus, multis et inlatis et acceptis vulneribus, in castra reduxit.",
+      "underlines": [
+        {
+          "startUtf16": 28,
+          "endUtf16": 34,
+          "exact": "suarum"
+        },
+        {
+          "startUtf16": 55,
+          "endUtf16": 61,
+          "exact": "minora"
+        },
+        {
+          "startUtf16": 116,
+          "endUtf16": 128,
+          "exact": "pugnatum est"
+        },
+        {
+          "startUtf16": 197,
+          "endUtf16": 207,
+          "exact": "vulneribus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2016 JUNIO / A"
+    }
+  },
+  {
+    "year": 2016,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 21,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2016 · Opción B · p. 21 de la recopilación.\nSalmacis pasea por el bosque, cuando se encuentra con Hermafrodito\nLa ninfa se dirige a él. Admirada ante su belleza, se ofrece a compartir el tálamo nupcial",
+    "doc": {
+      "title": "La ninfa Salmacis, fuertemente atraída por Hermafrodito, se dispone a acercarse a él",
+      "author": "Ovidio",
+      "work": "Metamorphoseon libri",
+      "reference": "IV 315-320",
+      "latin": "Saepe legit flores. Et tum quoque forte legebat, cum puerum vidit visumque optavit habere. Nec tamen ante adiit, etsi properabat adire, quam se composuit, quam circumspexit amictus et finxit vultum et meruit formosa videri.",
+      "underlines": [
+        {
+          "startUtf16": 12,
+          "endUtf16": 18,
+          "exact": "flores"
+        },
+        {
+          "startUtf16": 60,
+          "endUtf16": 65,
+          "exact": "vidit"
+        },
+        {
+          "startUtf16": 141,
+          "endUtf16": 143,
+          "exact": "se"
+        },
+        {
+          "startUtf16": 208,
+          "endUtf16": 215,
+          "exact": "formosa"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2016 JUNIO / B"
+    }
+  },
+  {
+    "year": 2016,
+    "session": "JULIO",
+    "option": "A",
+    "page": 22,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2016 · Opción A · p. 22 de la recopilación.\nCésar reclama a los heduos que cumplan su promesa de abastecerle de trigo\nCésar se lamenta de no encontrar en sus aliados el apoyo que necesita\nRevisión morfológica: Revisar ocurrencia de quod (repetida en el texto). Forma oficial no contigua: erant polliciti Revisar selección morfológica original: quod, frigora, matura, erant polliciti La forma erant polliciti es discontinua (erant publice polliciti). Se conserva la pregunta en notas y se deja la selección morfológica al editor.",
+    "doc": {
+      "title": "CÉSAR SE VE ACUCIADO POR LA FALTA DE TRIGO",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "I 16, 1-2",
+      "latin": "Interim cotidie Caesar Haeduos frumentum quod erant publice polliciti flagitabat. Nam propter frigora, quod Gallia sub septentrionibus posita est, non modo frumenta in agris matura non erant, sed ne pabuli quidem satis magna copia suppetebat.",
+      "underlines": [],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de quod (repetida en el texto).",
+        "Forma oficial no contigua: erant polliciti",
+        "Revisar selección morfológica original: quod, frigora, matura, erant polliciti",
+        "La forma erant polliciti es discontinua (erant publice polliciti). Se conserva la pregunta en notas y se deja la selección morfológica al editor."
+      ],
+      "pauCv": "2016 JULIO / A"
+    }
+  },
+  {
+    "year": 2016,
+    "session": "JULIO",
+    "option": "B",
+    "page": 22,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2016 · Opción B · p. 22 de la recopilación.\nPíramo y Tisbe se despiden y quedan en verse al día siguiente\n1dixere, dedere, coiere = dixerunt, dederunt, coierunt Ambos acuden al lugar acordado, pero las cosas no salen como ellos esperan: su ansiado encuentro acaba en tragedia",
+    "doc": {
+      "title": "Píramo y Tisbe hablan, separados por un tabique. Están enamorados y ansían verse en persona",
+      "author": "Ovidio",
+      "work": "Metamorphoseon libri",
+      "reference": "IV 78-83",
+      "latin": "Talia diversa nequiquam sede locuti sub noctem dixere “vale” partique dedere oscula quisque suae non pervenientia contra. postera nocturnos Aurora removerat ignes, solque pruinosas radiis siccaverat herbas: ad solitum coiere locum.",
+      "underlines": [
+        {
+          "startUtf16": 77,
+          "endUtf16": 83,
+          "exact": "oscula"
+        },
+        {
+          "startUtf16": 84,
+          "endUtf16": 91,
+          "exact": "quisque"
+        },
+        {
+          "startUtf16": 147,
+          "endUtf16": 156,
+          "exact": "removerat"
+        },
+        {
+          "startUtf16": 171,
+          "endUtf16": 180,
+          "exact": "pruinosas"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2016 JULIO / B"
+    }
+  },
+  {
+    "year": 2017,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 23,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2017 · Opción A · p. 23 de la recopilación.\nCésar observa la disposición de las filas pompeyanas\nCésar se hace una idea cabal de las tropas de Pompeyo",
+    "doc": {
+      "title": "César y Pompeyo se preparan para la batalla",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III 88, 1",
+      "latin": "Caesar, cum Pompei castris appropinquavisset, ad hunc modum aciem eius instructam animadvertit. Erant in sinistro cornu legiones duae traditae a Caesare initio dissensionis; quarum una prima, altera tertia appellabatur. In eo loco ipse erat Pompeius.",
+      "underlines": [
+        {
+          "startUtf16": 27,
+          "endUtf16": 44,
+          "exact": "appropinquavisset"
+        },
+        {
+          "startUtf16": 114,
+          "endUtf16": 119,
+          "exact": "cornu"
+        },
+        {
+          "startUtf16": 134,
+          "endUtf16": 142,
+          "exact": "traditae"
+        },
+        {
+          "startUtf16": 174,
+          "endUtf16": 180,
+          "exact": "quarum"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2017 JUNIO / A"
+    }
+  },
+  {
+    "year": 2017,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 23,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2017 · Opción B · p. 23 de la recopilación.\nCon Cleómenes, uno de los capitanes de barco, Verres trama el plan para asesinar al resto de los capitanes: los convoca y luego los apresa\nVerres les dice que están detenidos por haber entregado la flota a los piratas, a sabiendas de que ello es falso\nRevisión morfológica: Revisar ocurrencia de iste (repetida en el texto).",
+    "doc": {
+      "title": "Verres decide que los capitanes de barco sean asesinados para evitar una acusación difícil de rechazar",
+      "author": "Cicerón",
+      "work": "In VerremII",
+      "reference": "5,106",
+      "latin": "Haec posteaquam acta et constituta sunt, procedit iste repente e praetorio inflammatus scelere, furore, crudelitate; in forum venit, navarchos vocari iubet. Qui nihil metuebant, nihil suspicabantur, statim accurrunt. Iste hominibus miseris innocentibus inici catenas imperat.",
+      "underlines": [
+        {
+          "startUtf16": 24,
+          "endUtf16": 39,
+          "exact": "constituta sunt"
+        },
+        {
+          "startUtf16": 50,
+          "endUtf16": 54,
+          "exact": "iste"
+        },
+        {
+          "startUtf16": 65,
+          "endUtf16": 74,
+          "exact": "praetorio"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 252,
+          "exact": "innocentibus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [
+        "Revisar ocurrencia de iste (repetida en el texto)."
+      ],
+      "pauCv": "2017 JUNIO / B"
+    }
+  },
+  {
+    "year": 2017,
+    "session": "JULIO",
+    "option": "A",
+    "page": 24,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2017 · Opción A · p. 24 de la recopilación.\nSe describe el lugar en que ambos jefes se encontrarán\nLa entrevista tiene lugar respetando las condiciones de Ariovisto",
+    "doc": {
+      "title": "César y Ariovisto van a entrevistarse en campo neutral",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "I 43, 1-2",
+      "latin": "Planities erat magna et in ea tumulus terrenus satis grandis. Hic locus aequum spatium ab castris Ariovisti et Caesaris aberat. Eo ad colloquium venerunt. Legionem Caesar quam equis vexerat passibus ducentis ab eo tumulo constituit.",
+      "underlines": [
+        {
+          "startUtf16": 171,
+          "endUtf16": 175,
+          "exact": "quam"
+        },
+        {
+          "startUtf16": 182,
+          "endUtf16": 189,
+          "exact": "vexerat"
+        },
+        {
+          "startUtf16": 199,
+          "endUtf16": 207,
+          "exact": "ducentis"
+        },
+        {
+          "startUtf16": 214,
+          "endUtf16": 220,
+          "exact": "tumulo"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2017 JULIO / A"
+    }
+  },
+  {
+    "year": 2017,
+    "session": "JULIO",
+    "option": "B",
+    "page": 24,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2017 · Opción B · p. 24 de la recopilación.\nEl río Numicio purifica el cuerpo de Eneas y lava todo lo que era mortal\nEneas sube al Olimpo de los dioses",
+    "doc": {
+      "title": "Júpiter concede a Eneas la naturaleza divina a petición de Venus",
+      "author": "Ovidio",
+      "work": "Metamorphoseon libri",
+      "reference": "XIV 605-610",
+      "latin": "Lustratum genetrix divino corpus odore unxit et ambrosia cum dulci nectare mixta contigit os fecitque deum, quem turba Quirini nuncupat Indigetem temploque arisque recepit. Inde sub Ascanii dicione binominis Alba resque Latina fuit.",
+      "underlines": [
+        {
+          "startUtf16": 67,
+          "endUtf16": 74,
+          "exact": "nectare"
+        },
+        {
+          "startUtf16": 81,
+          "endUtf16": 89,
+          "exact": "contigit"
+        },
+        {
+          "startUtf16": 108,
+          "endUtf16": 112,
+          "exact": "quem"
+        },
+        {
+          "startUtf16": 198,
+          "endUtf16": 207,
+          "exact": "binominis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2017 JULIO / B"
+    }
+  },
+  {
+    "year": 2018,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 25,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2018 · Opción A · p. 25 de la recopilación.\nCésar ha desembarcado al ejército en una playa segura\nLos soldados de César expulsan a los enemigos del bosque",
+    "doc": {
+      "title": "EL ENEMIGO EMPIEZA A OBSTACULIZAR EL PASO Y A ENTABLAR COMBATE CON EL EJÉRCITO DE CÉSAR",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 9, 2",
+      "latin": "[Caesar] Ipse noctu progressus milia passuum circiter XII hostium copias conspicatus est. Illi equitatu atque essedis ad flumen progressi, ex loco superiore nostros prohibere et proelium committere coeperunt. Repulsi ab equitatu se in silvas abdiderunt.",
+      "underlines": [
+        {
+          "startUtf16": 37,
+          "endUtf16": 44,
+          "exact": "passuum"
+        },
+        {
+          "startUtf16": 73,
+          "endUtf16": 88,
+          "exact": "conspicatus est"
+        },
+        {
+          "startUtf16": 90,
+          "endUtf16": 94,
+          "exact": "Illi"
+        },
+        {
+          "startUtf16": 147,
+          "endUtf16": 156,
+          "exact": "superiore"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2018 JUNIO / A"
+    }
+  },
+  {
+    "year": 2018,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 25,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2018 · Opción B · p. 25 de la recopilación.\nEl poeta manifiesta su rabia porque su amada lo ha abandonado por otro\n1positam se refiere a cara puella del primer verso. El poeta se lamenta por los cambios de la vida, en especial por los de la rueda del amor",
+    "doc": {
+      "title": "EL POETA, AL QUE SU AMADA HA DEJADO POR OTRO, SE QUEJA AMARGAMENTE ANTE SU AMIGO",
+      "author": "Propercio",
+      "work": "Elegiarum liber",
+      "reference": "II 8",
+      "latin": "Eripitur nobis iam pridem cara puella: et tu me lacrimas fundere, amice, vetas? Nullae sunt inimicitiae nisi amoris acerbae: ipsum me iugula, lenior hostis ero. Possum ego in alterius positam spectare lacerto?",
+      "underlines": [
+        {
+          "startUtf16": 9,
+          "endUtf16": 14,
+          "exact": "nobis"
+        },
+        {
+          "startUtf16": 66,
+          "endUtf16": 71,
+          "exact": "amice"
+        },
+        {
+          "startUtf16": 116,
+          "endUtf16": 123,
+          "exact": "acerbae"
+        },
+        {
+          "startUtf16": 134,
+          "endUtf16": 140,
+          "exact": "iugula"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2018 JUNIO / B"
+    }
+  },
+  {
+    "year": 2018,
+    "session": "JULIO",
+    "option": "A",
+    "page": 26,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2018 · Opción A · p. 26 de la recopilación.\nLas tropas de Afranio y Petreyo cruzan el Segre\nLas últimas formaciones enemigas se ven en grave aprieto por el acoso de la caballería de César",
+    "doc": {
+      "title": "CÉSAR INCOMODA Y HOSTIGA CON LA CABALLERÍA A LA COLUMNA ENEMIGA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 63, 3",
+      "latin": "Equites ab eo missi flumen transeunt et, cum de tertia vigilia Petreius atque Afranius castra movissent, repente sese ad novissimum agmen ostendunt et, magna multitudine circumfusa, morari atque iter impedire incipiunt.",
+      "underlines": [
+        {
+          "startUtf16": 11,
+          "endUtf16": 13,
+          "exact": "eo"
+        },
+        {
+          "startUtf16": 55,
+          "endUtf16": 62,
+          "exact": "vigilia"
+        },
+        {
+          "startUtf16": 121,
+          "endUtf16": 131,
+          "exact": "novissimum"
+        },
+        {
+          "startUtf16": 138,
+          "endUtf16": 147,
+          "exact": "ostendunt"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2018 JULIO / A"
+    }
+  },
+  {
+    "year": 2018,
+    "session": "JULIO",
+    "option": "B",
+    "page": 26,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2018 · Opción B · p. 26 de la recopilación.\nLos griegos invaden la ciudad sepultada en el sueño y el vino\n1Excutior, supero, asto: primera persona del singular Eneas contempla su ciudad envuelta en llamas y destrucción",
+    "doc": {
+      "title": "ENEAS NARRA CÓMO SE DESPIERTA SOBRESALTADO Y SUBE A LA AZOTEA PARA VER QUÉ SUCEDE",
+      "author": "Virgilio",
+      "work": "Aeneis",
+      "reference": "II 298-303",
+      "latin": "Diverso interea miscentur moenia luctu, et magis atque magis, quamquam secreta parentis Anchisae domus arboribusque obtecta recessit, clarescunt sonitus armorumque ingruit horror. Excutior somno et summi fastigia tecti ascensu supero atque arrectis auribus asto.",
+      "underlines": [
+        {
+          "startUtf16": 33,
+          "endUtf16": 38,
+          "exact": "luctu"
+        },
+        {
+          "startUtf16": 164,
+          "endUtf16": 171,
+          "exact": "ingruit"
+        },
+        {
+          "startUtf16": 198,
+          "endUtf16": 203,
+          "exact": "summi"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 248,
+          "exact": "arrectis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2018 JULIO / B"
+    }
+  },
+  {
+    "year": 2019,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 27,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2019 · Opción A · p. 27 de la recopilación.\nLos helvecios provocan a los soldados de César para trabar combate\n1in praesentia: “por el momento” César pedía cada día a los heduos el trigo que le habían prometido",
+    "doc": {
+      "title": "CÉSAR MANTIENE A LOS SUYOS ALEJADOS DEL COMBATE",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "I 15, 4-5",
+      "latin": "Caesar suos a proelio continebat ac satis habebat in praesentia hostem rapinis, pabulationibus populationibusque prohibere. Ita dies circiter quindecim iter fecerunt, ut inter novissimum hostium agmen et nostrum primum non amplius quinis aut senis milibus passuum interesset.",
+      "underlines": [
+        {
+          "startUtf16": 7,
+          "endUtf16": 11,
+          "exact": "suos"
+        },
+        {
+          "startUtf16": 176,
+          "endUtf16": 186,
+          "exact": "novissimum"
+        },
+        {
+          "startUtf16": 256,
+          "endUtf16": 263,
+          "exact": "passuum"
+        },
+        {
+          "startUtf16": 264,
+          "endUtf16": 274,
+          "exact": "interesset"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2019 JUNIO / A"
+    }
+  },
+  {
+    "year": 2019,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 27,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2019 · Opción B · p. 27 de la recopilación.\nLaocoonte, sacerdote de Neptuno, inmolaba un enorme toro\n1 horresco: primera persona del singular Por donde pasan las serpientes se levanta ruido y espuma en el mar",
+    "doc": {
+      "title": "ENEAS NARRA CÓMO DESDE LA ISLA DE TÉNEDOS DOS INMENSAS SERPIENTES AVANZAN POR EL MAR",
+      "author": "Virgilio",
+      "work": "Aeneis",
+      "reference": "II 203-208",
+      "latin": "Ecce autem gemini a Tenedo tranquilla per alta (horresco referens) immensis orbibus angues incumbunt pelago pariterque ad litora tendunt; pectora quorum inter fluctus arrecta iubaeque sanguineae superant undas; pars cetera pontum pone legit…",
+      "underlines": [
+        {
+          "startUtf16": 67,
+          "endUtf16": 75,
+          "exact": "immensis"
+        },
+        {
+          "startUtf16": 91,
+          "endUtf16": 100,
+          "exact": "incumbunt"
+        },
+        {
+          "startUtf16": 146,
+          "endUtf16": 152,
+          "exact": "quorum"
+        },
+        {
+          "startUtf16": 159,
+          "endUtf16": 166,
+          "exact": "fluctus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2019 JUNIO / B"
+    }
+  },
+  {
+    "year": 2019,
+    "session": "JULIO",
+    "option": "A",
+    "page": 28,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2019 · Opción A · p. 28 de la recopilación.\nEl portaestandarte romano avisa de que los soldados deben seguirle si no quieren que el estandarte caiga en manos enemigas\nComienza la lucha en la playa entre britanos y romanos",
+    "doc": {
+      "title": "LAS TROPAS DE CÉSAR DESEMBARCAN EN BRITANIA ANIMADAS POR EL VALOR DEL PORTAESTANDARTE",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "IV 25, 4-6",
+      "latin": "Cum hoc voce magna dixisset, se ex navi proiecit atque in hostes aquilam ferre coepit. Tum nostri, cohortati inter se, ne dedecus admitteretur, ex navi desiluerunt. Alii, cum hos ex proximis navibus conspexissent, hostibus adpropinquaverunt.",
+      "underlines": [
+        {
+          "startUtf16": 13,
+          "endUtf16": 18,
+          "exact": "magna"
+        },
+        {
+          "startUtf16": 19,
+          "endUtf16": 27,
+          "exact": "dixisset"
+        },
+        {
+          "startUtf16": 122,
+          "endUtf16": 129,
+          "exact": "dedecus"
+        },
+        {
+          "startUtf16": 175,
+          "endUtf16": 178,
+          "exact": "hos"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2019 JULIO / A"
+    }
+  },
+  {
+    "year": 2019,
+    "session": "JULIO",
+    "option": "B",
+    "page": 28,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2019 · Opción B · p. 28 de la recopilación.\nAlejandro se prepara para la lucha contra los persas\nLa batalla se desarrolla de forma favorable para los macedonios",
+    "doc": {
+      "title": "ALEJANDRO MAGNO SE MUESTRA OPTIMISTA ANTE LA INMINENTE BATALLA CONTRA LOS PERSAS",
+      "author": "Curcio",
+      "work": "Historia Alexandri",
+      "reference": "IV 13, 25-26",
+      "latin": "Haud alias tam alacrem viderant regem milites, et ex vultu eius interrito certam spem victoriae augurabantur. Atque ille, proruto vallo, exire copias iubet aciemque disponit. In dextro cornu locati sunt equites.",
+      "underlines": [
+        {
+          "startUtf16": 23,
+          "endUtf16": 31,
+          "exact": "viderant"
+        },
+        {
+          "startUtf16": 116,
+          "endUtf16": 120,
+          "exact": "ille"
+        },
+        {
+          "startUtf16": 178,
+          "endUtf16": 184,
+          "exact": "dextro"
+        },
+        {
+          "startUtf16": 203,
+          "endUtf16": 210,
+          "exact": "equites"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2019 JULIO / B"
+    }
+  },
+  {
+    "year": 2020,
+    "session": "JULIO",
+    "option": "A",
+    "page": 29,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2020 · Opción A · p. 29 de la recopilación.\nLos enemigos disponían de toda clase de provisiones en la otra ribera del río\nDesde la otra ribera los enemigos arrojan proyectiles",
+    "doc": {
+      "title": "CÉSAR NO PUEDE RECONSTRUIR LOS PUENTES PORQUE UNA TORMENTA CAUSA UNA FUERTE CRECIDA DEL RÍO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 50, 1-2",
+      "latin": "Hae permanserunt aquae dies complures. Conatus est Caesar reficere pontes, sed nec magnitudo fluminis permittebat neque ad ripam dispositae cohortes adversariorum perfici patiebantur; id illis prohibere erat facile ipsius fluminis natura atque aquae magnitudine.",
+      "underlines": [
+        {
+          "startUtf16": 67,
+          "endUtf16": 73,
+          "exact": "pontes"
+        },
+        {
+          "startUtf16": 129,
+          "endUtf16": 139,
+          "exact": "dispositae"
+        },
+        {
+          "startUtf16": 171,
+          "endUtf16": 182,
+          "exact": "patiebantur"
+        },
+        {
+          "startUtf16": 187,
+          "endUtf16": 192,
+          "exact": "illis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2020 JULIO / A"
+    }
+  },
+  {
+    "year": 2020,
+    "session": "JULIO",
+    "option": "B",
+    "page": 29,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2020 · Opción B · p. 29 de la recopilación.\nPetreyo dispone las tropas\nSe lucha con extrema violencia",
+    "doc": {
+      "title": "PETREYO DA LA SEÑAL DE COMBATE CONTRA EL EJÉRCITO DE CATILINA",
+      "author": "Salustio",
+      "work": "De coniuratione Catilinae",
+      "reference": "60, 1-2",
+      "latin": "Sed ubi omnibus rebus exploratis Petreius tuba signum dat, cohortes paulatim incedere iubet. Idem facit hostium exercitus. Postquam eo ventum est unde a ferentariis proelium committi possit, maximo clamore cum infestis signis concurrunt.",
+      "underlines": [
+        {
+          "startUtf16": 16,
+          "endUtf16": 21,
+          "exact": "rebus"
+        },
+        {
+          "startUtf16": 22,
+          "endUtf16": 32,
+          "exact": "exploratis"
+        },
+        {
+          "startUtf16": 135,
+          "endUtf16": 145,
+          "exact": "ventum est"
+        },
+        {
+          "startUtf16": 198,
+          "endUtf16": 205,
+          "exact": "clamore"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2020 JULIO / B"
+    }
+  },
+  {
+    "year": 2020,
+    "session": "SEPTIEMBRE",
+    "option": "A",
+    "page": 30,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2020 · Opción A · p. 30 de la recopilación.\nLas tropas de Pompeyo disponen de gran abundancia de recursos\n1haec, acusatiu plural neutre. Los soldados de César siguen recordando otras penalidades de una campaña anterior",
+    "doc": {
+      "title": "LOS SOLDADOS DE CÉSAR RESISTEN ANTE LAS TROPAS DE POMPEYO SOPORTANDO GRANDES PENALIDADES",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "III 47, 4-5",
+      "latin": "Ipse [Caesar] autem, consumptis omnibus longe lateque frumentis, summis erat in angustiis. Sed tamen haec singulari patientia milites ferebant. Recordabantur enim [...] se superiore anno in Hispania [...] maximum bellum confecisse.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 4,
+          "exact": "Ipse"
+        },
+        {
+          "startUtf16": 106,
+          "endUtf16": 115,
+          "exact": "singulari"
+        },
+        {
+          "startUtf16": 134,
+          "endUtf16": 142,
+          "exact": "ferebant"
+        },
+        {
+          "startUtf16": 182,
+          "endUtf16": 186,
+          "exact": "anno"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2020 SEPTIEMBRE / A"
+    }
+  },
+  {
+    "year": 2020,
+    "session": "SEPTIEMBRE",
+    "option": "B",
+    "page": 30,
+    "model": "antiguo",
+    "notes": "PAU CV · SEPTIEMBRE 2020 · Opción B · p. 30 de la recopilación.\nNerón acude a casas de sus amigos en busca de refugio\n1 cuius manu periret:para que lo matara (literalmente: por cuya mano muriese) No acudió nadie, y Nerón marchó corriendo con la intención de lanzarse al Tíber",
+    "doc": {
+      "title": "NERÓN, QUE QUIERE SUICIDARSE, REQUIERE LA PRESENCIA DE UN GLADIADOR O UN SICARIO",
+      "author": "Suetonio",
+      "work": "De uita duodecim Caesarum",
+      "reference": "VI 47, 3",
+      "latin": "Verum, clausis omnium foribus, respondente nullo, in cubiculum rediit, unde iam custodes diffugerant, direptis etiam stragulis et amota pyxide veneni; ac statim Spiculum mirmillonem vel quemlibet alium percussorem, cuius manu periret, requisiit.",
+      "underlines": [
+        {
+          "startUtf16": 43,
+          "endUtf16": 48,
+          "exact": "nullo"
+        },
+        {
+          "startUtf16": 80,
+          "endUtf16": 88,
+          "exact": "custodes"
+        },
+        {
+          "startUtf16": 89,
+          "endUtf16": 100,
+          "exact": "diffugerant"
+        },
+        {
+          "startUtf16": 196,
+          "endUtf16": 201,
+          "exact": "alium"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2020 SEPTIEMBRE / B"
+    }
+  },
+  {
+    "year": 2021,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 31,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2021 · Opción A · p. 31 de la recopilación.\nLos enemigos de César preparan una flota.\n1Domitius: Domicio, nombre propio masculino. La flota de César se prepara para la batalla.",
+    "doc": {
+      "title": "SE PREPARA UNA FLOTA CONTRA LA ESCUADRA DE CÉSAR",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 56, 2-4",
+      "latin": "Multa huc minora navigia addunt ut ipsa multitudine nostra classis terreatur. [...] Certas sibi deposcit naves Domitius atque has colonis pastoribusque quos secum adduxerat complet. Sic omnibus rebus instructa classe magna fiducia ad nostras naves procedunt [...].",
+      "underlines": [
+        {
+          "startUtf16": 35,
+          "endUtf16": 39,
+          "exact": "ipsa"
+        },
+        {
+          "startUtf16": 67,
+          "endUtf16": 76,
+          "exact": "terreatur"
+        },
+        {
+          "startUtf16": 130,
+          "endUtf16": 137,
+          "exact": "colonis"
+        },
+        {
+          "startUtf16": 194,
+          "endUtf16": 199,
+          "exact": "rebus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2021 JUNIO / A"
+    }
+  },
+  {
+    "year": 2021,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 31,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2021 · Opción B · p. 31 de la recopilación.\nEl cónsul Marcelo toma el cargo y prepara la campaña militar\n1Mediolanum: ciudad del norte de Italia, actualmente Milán. 2Romam: Ac. de dirección, ‘a Roma’. Marcelo acaba su consulado.",
+    "doc": {
+      "title": "EL CÓNSUL MARCELO ATACA A LOS GALOS DEL NORTE DE ITALIA",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "III 2, 6",
+      "latin": "Tum Marcellus cum parva manu equitum dimicavit et regem Gallorum [...] manu sua occidit. Postea cum collega ingentes copias Gallorum peremit, Mediolanum expugnavit, grandem praedam Romam pertulit. Ac triumphans Marcellus spolia Galli stipiti imposita umeris suis vexit.",
+      "underlines": [
+        {
+          "startUtf16": 29,
+          "endUtf16": 36,
+          "exact": "equitum"
+        },
+        {
+          "startUtf16": 108,
+          "endUtf16": 116,
+          "exact": "ingentes"
+        },
+        {
+          "startUtf16": 200,
+          "endUtf16": 210,
+          "exact": "triumphans"
+        },
+        {
+          "startUtf16": 263,
+          "endUtf16": 268,
+          "exact": "vexit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2021 JUNIO / B"
+    }
+  },
+  {
+    "year": 2021,
+    "session": "JULIO",
+    "option": "A",
+    "page": 32,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2021 · Opción A · p. 32 de la recopilación.\nCésar se reúne con sus tropas.\n1continuos complures dies: circunstancial, acusativo de duración, ‘durante ...’. Los britanos buscan aliados para luchar contra los romanos.",
+    "doc": {
+      "title": "EL MAL TIEMPO PARALIZA LOS COMBATES EN BRITANIA",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "IV 34, 4-5",
+      "latin": "Secutae sunt continuos complures dies tempestates quae et nostros in castris continerent et hostem a pugna prohiberent. Interim barbari nuntios in omnes partes dimiserunt paucitatemque nostrorum militum suis praedicaverunt [...].",
+      "underlines": [
+        {
+          "startUtf16": 23,
+          "endUtf16": 32,
+          "exact": "complures"
+        },
+        {
+          "startUtf16": 101,
+          "endUtf16": 106,
+          "exact": "pugna"
+        },
+        {
+          "startUtf16": 195,
+          "endUtf16": 202,
+          "exact": "militum"
+        },
+        {
+          "startUtf16": 208,
+          "endUtf16": 222,
+          "exact": "praedicaverunt"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2021 JULIO / A"
+    }
+  },
+  {
+    "year": 2021,
+    "session": "JULIO",
+    "option": "B",
+    "page": 32,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2021 · Opción B · p. 32 de la recopilación.\nTito hereda el imperio de su padre Vespasiano.\n1huic: ‘a este’, referido a Vespasiano. 2et: valor adverbial. Tito gobierna con generosidad.",
+    "doc": {
+      "title": "VIRTUDES DEL EMPERADOR TITO",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "VII 21, 1-2",
+      "latin": "Huic Titus filius successit, qui et ipse Vespasianus est dictus: vir omnium virtutum genere mirabilis adeo ut «amor et deliciae humani generis» diceretur; facundissimus, bellicosissimus, moderatissimus [fuit]. Causas Latine egit, poemata et tragoedias Graece composuit.",
+      "underlines": [
+        {
+          "startUtf16": 119,
+          "endUtf16": 127,
+          "exact": "deliciae"
+        },
+        {
+          "startUtf16": 155,
+          "endUtf16": 168,
+          "exact": "facundissimus"
+        },
+        {
+          "startUtf16": 210,
+          "endUtf16": 216,
+          "exact": "Causas"
+        },
+        {
+          "startUtf16": 259,
+          "endUtf16": 268,
+          "exact": "composuit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2021 JULIO / B"
+    }
+  },
+  {
+    "year": 2022,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 33,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2022 · Opción A · p. 33 de la recopilación.\nCésar recuerda a los eduos los beneficios recibidos y deja su depósito en la ciudad de Nevers, controlada por ellos.\n1Noviodunum: “Nevers”, ciudad a la orilla del río Loira. Los eduos no tardan en traicionar a César.",
+    "doc": {
+      "title": "CÉSAR DEJA SU DEPÓSITO EN NEVERS EN MANOS DE LOS EDUOS",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "VII 55, 1-3",
+      "latin": "Noviodunum erat oppidum Aeduorum ad ripas Ligeris opportuno loco positum. Huc Caesar omnes obsides Galliae, frumentum, pecuniam publicam, suorum atque exercitus impedimentorum magnam partem contulerat; huc magnum numerum equorum huius belli causa [...] miserat.",
+      "underlines": [
+        {
+          "startUtf16": 50,
+          "endUtf16": 59,
+          "exact": "opportuno"
+        },
+        {
+          "startUtf16": 91,
+          "endUtf16": 98,
+          "exact": "obsides"
+        },
+        {
+          "startUtf16": 138,
+          "endUtf16": 144,
+          "exact": "suorum"
+        },
+        {
+          "startUtf16": 190,
+          "endUtf16": 200,
+          "exact": "contulerat"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2022 JUNIO / A"
+    }
+  },
+  {
+    "year": 2022,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 33,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2022 · Opción B · p. 33 de la recopilación.\nMientras Aníbal se retira hacia el sur de Italia, en Hispania los dos Escipiones mueren en lucha contra Asdrúbal.\n1 erant... decepti: forma verbal de la voz pasiva. Después de la muerte de los hermanos Publio y Cneo Cornelio Escipión, es enviado a Hispania el hijo del primero.",
+    "doc": {
+      "title": "DOBLE ESCENARIO DE LA SEGUNDA GUERRA PÚNICA",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "III 14",
+      "latin": "Hannibal ad Campaniam se recepit. In Hispania a fratre eius Hasdrubale ambo Scipiones, qui per multos annos victores fuerant, interficiuntur, exercitus tamen integer mansit; casu enim magis erant quam virtute decepti.",
+      "underlines": [
+        {
+          "startUtf16": 22,
+          "endUtf16": 24,
+          "exact": "se"
+        },
+        {
+          "startUtf16": 108,
+          "endUtf16": 116,
+          "exact": "victores"
+        },
+        {
+          "startUtf16": 166,
+          "endUtf16": 172,
+          "exact": "mansit"
+        },
+        {
+          "startUtf16": 201,
+          "endUtf16": 208,
+          "exact": "virtute"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2022 JUNIO / B"
+    }
+  },
+  {
+    "year": 2022,
+    "session": "JULIO",
+    "option": "A",
+    "page": 34,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2022 · Opción A · p. 34 de la recopilación.\nNada más llegar a Útica enviado por César, Curión gana con la caballería una primera escaramuza contra los númidas.\n1Quae res: sujeto de complevit. “Esta circunstancia, este aviso”. Se refiere a la amenaza de Curión de considerar enemigas a aquellas naves mercantes que no acudieran al campamento romano. Victoria de Curión sobre los pompeyanos en la batalla de Útica.",
+    "doc": {
+      "title": "PREPARATIVOS DE CURIÓN EN ÚTICA PARA LUCHAR CONTRA LOS PARTIDARIOS DE POMPEYO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "II 25-26",
+      "latin": "Quae res omnium rerum copia complevit exercitum. His rebus gestis Curio se in castra ad Bagradam recipit atque universi exercitus conclamatione imperator appellatur, posteroque die exercitum Uticam ducit et prope oppidum castra ponit.",
+      "underlines": [
+        {
+          "startUtf16": 49,
+          "endUtf16": 52,
+          "exact": "His"
+        },
+        {
+          "startUtf16": 111,
+          "endUtf16": 119,
+          "exact": "universi"
+        },
+        {
+          "startUtf16": 154,
+          "endUtf16": 164,
+          "exact": "appellatur"
+        },
+        {
+          "startUtf16": 177,
+          "endUtf16": 180,
+          "exact": "die"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2022 JULIO / A"
+    }
+  },
+  {
+    "year": 2022,
+    "session": "JULIO",
+    "option": "B",
+    "page": 34,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2022 · Opción B · p. 34 de la recopilación.\nLas tropas enviadas por Escipión dispersan con facilidad las tropas de Indíbil y Mandonio.\nPublio Cornelio Escipión desembarca en Tarraco con una gran cantidad de soldados y de provisiones.",
+    "doc": {
+      "title": "ATAQUE DE LOS CELTÍBEROS CONTRA LOS CARTAGINESES",
+      "author": "Tito Livio",
+      "work": "Ab urbe condita",
+      "reference": "XXII 21, 7-8",
+      "latin": "Celtiberi [...] arma capiunt provinciamque Carthaginiensium valido exercitu invadunt. Tria oppida vi expugnant; inde cum ipso Hasdrubale duobus proeliis egregie pugnantes, quindecim milia hostium occiderunt, quattuor milia cum multis militaribus signis capiunt.",
+      "underlines": [
+        {
+          "startUtf16": 121,
+          "endUtf16": 125,
+          "exact": "ipso"
+        },
+        {
+          "startUtf16": 137,
+          "endUtf16": 143,
+          "exact": "duobus"
+        },
+        {
+          "startUtf16": 161,
+          "endUtf16": 170,
+          "exact": "pugnantes"
+        },
+        {
+          "startUtf16": 246,
+          "endUtf16": 252,
+          "exact": "signis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2022 JULIO / B"
+    }
+  },
+  {
+    "year": 2023,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 35,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2023 · Opción A · p. 35 de la recopilación.\nTítulo y contexto traducidos del valenciano de la recopilación.\nCésar manda reparar un puente sobre el río Sicoris (actual Segre).\nTomadas estas medidas, César marcha hacia Ilerda (la actual Lérida).",
+    "doc": {
+      "title": "CÉSAR LLEGA CON SU ESCOLTA",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "1, 41, 1-2",
+      "latin": "[...] Caesar cum equitibus [...], quos sibi praesidio reliquerat, in castra pervenit. Pons, qui fuerat tempestate interruptus, paene erat refectus; hunc noctu perfici iussit. Ipse, cognita locorum natura, ponti castrisque praesidio sex cohortes reliquit [...].",
+      "underlines": [
+        {
+          "startUtf16": 17,
+          "endUtf16": 26,
+          "exact": "equitibus"
+        },
+        {
+          "startUtf16": 54,
+          "endUtf16": 64,
+          "exact": "reliquerat"
+        },
+        {
+          "startUtf16": 167,
+          "endUtf16": 173,
+          "exact": "iussit"
+        },
+        {
+          "startUtf16": 236,
+          "endUtf16": 244,
+          "exact": "cohortes"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2023 JUNIO / A"
+    }
+  },
+  {
+    "year": 2023,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 35,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2023 · Opción B · p. 35 de la recopilación.\nTítulo y contexto traducidos del valenciano de la recopilación.\nPirro inicia su campaña contra Roma.\nPirro presenta una propuesta de paz que Roma no acepta.",
+    "doc": {
+      "title": "PIRRO, REY DEL EPIRO, ATACA ROMA",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "2, 12",
+      "latin": "Postea Pyrrus [...] Romam perrexit, omnia ferro ignique vastavit, Campaniam populatus est atque ad Praeneste venit [...]. Mox terrore exercitus, qui eum cum consule sequebatur, in Campaniam se recepit. Legati [...] ab eo honorifice suscepti sunt.",
+      "underlines": [
+        {
+          "startUtf16": 36,
+          "endUtf16": 41,
+          "exact": "omnia"
+        },
+        {
+          "startUtf16": 56,
+          "endUtf16": 64,
+          "exact": "vastavit"
+        },
+        {
+          "startUtf16": 165,
+          "endUtf16": 175,
+          "exact": "sequebatur"
+        },
+        {
+          "startUtf16": 218,
+          "endUtf16": 220,
+          "exact": "eo"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2023 JUNIO / B"
+    }
+  },
+  {
+    "year": 2023,
+    "session": "JULIO",
+    "option": "A",
+    "page": 36,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2023 · Opción A · p. 36 de la recopilación.\nRelación de las legiones reunidas por Pompeyo.\n1effecerat: su sujeto es Pompeius, como el de traduxerat. 2dimissi:participio de dimitto en el sentido ‘licenciar’. 3a superioribus imperatoribus: complemento agente de dimissi. Imperator aquí tiene el sentido ‘comandante’. Continúa la enumeración de las legiones de Pompeyo y de sus tropas auxiliares.",
+    "doc": {
+      "title": "POMPEYO REUNE TODAS LAS FUERZAS POSIBLES",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "3, 4, 1",
+      "latin": "Legiones effecerat civium Romanorum VIIII: V ex Italia, quas traduxerat; unam ex Cilicia veteranam [...]; unam ex Creta et Macedonia ex veteranis militibus, qui dimissi a superioribus imperatoribus in his provinciis consederant; duas ex Asia [...].",
+      "underlines": [
+        {
+          "startUtf16": 19,
+          "endUtf16": 25,
+          "exact": "civium"
+        },
+        {
+          "startUtf16": 61,
+          "endUtf16": 71,
+          "exact": "traduxerat"
+        },
+        {
+          "startUtf16": 146,
+          "endUtf16": 155,
+          "exact": "militibus"
+        },
+        {
+          "startUtf16": 161,
+          "endUtf16": 168,
+          "exact": "dimissi"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2023 JULIO / A"
+    }
+  },
+  {
+    "year": 2023,
+    "session": "JULIO",
+    "option": "B",
+    "page": 36,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2023 · Opción B · p. 36 de la recopilación.\nPrimer combate naval entre romanos y cartagineses.\n1primum: valor adverbial, ‘por primera vez’. 2 C. Duillio et Cn. Cornelio Asina consulibus: fórmula de datación: ‘siendo cónsules Cayo Duilio y Cneo Cornelio Asina’. 3navibus rostratis: ‘naves rostradas’, es decir, ‘naves con espolón’. 4Liburnas: ‘[naves] libúrnicas’, por proceder de Liburnia, región de Iliria, en la costa adriática. Esta victoria da ánimos a los romanos, al ver que pueden vencer a los cartagineses tanto por tierra como por mar.",
+    "doc": {
+      "title": "DESARROLLO DE LA PRIMERA GUERRA PÚNICA",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "2, 20",
+      "latin": "Quinto anno Punici belli, quod contra Afros gerebatur, primum Romani C. Duillio et Cn. Cornelio Asina consulibus in mari dimicaverunt [...] navibus rostratis, quas Liburnas vocant. Consul Cornelius fraude deceptus est. Duillius, commisso proelio, Carthaginiensium ducem vicit [...].",
+      "underlines": [
+        {
+          "startUtf16": 44,
+          "endUtf16": 53,
+          "exact": "gerebatur"
+        },
+        {
+          "startUtf16": 159,
+          "endUtf16": 163,
+          "exact": "quas"
+        },
+        {
+          "startUtf16": 198,
+          "endUtf16": 204,
+          "exact": "fraude"
+        },
+        {
+          "startUtf16": 264,
+          "endUtf16": 269,
+          "exact": "ducem"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2023 JULIO / B"
+    }
+  },
+  {
+    "year": 2024,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 37,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2024 · Opción A · p. 37 de la recopilación.\nVirídovix, jefe de los venelos, comanda una rebelión contra los romanos junto con otros pueblos galos.\n1 Veneti, Venetorum,‘vénetos’, pueblo galo. 2Venelli, Venellorum,‘venelos’, pueblo galo. 3Viridovix, Viridovigis, ‘Virídovix’, jefe galo de la tribu de los venelos. Quinto Titurio Sabino, enviado por César para hacer frente a la rebelión de diversos pueblos, consigue someterlos con un ardid.",
+    "doc": {
+      "title": "REVUELTA DE DIVERSOS PUEBLOS GALOS AL MANDO DE VIRÍDOVIX",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "3.17.1-2",
+      "latin": "Dum haec in Venetis geruntur, Q. Titurius Sabinus cum iis copiis quas a Caesare acceperat in fines Venellorum pervenit. His praeerat Viridovix ac summam imperii tenebat earum omnium civitatum quae defecerant.",
+      "underlines": [
+        {
+          "startUtf16": 20,
+          "endUtf16": 28,
+          "exact": "geruntur"
+        },
+        {
+          "startUtf16": 54,
+          "endUtf16": 57,
+          "exact": "iis"
+        },
+        {
+          "startUtf16": 146,
+          "endUtf16": 152,
+          "exact": "summam"
+        },
+        {
+          "startUtf16": 175,
+          "endUtf16": 181,
+          "exact": "omnium"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2024 JUNIO / A"
+    }
+  },
+  {
+    "year": 2024,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 37,
+    "model": "antiguo",
+    "notes": "PAU CV · JUNIO 2024 · Opción B · p. 37 de la recopilación.\nLuchas entre los etruscos de Veyes y los romanos comandados por los Fabios.\n1Veiens, Veientis, ‘veyense’, habitante de la ciutat etrusca de Veyes. 2 Ianiculum, Ianiculi, ‘Janículo’, una de las siete colinas de Roma. 3Capti... sunt, forma compuesta del verbo capio. 4Fabius, -a -um, ‘Fabio’, de la familia de los Fabios. Los veyenses caen en una emboscada.",
+    "doc": {
+      "title": "LOS VEYENSES RENUNCIAN A LA LUCHA EN CAMPO ABIERTO CONTRA LOS ROMANOS",
+      "author": "Tito Livio",
+      "work": "Ab urbe condita",
+      "reference": "2.51.4-5",
+      "latin": "Post acceptam proxima pugna cladem Veientes abstinuere acie; populationes erant, et velut ab arce Ianiculo passim in Romanum agrum impetus dabant; non usquam pecora tuta, non agrestes erant. Capti deinde eadem arte sunt qua ceperant Fabios.",
+      "underlines": [
+        {
+          "startUtf16": 5,
+          "endUtf16": 13,
+          "exact": "acceptam"
+        },
+        {
+          "startUtf16": 28,
+          "endUtf16": 34,
+          "exact": "cladem"
+        },
+        {
+          "startUtf16": 165,
+          "endUtf16": 169,
+          "exact": "tuta"
+        },
+        {
+          "startUtf16": 224,
+          "endUtf16": 232,
+          "exact": "ceperant"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2024 JUNIO / B"
+    }
+  },
+  {
+    "year": 2024,
+    "session": "JULIO",
+    "option": "A",
+    "page": 38,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2024 · Opción A · p. 38 de la recopilación.\nDivisión general de la Galia.\n1Aquitani: aquitanos, antiguo pueblo de la Galia. 2Garumna: Garona, río de la Galia. 3Matrona et Sequana: Marne y Sena, ríos de la Galia. Más diferencias entre los pueblos de la Galia.",
+    "doc": {
+      "title": "DESCRIPCIÓN DE LA GALIA",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "I 1, 1-2",
+      "latin": "Gallia est omnis divisa in partes tres, quarum unam incolunt Belgae, aliam Aquitani, tertiam [...] Galli. Hi omnes lingua, institutis, legibus inter se differunt. Gallos ab Aquitanis Garumna flumen, a Belgis Matrona et Sequana dividit.",
+      "underlines": [
+        {
+          "startUtf16": 11,
+          "endUtf16": 16,
+          "exact": "omnis"
+        },
+        {
+          "startUtf16": 40,
+          "endUtf16": 46,
+          "exact": "quarum"
+        },
+        {
+          "startUtf16": 106,
+          "endUtf16": 108,
+          "exact": "Hi"
+        },
+        {
+          "startUtf16": 227,
+          "endUtf16": 234,
+          "exact": "dividit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2024 JULIO / A"
+    }
+  },
+  {
+    "year": 2024,
+    "session": "JULIO",
+    "option": "B",
+    "page": 38,
+    "model": "antiguo",
+    "notes": "PAU CV · JULIO 2024 · Opción B · p. 38 de la recopilación.\nLos asesinos de César no sobreviven mucho tiempo.\n1percussorum: ‘asesinos’, genitivo compl. del nombre de quisquam. 5alius alio casu: ‘cada uno de una forma diferente’. 2neque quisquam: ‘ninguno, nadie’. 6eodem illo pugione:ablativo instrumental. 3triennio amplius:‘más de tres años’. 7violaverant: ‘habían asesinado’. 4sua morte: ‘por muerte natural’. 8interemerunt: perf. de interimo. La muerte de César convulsiona Roma.",
+    "doc": {
+      "title": "TRISTE FINAL DE LOS ASESINOS DE CÉSAR",
+      "author": "Suetonio",
+      "work": "Divus Iulius",
+      "reference": "I 89",
+      "latin": "Percussorum autem fere neque triennio quisquam amplius supervixit, neque sua morte defunctus est. Damnati [sunt] omnes, alius alio casu periit: pars naufragio, pars proelio. Nonnulli se eodem illo pugione, quo Caesarem violaverant, interemerunt.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 11,
+          "exact": "Percussorum"
+        },
+        {
+          "startUtf16": 47,
+          "endUtf16": 54,
+          "exact": "amplius"
+        },
+        {
+          "startUtf16": 197,
+          "endUtf16": 204,
+          "exact": "pugione"
+        },
+        {
+          "startUtf16": 219,
+          "endUtf16": 230,
+          "exact": "violaverant"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [],
+        "prefix": [],
+        "latinism": []
+      },
+      "preverbBases": null,
+      "warnings": [],
+      "pauCv": "2024 JULIO / B"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JUNIO",
+    "option": "A",
+    "page": 39,
+    "model": "actual",
+    "notes": "PAU CV · JUNIO 2025 · Opción A · p. 39 de la recopilación.\nLos masilienses, en unas circunstancias penosas debido al asedio de las tropas de César, deciden finalmente rendirse\nMassilia (Marsella) queda en manos de las tropas de César",
+    "doc": {
+      "title": "RENDICIÓN DE LOS MASILIENSES, ALIADOS DE POMPEYO, DESPUÉS DE UN LARGO ASEDIO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "II 22, 5-6",
+      "latin": "Massilienses arma tormentaque ex oppido [...] proferunt, naves ex portu navalibusque educunt, pecuniam ex publico tradunt. Quibus rebus confectis Caesar [...] duas ibi legiones praesidio relinquit, ceteras in Italiam mittit; ipse ad urbem proficiscitur.",
+      "underlines": [
+        {
+          "startUtf16": 66,
+          "endUtf16": 71,
+          "exact": "portu"
+        },
+        {
+          "startUtf16": 136,
+          "endUtf16": 145,
+          "exact": "confectis"
+        },
+        {
+          "startUtf16": 159,
+          "endUtf16": 163,
+          "exact": "duas"
+        },
+        {
+          "startUtf16": 225,
+          "endUtf16": 229,
+          "exact": "ipse"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "iudicium",
+          "flammam",
+          "castellum",
+          "salutem"
+        ],
+        "prefix": [
+          "interlineado",
+          "posponer",
+          "circuncisión",
+          "retrospectiva"
+        ],
+        "latinism": [
+          "plácet",
+          "inter nos",
+          "lapsus linguae",
+          "hábitat"
+        ]
+      },
+      "preverbBases": [
+        "proferunt",
+        "distractae"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JUNIO / A"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JUNIO",
+    "option": "B",
+    "page": 39,
+    "model": "actual",
+    "notes": "PAU CV · JUNIO 2025 · Opción B · p. 39 de la recopilación.\nCicerón anima a César a no dejarse llevar por sus triunfos militares y a conseguir la inmortalidad gracias a su labor en la paz\nCicerón agradece el perdón de César",
+    "doc": {
+      "title": "CICERÓN RECUERDA LAS CIRCUNSTANCIAS DE LA GUERRA CIVIL EN SU DISCURSO A FAVOR DEL RETORNO DE MARCO MARCELO",
+      "author": "Cicerón",
+      "work": "Pro Marcello",
+      "reference": "30-31",
+      "latin": "Diversae voluntates civium fuerunt distractaeque sententiae. Non enim consiliis solum et studiis sed armis etiam et castris dissidebamus. Erat obscuritas quaedam, erat certamen inter clarissimos duces [...] Perfuncta res publica est hoc misero fatalique bello.",
+      "underlines": [
+        {
+          "startUtf16": 20,
+          "endUtf16": 26,
+          "exact": "civium"
+        },
+        {
+          "startUtf16": 124,
+          "endUtf16": 136,
+          "exact": "dissidebamus"
+        },
+        {
+          "startUtf16": 183,
+          "endUtf16": 194,
+          "exact": "clarissimos"
+        },
+        {
+          "startUtf16": 233,
+          "endUtf16": 236,
+          "exact": "hoc"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "iudicium",
+          "flammam",
+          "castellum",
+          "salutem"
+        ],
+        "prefix": [
+          "interlineado",
+          "posponer",
+          "circuncisión",
+          "retrospectiva"
+        ],
+        "latinism": [
+          "plácet",
+          "inter nos",
+          "lapsus linguae",
+          "hábitat"
+        ]
+      },
+      "preverbBases": [
+        "proferunt",
+        "distractae"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JUNIO / B"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JUNIO (reserva)",
+    "option": "A",
+    "page": 42,
+    "model": "actual",
+    "notes": "PAU CV · JUNIO (reserva) 2025 · Opción A · p. 42 de la recopilación.\nLos oscenses y calagurritanos envían embajadores a César y le prometen obediencia.\nPaulatinamente muchos otros pueblos abrazan la causa de César, al conocer que no hay refuerzos pompeyanos de camino.",
+    "doc": {
+      "title": "LOS PUEBLOS HISPANOS ENVÍAN LEGADOS Y AYUDAN A CÉSAR CON GRANO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 60, 2-3",
+      "latin": "Hos Tarraconenses et Iacetani et Ausetani et paucis post diebus Illurgavonenses, qui flumen Hiberum attingunt, insequuntur. Petit ab his omnibus, ut se frumento iuvent. Pollicentur atque omnibus undique conquisitis iumentis in castra deportant.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 3,
+          "exact": "Hos"
+        },
+        {
+          "startUtf16": 57,
+          "endUtf16": 63,
+          "exact": "diebus"
+        },
+        {
+          "startUtf16": 111,
+          "endUtf16": 122,
+          "exact": "insequuntur"
+        },
+        {
+          "startUtf16": 203,
+          "endUtf16": 214,
+          "exact": "conquisitis"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "focum",
+          "plumbum",
+          "muscam",
+          "calidum"
+        ],
+        "prefix": [
+          "admirar",
+          "translúcido",
+          "disentir",
+          "pervivir"
+        ],
+        "latinism": [
+          "ad nauseam",
+          "addenda",
+          "ipso facto",
+          "opera prima"
+        ]
+      },
+      "preverbBases": [
+        "resident",
+        "perfecerunt"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JUNIO (reserva) / A"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JUNIO (reserva)",
+    "option": "B",
+    "page": 42,
+    "model": "actual",
+    "notes": "PAU CV · JUNIO (reserva) 2025 · Opción B · p. 42 de la recopilación.\nCicerón, desterrado, escribe a su esposa Terencia, lamentando la situación en la que se encuentran ambos.\nCicerón considera que la situación de destierro en la que se encuentra es responsabilidad suya y acepta los consejos de Terencia para superarla.",
+    "doc": {
+      "title": "CICERÓN SE QUEJA DE SU DESTIERRO",
+      "author": "Cicerón",
+      "work": "Ep.ad fam",
+      "reference": "XIV, 3",
+      "latin": "Accepi ab Aristocrito tres epistulas, quas ego lacrimis prope delevi. conficior enim maerore, mea Terentia, nec meae me miseriae magis excruciant quam tuae vestraeque. ego autem hoc miserior sum quam tu, quae es miserrima.",
+      "underlines": [
+        {
+          "startUtf16": 38,
+          "endUtf16": 42,
+          "exact": "quas"
+        },
+        {
+          "startUtf16": 47,
+          "endUtf16": 55,
+          "exact": "lacrimis"
+        },
+        {
+          "startUtf16": 70,
+          "endUtf16": 79,
+          "exact": "conficior"
+        },
+        {
+          "startUtf16": 182,
+          "endUtf16": 190,
+          "exact": "miserior"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "focum",
+          "plumbum",
+          "muscam",
+          "calidum"
+        ],
+        "prefix": [
+          "admirar",
+          "translúcido",
+          "disentir",
+          "pervivir"
+        ],
+        "latinism": [
+          "ad nauseam",
+          "addenda",
+          "ipso facto",
+          "opera prima"
+        ]
+      },
+      "preverbBases": [
+        "resident",
+        "perfecerunt"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JUNIO (reserva) / B"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JULIO",
+    "option": "A",
+    "page": 45,
+    "model": "actual",
+    "notes": "PAU CV · JULIO 2025 · Opción A · p. 45 de la recopilación.\nCésar se informa sobre las intenciones de la tropa, convoca más efectivos y se reune con otros comandantes.\nLéntulo transmite a César mensajes de su adversario Pompeyo",
+    "doc": {
+      "title": "CÉSAR AVANZA HACIA ARIMINO",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 8, 1-2",
+      "latin": "Cognita militum voluntate, Ariminum cum ea legione proficiscitur ibique tribunos plebis, qui ad eum confugerant, convenit; reliquas legiones ex hibernis evocat et subsequi iubet. Eo Lucius Caesar adulescens venit, cuius pater Caesaris erat legatus.",
+      "underlines": [
+        {
+          "startUtf16": 40,
+          "endUtf16": 42,
+          "exact": "ea"
+        },
+        {
+          "startUtf16": 100,
+          "endUtf16": 111,
+          "exact": "confugerant"
+        },
+        {
+          "startUtf16": 123,
+          "endUtf16": 131,
+          "exact": "reliquas"
+        },
+        {
+          "startUtf16": 240,
+          "endUtf16": 247,
+          "exact": "legatus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "causam",
+          "exercitum",
+          "erat",
+          "mensam"
+        ],
+        "prefix": [
+          "confluencia",
+          "exhumar",
+          "prefijar",
+          "subestimar"
+        ],
+        "latinism": [
+          "sine die",
+          "sui generis",
+          "primus inter pares",
+          "numerus clausus"
+        ]
+      },
+      "preverbBases": [
+        "convenit",
+        "accepit"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JULIO / A"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JULIO",
+    "option": "B",
+    "page": 45,
+    "model": "actual",
+    "notes": "PAU CV · JULIO 2025 · Opción B · p. 45 de la recopilación.\nSeptimio Severo asume el poder imperial\nSeptimio Severo no solo tenía buenas cualidades militares.",
+    "doc": {
+      "title": "ORÍGENES Y CUALIDADES DEL EMPERADOR SEPTIMIO SEVERO",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "VIII 18",
+      "latin": "Hinc imperii Romani administrationem Septimius Severus accepit, oriundus ex Africa, provincia Tripolitana, oppido Lepti. Solus omni memoria et ante et postea ex Africa imperator fuit. […] Parcus admodum fuit, natura saevus. Bella multa et feliciter gessit.",
+      "underlines": [
+        {
+          "startUtf16": 20,
+          "endUtf16": 36,
+          "exact": "administrationem"
+        },
+        {
+          "startUtf16": 55,
+          "endUtf16": 62,
+          "exact": "accepit"
+        },
+        {
+          "startUtf16": 127,
+          "endUtf16": 131,
+          "exact": "omni"
+        },
+        {
+          "startUtf16": 249,
+          "endUtf16": 255,
+          "exact": "gessit"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "causam",
+          "exercitum",
+          "erat",
+          "mensam"
+        ],
+        "prefix": [
+          "confluencia",
+          "exhumar",
+          "prefijar",
+          "subestimar"
+        ],
+        "latinism": [
+          "sine die",
+          "sui generis",
+          "primus inter pares",
+          "numerus clausus"
+        ]
+      },
+      "preverbBases": [
+        "convenit",
+        "accepit"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JULIO / B"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JULIO (reserva)",
+    "option": "A",
+    "page": 48,
+    "model": "actual",
+    "notes": "PAU CV · JULIO (reserva) 2025 · Opción A · p. 48 de la recopilación.\nQuinto Tulio Cicerón consigue hacer llegar un correo a César para informarle del asedio al que era sometido por los nervios\nCésar acude al territorio de los nervios en ayuda de Cicerón",
+    "doc": {
+      "title": "LOS NERVIOS, PUEBLO DE LA GALIA BELGA, ATACAN EL CAMPAMENTO DE QUINTO TULIO CICERÓN, LEGADO DE JULIO CÉSAR",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "V 46, 1-2",
+      "latin": "Caesar acceptis litteris hora circiter undecima diei statim nuntium in Bellovacos ad M. Crassum quaestorem mittit, cuius hiberna aberant ab eo milia passuum XXV; iubet media nocte legionem proficisci celeriterque ad se venire.",
+      "underlines": [
+        {
+          "startUtf16": 48,
+          "endUtf16": 52,
+          "exact": "diei"
+        },
+        {
+          "startUtf16": 129,
+          "endUtf16": 136,
+          "exact": "aberant"
+        },
+        {
+          "startUtf16": 140,
+          "endUtf16": 142,
+          "exact": "eo"
+        },
+        {
+          "startUtf16": 168,
+          "endUtf16": 173,
+          "exact": "media"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "diversitatem",
+          "filum",
+          "otiosum",
+          "mutare"
+        ],
+        "prefix": [
+          "recuerdo",
+          "inframundo",
+          "cooperación",
+          "ultramarina"
+        ],
+        "latinism": [
+          "persona non grata",
+          "mutatis mutandis",
+          "horror vacui",
+          "gratis et amore"
+        ]
+      },
+      "preverbBases": [
+        "acceptis",
+        "pugnatum"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JULIO (reserva) / A"
+    }
+  },
+  {
+    "year": 2025,
+    "session": "JULIO (reserva)",
+    "option": "B",
+    "page": 48,
+    "model": "actual",
+    "notes": "PAU CV · JULIO (reserva) 2025 · Opción B · p. 48 de la recopilación.\nAl final del invierno Aníbal se dirige hacia Etruria, pero al cruzar los Apeninos le sorprende una violenta tempestad\nLas fuerzas de los cartagineses y las de los romanos padecen pérdidas similares y la batalla no se decanta a favor de ninguno de los dos bandos",
+    "doc": {
+      "title": "ANÍBAL COMBATE CONTRA LOS ROMANOS CERCA DE PLACENCIA",
+      "author": "Tito Livio",
+      "work": "Ab urbe condita",
+      "reference": "XXI 59, 1-3",
+      "latin": "Postero die duodecim milia peditum, quinque equitum adversus hostem ducit; nec Sempronius consul ―iam enim redierat ab Roma― detractavit certamen. Atque eo die tria milia passuum inter bina castra fuere; postero die ingentibus animis vario eventu pugnatum est.",
+      "underlines": [
+        {
+          "startUtf16": 44,
+          "endUtf16": 51,
+          "exact": "equitum"
+        },
+        {
+          "startUtf16": 107,
+          "endUtf16": 115,
+          "exact": "redierat"
+        },
+        {
+          "startUtf16": 153,
+          "endUtf16": 155,
+          "exact": "eo"
+        },
+        {
+          "startUtf16": 216,
+          "endUtf16": 226,
+          "exact": "ingentibus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "diversitatem",
+          "filum",
+          "otiosum",
+          "mutare"
+        ],
+        "prefix": [
+          "recuerdo",
+          "inframundo",
+          "cooperación",
+          "ultramarina"
+        ],
+        "latinism": [
+          "persona non grata",
+          "mutatis mutandis",
+          "horror vacui",
+          "gratis et amore"
+        ]
+      },
+      "preverbBases": [
+        "acceptis",
+        "pugnatum"
+      ],
+      "warnings": [],
+      "pauCv": "2025 JULIO (reserva) / B"
+    }
+  },
+  {
+    "year": 2026,
+    "session": "ORDINARIA",
+    "option": "A",
+    "page": 51,
+    "model": "actual",
+    "notes": "PAU CV · ORDINARIA 2026 · Opción A · p. 51 de la recopilación.\nIlli: hace referencia a los soldados de Afranio.\nPetreyo y Afranio, generales del ejército pompeyano, amenazan a sus tropas para que no pasen a las filas de César\nRendición de las tropas de Afranio.",
+    "doc": {
+      "title": "LAS TROPAS DE AFRANIO INTENTAN LLEGAR A ILERDA (LÉRIDA) PRESIONADAS POR LAS TROPAS DE CÉSAR",
+      "author": "César",
+      "work": "De bello civili",
+      "reference": "I 82, 1-2",
+      "latin": "Illi [...] hora circiter VIIII signo dato legiones educunt aciemque sub castris instruunt. Caesar ab opere legiones revocat, equitatum omnem convenire iubet, aciem instruit.",
+      "underlines": [
+        {
+          "startUtf16": 0,
+          "endUtf16": 4,
+          "exact": "Illi"
+        },
+        {
+          "startUtf16": 37,
+          "endUtf16": 41,
+          "exact": "dato"
+        },
+        {
+          "startUtf16": 135,
+          "endUtf16": 140,
+          "exact": "omnem"
+        },
+        {
+          "startUtf16": 158,
+          "endUtf16": 163,
+          "exact": "aciem"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "paenitentiam",
+          "stipendium",
+          "siccare",
+          "aetatem"
+        ],
+        "prefix": [
+          "pernoctar",
+          "preposición",
+          "transformar",
+          "circuncisión"
+        ],
+        "latinism": [
+          "in extremis",
+          "post mortem",
+          "vox populi",
+          "etcétera"
+        ]
+      },
+      "preverbBases": [
+        "habebant",
+        "instruit"
+      ],
+      "warnings": [],
+      "pauCv": "2026 ORDINARIA / A"
+    }
+  },
+  {
+    "year": 2026,
+    "session": "ORDINARIA",
+    "option": "B",
+    "page": 51,
+    "model": "actual",
+    "notes": "PAU CV · ORDINARIA 2026 · Opción B · p. 51 de la recopilación.\nLos romanos instauran la república porque el poder de los reyes se había convertido en tiranía\nLos romanos consiguieron grandes éxitos militares por el espíritu y las virtudes de su juventud",
+    "doc": {
+      "title": "VIRTUDES DE LOS JÓVENES ROMANOS AL INICIO DE LA REPÚBLICA",
+      "author": "Salustio",
+      "work": "De coniuratione Catilinae",
+      "reference": "VII 4",
+      "latin": "Iam primum iuventus [...] in castris per laborem usum militiae discebat, magisque in decoris armis et militaribus equis quam in scortis atque conviviis libidinem habebant.",
+      "underlines": [
+        {
+          "startUtf16": 63,
+          "endUtf16": 71,
+          "exact": "discebat"
+        },
+        {
+          "startUtf16": 102,
+          "endUtf16": 113,
+          "exact": "militaribus"
+        },
+        {
+          "startUtf16": 142,
+          "endUtf16": 151,
+          "exact": "conviviis"
+        },
+        {
+          "startUtf16": 152,
+          "endUtf16": 161,
+          "exact": "libidinem"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "paenitentiam",
+          "stipendium",
+          "siccare",
+          "aetatem"
+        ],
+        "prefix": [
+          "pernoctar",
+          "preposición",
+          "transformar",
+          "circuncisión"
+        ],
+        "latinism": [
+          "in extremis",
+          "post mortem",
+          "vox populi",
+          "etcétera"
+        ]
+      },
+      "preverbBases": [
+        "habebant",
+        "instruit"
+      ],
+      "warnings": [],
+      "pauCv": "2026 ORDINARIA / B"
+    }
+  },
+  {
+    "year": 2026,
+    "session": "EXTRAORDINARIA",
+    "option": "A",
+    "page": 54,
+    "model": "actual",
+    "notes": "PAU CV · EXTRAORDINARIA 2026 · Opción A · p. 54 de la recopilación.\nCésar trata de dominar a los pocos pueblos galos que quedaban por someter antes de la llegada del invierno.\nDiversos pueblos germánicos, presionados por los suevos, cruzan el Rin",
+    "doc": {
+      "title": "CÉSAR RETIRA SUS TROPAS A LOS CAMPAMENTOS DE INVIERNO",
+      "author": "César",
+      "work": "De bello Gallico",
+      "reference": "III 29, 3",
+      "latin": "Itaque vastatis omnibus eorum agris, vicis aedificiisque incensis, Caesar exercitum reduxit et in Aulercis Lexoviisque, reliquis item civitatibus quae proxime bellum fecerant, in hibernis conlocavit.",
+      "underlines": [
+        {
+          "startUtf16": 16,
+          "endUtf16": 23,
+          "exact": "omnibus"
+        },
+        {
+          "startUtf16": 24,
+          "endUtf16": 29,
+          "exact": "eorum"
+        },
+        {
+          "startUtf16": 57,
+          "endUtf16": 65,
+          "exact": "incensis"
+        },
+        {
+          "startUtf16": 134,
+          "endUtf16": 145,
+          "exact": "civitatibus"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "dispositionem",
+          "spicam",
+          "natare",
+          "attonitum"
+        ],
+        "prefix": [
+          "antifascismo",
+          "intangible",
+          "progenitor",
+          "contratacar"
+        ],
+        "latinism": [
+          "alter ego",
+          "ex aequo",
+          "in fraganti",
+          "per capita"
+        ]
+      },
+      "preverbBases": [
+        "reduxit",
+        "incensis"
+      ],
+      "warnings": [],
+      "pauCv": "2026 EXTRAORDINARIA / A"
+    }
+  },
+  {
+    "year": 2026,
+    "session": "EXTRAORDINARIA",
+    "option": "B",
+    "page": 54,
+    "model": "actual",
+    "notes": "PAU CV · EXTRAORDINARIA 2026 · Opción B · p. 54 de la recopilación.\nAníbal se ve obligado a abandonar Italia ante las continuas victorias de Escipión en África\nAníbal es derrotado definitivamente por Escipión en la batalla de Zama",
+    "doc": {
+      "title": "ANÍBAL ABANDONA DEFINITIVAMENTE ITALIA",
+      "author": "Eutropio",
+      "work": "Breviarium",
+      "reference": "III 21",
+      "latin": "Ita anno septimo decimo ab Hannibale Italia liberata est. Legati Carthaginiensium pacem a Scipione petiverunt; ab eo ad senatum Romam missi sunt.",
+      "underlines": [
+        {
+          "startUtf16": 17,
+          "endUtf16": 23,
+          "exact": "decimo"
+        },
+        {
+          "startUtf16": 82,
+          "endUtf16": 87,
+          "exact": "pacem"
+        },
+        {
+          "startUtf16": 114,
+          "endUtf16": 116,
+          "exact": "eo"
+        },
+        {
+          "startUtf16": 134,
+          "endUtf16": 144,
+          "exact": "missi sunt"
+        }
+      ],
+      "vocabulary": [],
+      "lexical": {
+        "preverb": [],
+        "phonetics": [
+          "dispositionem",
+          "spicam",
+          "natare",
+          "attonitum"
+        ],
+        "prefix": [
+          "antifascismo",
+          "intangible",
+          "progenitor",
+          "contratacar"
+        ],
+        "latinism": [
+          "alter ego",
+          "ex aequo",
+          "in fraganti",
+          "per capita"
+        ]
+      },
+      "preverbBases": [
+        "reduxit",
+        "incensis"
+      ],
+      "warnings": [],
+      "pauCv": "2026 EXTRAORDINARIA / B"
+    }
+  }
+]

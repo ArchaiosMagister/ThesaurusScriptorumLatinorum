@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './isolated-bank.mjs';
 
 test('el margen superior coincide con la banda del título en los tres temas', async ({ page }) => {
   await page.goto('/ThesaurusScriptorumLatinorum/');

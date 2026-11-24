@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './isolated-bank.mjs';
 
 const path = '/ThesaurusScriptorumLatinorum/';
 

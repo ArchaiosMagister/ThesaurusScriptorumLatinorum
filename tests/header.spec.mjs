@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './isolated-bank.mjs';
 
 test('las acciones están encima de las secciones y conservan sus colores en los tres temas', async ({ page }) => {
   await page.goto('/ThesaurusScriptorumLatinorum/');

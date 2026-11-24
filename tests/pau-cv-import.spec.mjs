@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test';
+import { expect,test } from './isolated-bank.mjs';
 
 // Small selectable-text PDF in the old format. No third-party fixture or network.
 function pdfFixture() {

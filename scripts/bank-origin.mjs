@@ -4,6 +4,13 @@ function replace(source, from, to) {
 }
 
 export function integrateOriginValidation(source) {
+  source = replace(source, "['textRevisions']);", "['textRevisions', 'pauCvSeedVersion']);");
+  source = replace(source, "    uniqueIds(corpus.texts, 'texts');", `    if (data.pauCvSeedVersion !== undefined) {
+        if (!Number.isSafeInteger(data.pauCvSeedVersion) || data.pauCvSeedVersion < 1)
+            invalid('corpus.pauCvSeedVersion', 'versión de banco PAU CV inválida');
+        corpus.pauCvSeedVersion = data.pauCvSeedVersion;
+    }
+    uniqueIds(corpus.texts, 'texts');`);
   source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv']);");
   source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }) };");
   source = replace(source, "['notes', 'vocabulary', 'reviewed', 'teacherDocx']);",
