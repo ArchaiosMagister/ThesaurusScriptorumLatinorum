@@ -59,6 +59,9 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const exam = element('input', { type: 'checkbox', checked: state.exam });
   const examLabel = element('label', { className: 'atl-tag-option' });
   examLabel.append(exam, ' Solo Selectividad');
+  const excludeExam = element('input', { type: 'checkbox', checked: Boolean(state.excludeExam) && !state.exam });
+  const excludeExamLabel = element('label', { className: 'atl-tag-option' });
+  excludeExamLabel.append(excludeExam, ' Excluir Selectividad');
   const examYear = element('select');
   examYear.setAttribute('aria-label', 'Filtrar por año de Selectividad');
   const years = [...new Set(texts.map(text => text.selectividad?.year).filter(Boolean))].sort((a, b) => b - a);
@@ -67,7 +70,20 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const examCommunity = communitySelect('Todas las comunidades');
   examCommunity.setAttribute('aria-label', 'Filtrar por comunidad autónoma');
   examCommunity.value = state.examCommunity;
-  for (const control of [exam, examYear, examCommunity]) control.addEventListener('change', onChange);
+  function setExamMode(mode) {
+    exam.checked = mode === 'only';
+    excludeExam.checked = mode === 'exclude';
+    // Year and community refer exclusively to PAU; excluding PAU clears them.
+    if (excludeExam.checked) examYear.value = examCommunity.value = '';
+    onChange();
+  }
+  if (excludeExam.checked) examYear.value = examCommunity.value = '';
+  exam.addEventListener('change', () => setExamMode(exam.checked ? 'only' : 'all'));
+  excludeExam.addEventListener('change', () => setExamMode(excludeExam.checked ? 'exclude' : 'all'));
+  for (const control of [examYear, examCommunity]) control.addEventListener('change', () => {
+    if (control.value) excludeExam.checked = false;
+    onChange();
+  });
 
   const panel = element('section', { className: 'atl-grammar-filters' });
   const mode = element('select', { id: 'atl-grammar-match' });
@@ -136,7 +152,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
     if (infinitive.checked) tags.push(infinitiveId);
     return { infTime: infTime.value, infVoice: infVoice.value, work: work.value, reference: reference.value, origin: origin.value,
-      course: course.value, usage: usage.value, exam: exam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
+      course: course.value, usage: usage.value, exam: exam.checked, excludeExam: excludeExam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
   }
   function reset() {
     work.value = '';
@@ -145,6 +161,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     usage.value = '';
     course.value = '';
     exam.checked = false;
+    excludeExam.checked = false;
     examYear.value = '';
     examCommunity.value = '';
     mode.value = 'all';
@@ -180,7 +197,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const voice = second || (infinitiveVoices.includes(first) ? first : '');
     return infinitive.checked && infTime.value === tense && infVoice.value === voice;
   }
-  return { panel, work, reference, origin, course, usage, examLabel, examYear, examCommunity, read, reset, toggleTag, isActive };
+  return { panel, work, reference, origin, course, usage, examLabel, excludeExamLabel, examYear, examCommunity, setExamMode, read, reset, toggleTag, isActive };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {

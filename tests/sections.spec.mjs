@@ -977,14 +977,17 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
   const exam = page.frameLocator('#panel-examinator iframe');
   await exam.getByRole('button', { name: 'Banco de textos…' }).click();
   await exam.getByRole('button', { name: /^Dos / }).click();
-  await exam.locator('[data-k="titulo"]').fill('Examen de la copia');
+  const examTitle = exam.locator('[data-k="titulo"]');
+  await expect(examTitle).toHaveValue('Dos');
+  await examTitle.fill('Examen de la copia');
   await page.evaluate(() => {
     localStorage.setItem('atl-v1:examinator.fs:/datos/listas/prefijos.json', JSON.stringify(['interponer']));
     localStorage.setItem('cuaderno-supabase-connection-v1', JSON.stringify({ unrelated: 'configuración privada de prueba' }));
   });
   const archive = page.waitForEvent('download');
   await clickExamToolbar(exam, '#btnSave');
-  await archive;
+  const examFile = await archive;
+  expect(JSON.parse(await readFile(await examFile.path(), 'utf8')).titulo).toBe('Examen de la copia');
   await expect(exam.getByText('Examen descargado (archivo .examen).', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Copias de seguridad' }).click();
   const pending = page.waitForEvent('download');

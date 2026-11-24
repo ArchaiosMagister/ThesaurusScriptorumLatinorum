@@ -75,7 +75,8 @@ export function compareSelectividadYear(a,b,descending=false) {
   return rank(x)-rank(y) || (x?.option==='B'?1:x?.option==='A'?0:2)-(y?.option==='B'?1:y?.option==='A'?0:2);
 }
 
-export function matchesSelectividad(text, year, community, only) {
+export function matchesSelectividad(text, year, community, only, exclude = false) {
+  if (exclude) return !text.selectividad;
   if (!only && !year && !community) return true;
   return Boolean(text.selectividad &&
     (!year || String(text.selectividad.year) === year) &&
