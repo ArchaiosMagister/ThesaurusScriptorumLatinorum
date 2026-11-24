@@ -158,6 +158,8 @@ export function lexicalValuesForDocument(option) {
     const anchor = 'questions, vocabulary: vocab';
     if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
     apply = apply.replace(anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})');
+    // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
+    apply = apply.replace("...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),");
     await writeFile(applyFile, apply);
     const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
       .replaceAll('./pwa-controls.js', './atl-pwa.js').replace("./edition-app.js", "./atl-edition.js")
@@ -196,6 +198,14 @@ export function lexicalValuesForDocument(option) {
       .replace('for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;");
     if (repetition === pauControls.slice(repetitionStart, repetitionEnd)) throw Error('Revisar filtros de repeticiones PAU CV.');
     pauControls = pauControls.slice(0, repetitionStart) + repetition + pauControls.slice(repetitionEnd);
+    const sourceUi = "        const picked = preverbBasesFor(o, p);";
+    const sourceStart = pauControls.indexOf('function setSourcesUi(');
+    const sourceEnd = pauControls.indexOf('function phoneticControls(', sourceStart);
+    if (sourceStart < 0 || sourceEnd < 0) throw Error('Revisar editor de bases PAU CV.');
+    const sourceSegment = pauControls.slice(sourceStart, sourceEnd);
+    if (!sourceSegment.includes(sourceUi)) throw Error('Revisar bases originales PAU CV.');
+    pauControls = pauControls.slice(0, sourceStart) + sourceSegment.replace(sourceUi,
+        "        if (p.pauCv && o.statement.locked && o.statement.origin === 'manual') {\n            section.append(el('p', 'hint', 'Bases originales del examen PAU CV. Edita el enunciado para modificarlas.'));\n            return;\n        }\n" + sourceUi) + pauControls.slice(sourceEnd);
     await writeFile(controls, pauControls);
     const libraryFile = join(directory, notebookPage, 'js', 'library.js');
     const library = groupLibraryAuthors((await readFile(libraryFile, 'utf8'))

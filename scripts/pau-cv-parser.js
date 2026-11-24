@@ -92,7 +92,9 @@ export async function readPauCvPdf(file) {
   if(file.size>24*1024*1024)throw Error('PDF demasiado grande (máximo 24 MiB).');
   const pdfjs=await import('../pdfjs/pdf.mjs');
   pdfjs.GlobalWorkerOptions.workerSrc=new URL('../pdfjs/pdf.worker.mjs',import.meta.url).href;
-  const task=pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false,useSystemFonts:true});
+  const assets=folder=>new URL('../pdfjs/'+folder+'/',import.meta.url).href;
+  const task=pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false,useSystemFonts:true,
+    standardFontDataUrl:assets('standard_fonts'),wasmUrl:assets('wasm'),cMapUrl:assets('cmaps'),cMapPacked:true});
   try {
     const pdf=await task.promise;
     if(pdf.numPages>16)throw Error('Se esperaba un examen, no un cuaderno de más de 16 páginas.');
@@ -111,7 +113,7 @@ export async function readPauCvPdf(file) {
       }
       groups.sort((a,b)=>a.y-b.y);
       // Solo la página de opciones modernas necesita imagen para recuperar los subrayados.
-      const modern=groups.some(g=>g.items.some(t=>/Opción\s+[AB]/iu.test(t.text)));
+      const modern=groups.some(g=>/Opción\s+[AB]/iu.test(g.items.map(t=>t.text).join(' ')));
       let canvas,ctx,pixels;
       if(modern){
         canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);

@@ -38,6 +38,7 @@ const pdfjs = join(notebook, 'pdfjs');
 await mkdir(pdfjs, { recursive: true });
 for (const file of ['pdf.mjs', 'pdf.worker.mjs']) await cp(join(root, 'node_modules', 'pdfjs-dist', 'legacy', 'build', file), join(pdfjs, file));
 await cp(join(root, 'node_modules', 'pdfjs-dist', 'LICENSE'), join(pdfjs, 'LICENSE'));
+for (const folder of ['standard_fonts','wasm','cmaps']) await cp(join(root, 'node_modules', 'pdfjs-dist', folder), join(pdfjs, folder), { recursive: true });
 await mkdir(exam, { recursive: true });
 
 const examFiles = ['index.html', 'styles.css', 'fonts.css', 'icon.png', 'icon-192.png', 'icono.svg',
