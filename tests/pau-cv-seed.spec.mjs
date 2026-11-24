@@ -225,7 +225,7 @@ test('Gestionar selección mantiene la posición y tamaño del encabezado al abr
  const before=await geometry();
  await summary.click();
  await expect(details).toHaveAttribute('open','');
- await expect(details.getByRole('button',{name:'Seleccionar resultados'})).toBeVisible();
+ await expect(details.getByRole('button',{name:'Seleccionar todo el banco (88)',exact:true})).toBeVisible();
  expect(await geometry()).toEqual(before);
  await summary.click();
  await expect(details).not.toHaveAttribute('open','');
