@@ -44,6 +44,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2006 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "cuius in priori consulatu quaestor fuerat",
+      "gram.pron.relativo": "cuius",
+      "gram.cum.historico": "cum diutius moraretur",
+      "gram.subjuntivo": "moraretur",
+      "gram.participio": "provinciam nactus",
+      "gram.part.perfecto.deponente": "nactus",
+      "gram.deponente": "nactus",
+      "gram.inf.presente.activo": "depellere"
     }
   },
   {
@@ -91,6 +101,19 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2006 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "copiis congregatis",
+      "gram.part.perfecto.pasivo": "congregatis",
+      "gram.ut.completiva": "ut bello abstineret",
+      "gram.subjuntivo": "abstineret",
+      "gram.voz.pasiva": "inlatum est",
+      "gram.deponente": "adgressus est",
+      "gram.part.presente.activo": "agens",
+      "gram.participio": "annum agens",
+      "gram.inf.presente.activo": "obpugnare",
+      "gram.pron.identidad": "Eodem anno",
+      "gram.pron.proximo": "Huic"
     }
   },
   {
@@ -138,6 +161,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2006 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "acceptis litteris",
+      "gram.part.perfecto.pasivo": "acceptis",
+      "gram.relativo": "cuius hiberna aberant",
+      "gram.pron.relativo": "cuius",
+      "gram.infinitivo": "legionem proficisci",
+      "gram.inf.presente.activo": "venire",
+      "gram.inf.presente.deponente": "proficisci",
+      "gram.deponente": "proficisci"
     }
   },
   {
@@ -185,6 +218,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2006 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quae saltu Pyrenaeo",
+      "gram.pron.relativo": "quae",
+      "gram.voz.pasiva": "continetur",
+      "gram.part.perfecto.deponente": "meritas",
+      "gram.deponente": "meritas",
+      "gram.participio": "bene meritas civitates",
+      "gram.pron.proximo": "haec"
     }
   },
   {
@@ -232,6 +274,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2007 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ne.completiva": "ne Mandubracio noceat",
+      "gram.subjuntivo": "noceat",
+      "gram.ablativo.absoluto": "Obsidibus acceptis",
+      "gram.pron.proximo": "His deductis",
+      "gram.participio": "naves invenit refectas",
+      "gram.part.perfecto.pasivo": "refectas",
+      "gram.inf.presente.activo": "reportare"
     }
   },
   {
@@ -279,6 +330,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2007 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.condicional": "nisi multum infra rostrum os illi esset",
+      "gram.subjuntivo": "evaderet",
+      "gram.pron.lejano": "illi",
+      "gram.genitivo.partitivo": "omnium animalium"
     }
   },
   {
@@ -326,6 +383,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2007 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "Qui diutissime impuberes permanserunt",
+      "gram.pron.relativo": "Qui",
+      "gram.infinitivo": "ali vires nervosque confirmari putant",
+      "gram.inf.presente.pasivo": "confirmari",
+      "gram.voz.pasiva": "confirmari",
+      "gram.pron.proximo": "hoc"
     }
   },
   {
@@ -373,6 +438,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2007 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Abistamene Cappadociae praeposito",
+      "gram.part.perfecto.pasivo": "praeposito",
+      "gram.relativo": "quae castra Cyri appellatur",
+      "gram.pron.relativo": "quae",
+      "gram.cum.historico": "cum adversum Croesum in Lidiam duceret",
+      "gram.subjuntivo": "duceret",
+      "gram.voz.pasiva": "appellatur",
+      "gram.part.presente.activo": "petens",
+      "gram.participio": "Ciliciam petens"
     }
   },
   {
@@ -420,6 +496,20 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2008 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "cognito consilio eorum",
+      "gram.relativo": "quod flumen uno omnino loco pedibus",
+      "gram.relativo.enlace": "quod flumen",
+      "gram.pron.relativo": "quod flumen",
+      "gram.cum.historico": "cum venisset",
+      "gram.subjuntivo": "venisset",
+      "gram.infinitivo": "magnas esse copias hostium instructas",
+      "gram.inf.presente.activo": "esse",
+      "gram.inf.presente.pasivo": "transiri",
+      "gram.voz.pasiva": "transiri",
+      "gram.pron.proximo": "hoc",
+      "gram.part.perfecto.pasivo": "instructas"
     }
   },
   {
@@ -467,6 +557,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2008 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.cum.historico": "Cum Pyrrus rex in terra Italia esset",
+      "gram.condicional": "si de praemio conveniret",
+      "gram.subjuntivo": "pugnasset",
+      "gram.inf.presente.activo": "necare"
     }
   },
   {
@@ -514,6 +610,21 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2008 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.participio": "legati, ab hostibus missi",
+      "gram.part.perfecto.pasivo": "missi",
+      "gram.agente": "ab hostibus missi",
+      "gram.voz.pasiva": "adduci",
+      "gram.infinitivo": "eosque in continentem adduci iussit",
+      "gram.inf.presente.pasivo": "adduci",
+      "gram.relativo": "quem ante imperaverat",
+      "gram.pron.relativo": "quem",
+      "gram.pron.enfatico": "Ipse",
+      "gram.part.perfecto.deponente": "nactus",
+      "gram.deponente": "nactus",
+      "gram.pron.identidad": "Eodem die",
+      "gram.pron.proximo": "His"
     }
   },
   {
@@ -563,6 +674,15 @@
         "Revisar ocurrencia de haec (repetida en el texto)."
       ],
       "pauCv": "2008 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "de qua dicimus",
+      "gram.pron.relativo": "qua",
+      "gram.voz.pasiva": "redditur",
+      "gram.pron.proximo": "haec",
+      "gram.pron.enfatico": "ipsa",
+      "gram.pron.lejano": "Illo tempore",
+      "gram.pron.posesivo": "suis antiquis sedibus"
     }
   },
   {
@@ -612,6 +732,18 @@
         "La pregunta original pide peditatum; en el pasaje figura peditatumque."
       ],
       "pauCv": "2009 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Re demonstrata",
+      "gram.participio": "Hac victoria sublatus",
+      "gram.part.perfecto.pasivo": "sublatus",
+      "gram.relativo": "qui erant eius regno finitimi",
+      "gram.pron.relativo": "qui",
+      "gram.dativo.aprox": "regno finitimi",
+      "gram.inf.presente.deponente": "subsequi",
+      "gram.deponente": "proficiscitur",
+      "gram.infinitivo": "peditatumque subsequi iubet",
+      "gram.pron.proximo": "Hac"
     }
   },
   {
@@ -659,6 +791,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2009 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "cuius patrocinio civitas plurimum utebatur",
+      "gram.pron.relativo": "cuius",
+      "gram.deponente": "utebatur",
+      "gram.ablativo.absoluto": "consilio cognito",
+      "gram.part.perfecto.pasivo": "cognito",
+      "gram.ut.completiva": "ut studium coniurationis vehementer simulent",
+      "gram.subjuntivo": "simulent"
     }
   },
   {
@@ -706,6 +847,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2009 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quem propter magnitudinem circuitus",
+      "gram.pron.relativo": "quem",
+      "gram.participio": "repulsi Galli",
+      "gram.part.perfecto.pasivo": "repulsi",
+      "gram.inf.presente.deponente": "circumplecti",
+      "gram.deponente": "circumplecti",
+      "gram.pron.proximo": "his",
+      "gram.pron.posesivo": "nostri",
+      "gram.subjuntivo": "agant"
     }
   },
   {
@@ -753,6 +905,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2009 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "His rebus comparatis",
+      "gram.part.perfecto.pasivo": "comparatis",
+      "gram.condicional": "si designatus foret",
+      "gram.subjuntivo": "foret",
+      "gram.voz.pasiva": "designatus foret",
+      "gram.infinitivo": "se ex voluntate Antonio usurum esse",
+      "gram.inf.futuro.deponente": "usurum esse",
+      "gram.deponente": "usurum esse",
+      "gram.pron.proximo": "His"
     }
   },
   {
@@ -800,6 +963,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2010 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "qui ad oppugnationem Massiliae relictus erat",
+      "gram.pron.relativo": "qui",
+      "gram.voz.pasiva": "relictus erat",
+      "gram.inf.presente.activo": "agere",
+      "gram.dativo.aprox": "proxima portui"
     }
   },
   {
@@ -847,6 +1017,10 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2010 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.inf.presente.activo": "contingere",
+      "gram.concordancia.nominal": "stuppea vincula"
     }
   },
   {
@@ -894,6 +1068,21 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2010 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.acus.ext": "dies complures",
+      "gram.pron.proximo": "Hae",
+      "gram.deponente": "Conatus est",
+      "gram.inf.presente.activo": "reficere",
+      "gram.inf.presente.pasivo": "perfici",
+      "gram.voz.pasiva": "perfici",
+      "gram.participio": "dispositae cohortes",
+      "gram.part.perfecto.pasivo": "dispositae",
+      "gram.pron.enfatico": "ipsius",
+      "gram.pron.lejano": "illis",
+      "gram.relativo.enlace": "quod illis",
+      "gram.relativo": "quod illis",
+      "gram.pron.relativo": "quod illis"
     }
   },
   {
@@ -941,6 +1130,19 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2010 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quod optimum videbatur",
+      "gram.pron.relativo": "quod",
+      "gram.inf.presente.deponente": "opperiri",
+      "gram.infinitivo": "exercitum plerumque in eisdem locis opperiri iubet",
+      "gram.pron.identidad": "eisdem",
+      "gram.pron.enfatico": "ipse",
+      "gram.deponente": "sequitur",
+      "gram.participio": "Romanos palantes",
+      "gram.part.presente.activo": "palantes",
+      "gram.voz.pasiva": "capiuntur",
+      "gram.genitivo.partitivo": "Eorum plerique"
     }
   },
   {
@@ -990,6 +1192,12 @@
         "Revisar ocurrencia de ipse (repetida en el texto)."
       ],
       "pauCv": "2011 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "ipse",
+      "gram.pron.posesivo": "sua legione",
+      "gram.inf.presente.activo": "hiemare",
+      "gram.acus.ext": "totam hiemem"
     }
   },
   {
@@ -1037,6 +1245,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2011 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.cum.historico": "Cum ego venissem Athenas",
+      "gram.subjuntivo": "venissem",
+      "gram.acus.ext": "sex menses",
+      "gram.participio": "studiumque philosophiae numquam intermissum",
+      "gram.part.perfecto.pasivo": "intermissum",
+      "gram.pron.proximo": "hoc"
     }
   },
   {
@@ -1084,6 +1300,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2011 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Hoc inito consilio",
+      "gram.pron.proximo": "Hoc",
+      "gram.inf.presente.pasivo": "conquiri",
+      "gram.voz.pasiva": "adduci",
+      "gram.infinitivo": "naves conquiri",
+      "gram.part.perfecto.pasivo": "inito"
     }
   },
   {
@@ -1131,6 +1355,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2011 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "nullo resistente",
+      "gram.part.presente.activo": "resistente",
+      "gram.deponente": "profectus est",
+      "gram.cum.historico": "Cum aliquot ibi dies castra habuisset",
+      "gram.subjuntivo": "habuisset",
+      "gram.dativo.aprox": "propinquis urbi",
+      "gram.acus.ext": "aliquot ibi dies"
     }
   },
   {
@@ -1178,6 +1411,18 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2012 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.participio": "Pompeius interclusus Dyrrachio",
+      "gram.part.perfecto.pasivo": "interclusus",
+      "gram.part.perfecto.deponente": "usus",
+      "gram.deponente": "usus",
+      "gram.inf.presente.activo": "tenere",
+      "gram.relativo": "qui appellatur Petra",
+      "gram.pron.relativo": "qui",
+      "gram.voz.pasiva": "appellatur",
+      "gram.genitivo.partitivo": "partem navium longarum",
+      "gram.infinitivo": "partem navium longarum convenire"
     }
   },
   {
@@ -1225,6 +1470,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2012 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quibus silvas publicas depopulatus erat",
+      "gram.pron.relativo": "quibus",
+      "gram.deponente": "depopulatus erat",
+      "gram.infinitivo": "consulatum Miloni eripi non posse",
+      "gram.inf.presente.pasivo": "eripi",
+      "gram.inf.presente.activo": "posse",
+      "gram.voz.pasiva": "eripi"
     }
   },
   {
@@ -1272,6 +1526,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2012 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Compluribus lapidibus ex turri quae suberat subductis",
+      "gram.relativo": "quae suberat",
+      "gram.pron.relativo": "quae",
+      "gram.participio": "hostes urbis direptione perterriti",
+      "gram.part.perfecto.pasivo": "perterriti",
+      "gram.part.presente.activo": "consequens",
+      "gram.deponente": "consequens"
     }
   },
   {
@@ -1321,6 +1584,12 @@
         "Revisar ocurrencia de eo (repetida en el texto)."
       ],
       "pauCv": "2012 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.cum.historico": "cum in senatu fuisset",
+      "gram.subjuntivo": "fuisset",
+      "gram.deponente": "commoratus est",
+      "gram.inf.presente.activo": "redire"
     }
   },
   {
@@ -1368,6 +1637,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2013 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "ipse",
+      "gram.participio": "Ab his liberaliter ipse appellatus",
+      "gram.part.perfecto.pasivo": "appellatus",
+      "gram.agente": "ab Septimio interficitur",
+      "gram.voz.pasiva": "interficitur",
+      "gram.pron.proximo": "Ab his",
+      "gram.pron.posesivo": "suis"
     }
   },
   {
@@ -1415,6 +1693,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2013 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quo non per haec tempora",
+      "gram.subjuntivo": "pervaserit",
+      "gram.deponente": "queruntur",
+      "gram.pron.posesivo": "nostris cupiditatibus",
+      "gram.pron.proximo": "haec"
     }
   },
   {
@@ -1464,6 +1749,16 @@
         "Revisar ocurrencia de quae (repetida en el texto)."
       ],
       "pauCv": "2013 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "erant scripti",
+      "gram.relativo": "quae aetate antecedebat",
+      "gram.pron.relativo": "quae",
+      "gram.ut.completiva": "Haec uti fierent",
+      "gram.subjuntivo": "fecisset",
+      "gram.deponente": "obtestabatur",
+      "gram.pron.proximo": "Haec",
+      "gram.pron.identidad": "eodem testamento"
     }
   },
   {
@@ -1511,6 +1806,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2013 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.genitivo.partitivo": "nemo tuorum amicorum",
+      "gram.pron.posesivo": "tuorum amicorum",
+      "gram.participio": "nemo abs te productus",
+      "gram.part.perfecto.pasivo": "productus",
+      "gram.agente": "abs te productus",
+      "gram.infinitivo": "se primum hoc dicet audire",
+      "gram.inf.presente.activo": "audire",
+      "gram.pron.proximo": "hoc"
     }
   },
   {
@@ -1558,6 +1863,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2014 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.participio": "nactus planitiem",
+      "gram.part.perfecto.deponente": "nactus",
+      "gram.deponente": "nactus",
+      "gram.pron.proximo": "hac",
+      "gram.cum.historico": "cum ab equitatu novissimum agmen premeretur",
+      "gram.subjuntivo": "premeretur",
+      "gram.voz.pasiva": "premeretur",
+      "gram.agente": "ab equitatu novissimum agmen premeretur"
     }
   },
   {
@@ -1605,6 +1920,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2014 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "in qua ducentae erant Atheniensium",
+      "gram.pron.relativo": "qua",
+      "gram.ne.final": "ne multitudine circuiretur",
+      "gram.subjuntivo": "circuiretur",
+      "gram.voz.pasiva": "circuiretur"
     }
   },
   {
@@ -1652,6 +1974,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2014 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.infinitivo": "tertiam aciem Caesar procurrere iussit",
+      "gram.inf.presente.activo": "procurrere",
+      "gram.cum.historico": "cum recentes atque integri defessis successissent",
+      "gram.subjuntivo": "successissent",
+      "gram.deponente": "adorirentur",
+      "gram.pron.identidad": "Eodem tempore"
     }
   },
   {
@@ -1699,6 +2029,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2014 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "panduntur",
+      "gram.inf.presente.activo": "ire",
+      "gram.participio": "desertosque videre locos",
+      "gram.part.perfecto.pasivo": "desertos"
     }
   },
   {
@@ -1748,6 +2084,19 @@
         "La pregunta original pide peditum; en el pasaje figura peditumque."
       ],
       "pauCv": "2015 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "Ipse",
+      "gram.deponente": "subsequitur",
+      "gram.ablativo.absoluto": "praemissis equitibus",
+      "gram.part.perfecto.pasivo": "praemissis",
+      "gram.infinitivo": "ipsum adesse Curionem",
+      "gram.inf.presente.activo": "adesse",
+      "gram.ut.completiva": "ut simulatione timoris paulatim cedant",
+      "gram.subjuntivo": "cedant",
+      "gram.part.perfecto.deponente": "Suspicatus",
+      "gram.participio": "Suspicatus praemissis equitibus ipsum adesse Curionem",
+      "gram.pron.proximo": "his"
     }
   },
   {
@@ -1795,6 +2144,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2015 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "qui ubique praedones fuerunt",
+      "gram.pron.relativo": "qui",
+      "gram.voz.pasiva": "capti interfectique sunt",
+      "gram.pron.proximo": "huius",
+      "gram.pron.identidad": "Idem",
+      "gram.cum.historico": "cum ad eum usque in Pamphyliam legatos deprecatoresque misissent",
+      "gram.subjuntivo": "misissent"
     }
   },
   {
@@ -1842,6 +2200,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2015 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.part.presente.activo": "fugientes",
+      "gram.voz.pasiva": "interficiuntur",
+      "gram.agente": "ab equitatu interficiuntur",
+      "gram.deponente": "Hortatur",
+      "gram.ut.completiva": "ut fuga salutem petat",
+      "gram.subjuntivo": "petat",
+      "gram.participio": "cum paucis equitibus cicumsistens"
     }
   },
   {
@@ -1889,6 +2256,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2015 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.subjuntivo": "fuisset",
+      "gram.pron.proximo": "hoc tumultu",
+      "gram.infinitivo": "rectum putabat pro eorum honestate se pugnare",
+      "gram.inf.presente.activo": "pugnare"
     }
   },
   {
@@ -1936,6 +2309,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2016 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.genitivo.partitivo": "partem suarum copiarum",
+      "gram.pron.posesivo": "suas copias",
+      "gram.ut.final": "ut castra minora oppugnaret",
+      "gram.subjuntivo": "oppugnaret",
+      "gram.voz.pasiva": "pugnatum est",
+      "gram.ablativo.absoluto": "multis et inlatis et acceptis vulneribus",
+      "gram.part.perfecto.pasivo": "inlatis"
     }
   },
   {
@@ -1983,6 +2365,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2016 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.inf.presente.activo": "habere",
+      "gram.inf.presente.pasivo": "videri",
+      "gram.voz.pasiva": "videri",
+      "gram.participio": "puerum vidit visumque",
+      "gram.part.perfecto.pasivo": "visumque"
     }
   },
   {
@@ -2014,6 +2403,13 @@
         "La forma erant polliciti es discontinua (erant publice polliciti). Se conserva la pregunta en notas y se deja la selección morfológica al editor."
       ],
       "pauCv": "2016 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quod erant publice polliciti",
+      "gram.pron.relativo": "quod erant",
+      "gram.deponente": "erant publice polliciti",
+      "gram.voz.pasiva": "posita est",
+      "gram.genitivo.partitivo": "pabuli quidem satis magna copia"
     }
   },
   {
@@ -2061,6 +2457,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2016 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.part.perfecto.deponente": "locuti",
+      "gram.deponente": "locuti",
+      "gram.part.presente.activo": "pervenientia",
+      "gram.participio": "oscula quisque suae non pervenientia",
+      "gram.pron.posesivo": "suae"
     }
   },
   {
@@ -2108,6 +2511,19 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2017 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.cum.historico": "cum Pompei castris appropinquavisset",
+      "gram.subjuntivo": "appropinquavisset",
+      "gram.pron.proximo": "hunc modum",
+      "gram.participio": "aciem eius instructam",
+      "gram.part.perfecto.pasivo": "instructam",
+      "gram.agente": "a Caesare",
+      "gram.relativo": "quarum una prima",
+      "gram.pron.relativo": "quarum",
+      "gram.genitivo.partitivo": "quarum una",
+      "gram.voz.pasiva": "appellabatur",
+      "gram.pron.enfatico": "ipse"
     }
   },
   {
@@ -2157,6 +2573,19 @@
         "Revisar ocurrencia de iste (repetida en el texto)."
       ],
       "pauCv": "2017 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.pron.proximo": "Haec",
+      "gram.voz.pasiva": "acta et constituta sunt",
+      "gram.pron.medio": "iste",
+      "gram.infinitivo": "navarchos vocari iubet",
+      "gram.inf.presente.pasivo": "vocari",
+      "gram.relativo.enlace": "Qui nihil metuebant",
+      "gram.relativo": "Qui nihil metuebant",
+      "gram.pron.relativo": "Qui",
+      "gram.deponente": "suspicabantur",
+      "gram.participio": "inflammatus scelere",
+      "gram.part.perfecto.pasivo": "inflammatus"
     }
   },
   {
@@ -2204,6 +2633,11 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2017 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.proximo": "Hic locus",
+      "gram.relativo": "quam equis vexerat",
+      "gram.pron.relativo": "quam"
     }
   },
   {
@@ -2251,6 +2685,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2017 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.participio": "Lustratum genetrix divino corpus",
+      "gram.part.perfecto.pasivo": "Lustratum",
+      "gram.relativo": "quem turba Quirini",
+      "gram.pron.relativo": "quem"
     }
   },
   {
@@ -2298,6 +2738,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2018 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "Ipse",
+      "gram.deponente": "conspicatus est",
+      "gram.part.perfecto.deponente": "progressus",
+      "gram.participio": "noctu progressus",
+      "gram.pron.lejano": "Illi",
+      "gram.inf.presente.activo": "prohibere",
+      "gram.agente": "ab equitatu",
+      "gram.part.perfecto.pasivo": "Repulsi"
     }
   },
   {
@@ -2345,6 +2795,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2018 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "Eripitur",
+      "gram.infinitivo": "me lacrimas fundere",
+      "gram.inf.presente.activo": "fundere",
+      "gram.pron.enfatico": "ipsum",
+      "gram.participio": "in alterius positam spectare lacerto",
+      "gram.part.perfecto.pasivo": "positam"
     }
   },
   {
@@ -2392,6 +2850,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2018 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.participio": "Equites ab eo missi",
+      "gram.part.perfecto.pasivo": "missi",
+      "gram.agente": "ab eo missi",
+      "gram.cum.historico": "cum de tertia vigilia Petreius atque Afranius castra movissent",
+      "gram.subjuntivo": "movissent",
+      "gram.ablativo.absoluto": "magna multitudine circumfusa",
+      "gram.inf.presente.deponente": "morari",
+      "gram.deponente": "morari",
+      "gram.inf.presente.activo": "impedire"
     }
   },
   {
@@ -2439,6 +2908,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2018 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "miscentur",
+      "gram.participio": "arboribusque obtecta",
+      "gram.part.perfecto.pasivo": "obtecta",
+      "gram.ablativo.absoluto": "arrectis auribus"
     }
   },
   {
@@ -2486,6 +2961,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2019 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.posesivo": "nostrum primum",
+      "gram.inf.presente.activo": "prohibere",
+      "gram.acus.ext": "dies circiter quindecim",
+      "gram.ut.consecutiva": "ut inter novissimum hostium agmen et nostrum primum",
+      "gram.subjuntivo": "interesset"
     }
   },
   {
@@ -2533,6 +3015,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2019 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.part.presente.activo": "referens",
+      "gram.participio": "horresco referens",
+      "gram.relativo": "quorum inter fluctus",
+      "gram.pron.relativo": "quorum",
+      "gram.part.perfecto.pasivo": "arrecta"
     }
   },
   {
@@ -2580,6 +3069,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2019 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.cum.historico": "Cum hoc voce magna dixisset",
+      "gram.subjuntivo": "dixisset",
+      "gram.pron.proximo": "hoc",
+      "gram.inf.presente.activo": "ferre",
+      "gram.part.perfecto.deponente": "cohortati",
+      "gram.participio": "cohortati inter se",
+      "gram.deponente": "cohortati",
+      "gram.ne.final": "ne dedecus admitteretur",
+      "gram.voz.pasiva": "admitteretur"
     }
   },
   {
@@ -2627,6 +3127,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2019 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.deponente": "augurabantur",
+      "gram.pron.lejano": "ille",
+      "gram.ablativo.absoluto": "proruto vallo",
+      "gram.part.perfecto.pasivo": "proruto",
+      "gram.inf.presente.activo": "exire",
+      "gram.infinitivo": "exire copias iubet",
+      "gram.voz.pasiva": "locati sunt"
     }
   },
   {
@@ -2674,6 +3183,18 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2020 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.acus.ext": "dies complures",
+      "gram.pron.proximo": "Hae",
+      "gram.deponente": "Conatus est",
+      "gram.inf.presente.activo": "reficere",
+      "gram.inf.presente.pasivo": "perfici",
+      "gram.voz.pasiva": "perfici",
+      "gram.participio": "dispositae cohortes",
+      "gram.part.perfecto.pasivo": "dispositae",
+      "gram.pron.enfatico": "ipsius",
+      "gram.pron.lejano": "illis"
     }
   },
   {
@@ -2721,6 +3242,17 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2020 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "omnibus rebus exploratis",
+      "gram.part.perfecto.pasivo": "exploratis",
+      "gram.infinitivo": "cohortes paulatim incedere iubet",
+      "gram.inf.presente.activo": "incedere",
+      "gram.pron.identidad": "Idem",
+      "gram.voz.pasiva": "ventum est",
+      "gram.inf.presente.pasivo": "committi",
+      "gram.agente": "a ferentariis",
+      "gram.subjuntivo": "possit"
     }
   },
   {
@@ -2768,6 +3300,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2020 SEPTIEMBRE / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "Ipse",
+      "gram.ablativo.absoluto": "consumptis omnibus longe lateque frumentis",
+      "gram.part.perfecto.pasivo": "consumptis",
+      "gram.pron.proximo": "haec",
+      "gram.deponente": "Recordabantur",
+      "gram.infinitivo": "se superiore anno in Hispania",
+      "gram.inf.perfecto.activo": "confecisse"
     }
   },
   {
@@ -2815,6 +3356,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2020 SEPTIEMBRE / B"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "clausis omnium foribus",
+      "gram.part.perfecto.pasivo": "clausis",
+      "gram.relativo": "cuius manu periret",
+      "gram.pron.relativo": "cuius",
+      "gram.subjuntivo": "periret"
     }
   },
   {
@@ -2862,6 +3410,18 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2021 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ut.final": "ut ipsa multitudine nostra classis terreatur",
+      "gram.subjuntivo": "terreatur",
+      "gram.voz.pasiva": "terreatur",
+      "gram.pron.enfatico": "ipsa",
+      "gram.pron.posesivo": "nostra classis",
+      "gram.pron.proximo": "has",
+      "gram.relativo": "quos secum adduxerat",
+      "gram.pron.relativo": "quos",
+      "gram.ablativo.absoluto": "omnibus rebus instructa classe",
+      "gram.part.perfecto.pasivo": "instructa"
     }
   },
   {
@@ -2909,6 +3469,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2021 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.pron.posesivo": "manu sua",
+      "gram.part.presente.activo": "triumphans",
+      "gram.participio": "spolia Galli stipiti imposita",
+      "gram.part.perfecto.pasivo": "imposita"
     }
   },
   {
@@ -2956,6 +3522,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2021 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.deponente": "Secutae sunt",
+      "gram.acus.ext": "continuos complures dies",
+      "gram.relativo": "quae et nostros in castris continerent",
+      "gram.pron.relativo": "quae",
+      "gram.subjuntivo": "continerent",
+      "gram.pron.posesivo": "nostrorum militum"
     }
   },
   {
@@ -3003,6 +3577,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2021 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "qui et ipse Vespasianus est dictus",
+      "gram.pron.relativo": "qui",
+      "gram.pron.enfatico": "ipse",
+      "gram.pron.proximo": "Huic",
+      "gram.voz.pasiva": "est dictus",
+      "gram.ut.consecutiva": "adeo ut",
+      "gram.subjuntivo": "diceretur"
     }
   },
   {
@@ -3050,6 +3633,10 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2022 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.genitivo.partitivo": "impedimentorum magnam partem",
+      "gram.concordancia.nominal": "pecuniam publicam"
     }
   },
   {
@@ -3097,6 +3684,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2022 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.agente": "a fratre eius Hasdrubale",
+      "gram.voz.pasiva": "interficiuntur",
+      "gram.relativo": "qui per multos annos victores fuerant",
+      "gram.pron.relativo": "qui"
     }
   },
   {
@@ -3144,6 +3737,15 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2022 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo.enlace": "Quae res",
+      "gram.relativo": "Quae res",
+      "gram.pron.relativo": "Quae res",
+      "gram.ablativo.absoluto": "His rebus gestis",
+      "gram.part.perfecto.pasivo": "gestis",
+      "gram.pron.proximo": "His",
+      "gram.voz.pasiva": "appellatur"
     }
   },
   {
@@ -3191,6 +3793,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2022 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.pron.enfatico": "ipso",
+      "gram.part.presente.activo": "pugnantes",
+      "gram.participio": "duobus proeliis egregie pugnantes",
+      "gram.genitivo.partitivo": "milia hostium"
     }
   },
   {
@@ -3238,6 +3846,18 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2023 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quos sibi praesidio reliquerat",
+      "gram.pron.relativo": "quos",
+      "gram.doble.dativo": "sibi praesidio",
+      "gram.voz.pasiva": "fuerat tempestate interruptus",
+      "gram.inf.presente.pasivo": "perfici",
+      "gram.infinitivo": "hunc noctu perfici iussit",
+      "gram.pron.proximo": "hunc",
+      "gram.pron.enfatico": "Ipse",
+      "gram.ablativo.absoluto": "cognita locorum natura",
+      "gram.part.perfecto.pasivo": "cognita"
     }
   },
   {
@@ -3285,6 +3905,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2023 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.deponente": "populatus est",
+      "gram.relativo": "qui eum cum consule sequebatur",
+      "gram.pron.relativo": "qui",
+      "gram.agente": "ab eo honorifice suscepti sunt",
+      "gram.voz.pasiva": "suscepti sunt"
     }
   },
   {
@@ -3332,6 +3959,14 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2023 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quas traduxerat",
+      "gram.pron.relativo": "quas",
+      "gram.participio": "qui dimissi a superioribus imperatoribus",
+      "gram.part.perfecto.pasivo": "dimissi",
+      "gram.agente": "a superioribus imperatoribus",
+      "gram.pron.proximo": "his provinciis"
     }
   },
   {
@@ -3379,6 +4014,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2023 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quod contra Afros gerebatur",
+      "gram.pron.relativo": "quod",
+      "gram.voz.pasiva": "gerebatur",
+      "gram.ablativo.absoluto": "C. Duillio et Cn. Cornelio Asina consulibus",
+      "gram.part.perfecto.pasivo": "commisso"
     }
   },
   {
@@ -3426,6 +4068,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2024 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.proximo": "haec",
+      "gram.voz.pasiva": "geruntur",
+      "gram.relativo": "quas a Caesare acceperat",
+      "gram.pron.relativo": "quas"
     }
   },
   {
@@ -3473,6 +4121,12 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2024 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "Capti deinde eadem arte sunt",
+      "gram.pron.identidad": "eadem arte",
+      "gram.relativo": "qua ceperant Fabios",
+      "gram.pron.relativo": "qua"
     }
   },
   {
@@ -3520,6 +4174,13 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2024 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.voz.pasiva": "est omnis divisa",
+      "gram.relativo": "quarum unam incolunt Belgae",
+      "gram.pron.relativo": "quarum",
+      "gram.genitivo.partitivo": "quarum unam",
+      "gram.pron.proximo": "Hi"
     }
   },
   {
@@ -3567,6 +4228,16 @@
       "preverbBases": null,
       "warnings": [],
       "pauCv": "2024 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.genitivo.partitivo": "Percussorum autem fere neque triennio quisquam",
+      "gram.deponente": "defunctus est",
+      "gram.pron.posesivo": "sua morte",
+      "gram.voz.pasiva": "Damnati [sunt]",
+      "gram.pron.identidad": "eodem",
+      "gram.pron.lejano": "illo pugione",
+      "gram.relativo": "quo Caesarem violaverant",
+      "gram.pron.relativo": "quo"
     }
   },
   {
@@ -3632,6 +4303,15 @@
       ],
       "warnings": [],
       "pauCv": "2025 JUNIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Quibus rebus confectis",
+      "gram.part.perfecto.pasivo": "confectis",
+      "gram.relativo.enlace": "Quibus rebus",
+      "gram.relativo": "Quibus rebus",
+      "gram.pron.relativo": "Quibus rebus",
+      "gram.pron.enfatico": "ipse",
+      "gram.deponente": "proficiscitur"
     }
   },
   {
@@ -3697,6 +4377,10 @@
       ],
       "warnings": [],
       "pauCv": "2025 JUNIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.deponente": "Perfuncta res publica est",
+      "gram.pron.proximo": "hoc"
     }
   },
   {
@@ -3762,6 +4446,16 @@
       ],
       "warnings": [],
       "pauCv": "2025 JUNIO (reserva) / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.proximo": "Hos",
+      "gram.relativo": "qui flumen Hiberum attingunt",
+      "gram.pron.relativo": "qui",
+      "gram.deponente": "insequuntur",
+      "gram.ut.completiva": "ut se frumento iuvent",
+      "gram.subjuntivo": "iuvent",
+      "gram.ablativo.absoluto": "omnibus undique conquisitis iumentis",
+      "gram.part.perfecto.pasivo": "conquisitis"
     }
   },
   {
@@ -3827,6 +4521,13 @@
       ],
       "warnings": [],
       "pauCv": "2025 JUNIO (reserva) / B"
+    },
+    "verifiedGrammar": {
+      "gram.relativo": "quas ego lacrimis prope delevi",
+      "gram.pron.relativo": "quas",
+      "gram.pron.posesivo": "mea Terentia",
+      "gram.voz.pasiva": "conficior",
+      "gram.pron.proximo": "hoc"
     }
   },
   {
@@ -3892,6 +4593,15 @@
       ],
       "warnings": [],
       "pauCv": "2025 JULIO / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "Cognita militum voluntate",
+      "gram.part.perfecto.pasivo": "Cognita",
+      "gram.deponente": "proficiscitur",
+      "gram.relativo": "qui ad eum confugerant",
+      "gram.pron.relativo": "qui",
+      "gram.inf.presente.deponente": "subsequi",
+      "gram.infinitivo": "reliquas legiones ex hibernis evocat et subsequi iubet"
     }
   },
   {
@@ -3957,6 +4667,9 @@
       ],
       "warnings": [],
       "pauCv": "2025 JULIO / B"
+    },
+    "verifiedGrammar": {
+      "gram.concordancia.nominal": "provincia Tripolitana"
     }
   },
   {
@@ -4022,6 +4735,16 @@
       ],
       "warnings": [],
       "pauCv": "2025 JULIO (reserva) / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "acceptis litteris",
+      "gram.part.perfecto.pasivo": "acceptis",
+      "gram.relativo": "cuius hiberna aberant",
+      "gram.pron.relativo": "cuius",
+      "gram.infinitivo": "legionem proficisci",
+      "gram.inf.presente.activo": "venire",
+      "gram.inf.presente.deponente": "proficisci",
+      "gram.deponente": "proficisci"
     }
   },
   {
@@ -4087,6 +4810,10 @@
       ],
       "warnings": [],
       "pauCv": "2025 JULIO (reserva) / B"
+    },
+    "verifiedGrammar": {
+      "gram.genitivo.partitivo": "duodecim milia peditum",
+      "gram.voz.pasiva": "pugnatum est"
     }
   },
   {
@@ -4152,6 +4879,13 @@
       ],
       "warnings": [],
       "pauCv": "2026 ORDINARIA / A"
+    },
+    "verifiedGrammar": {
+      "gram.pron.lejano": "Illi",
+      "gram.ablativo.absoluto": "signo dato",
+      "gram.part.perfecto.pasivo": "dato",
+      "gram.infinitivo": "equitatum omnem convenire iubet",
+      "gram.inf.presente.activo": "convenire"
     }
   },
   {
@@ -4217,6 +4951,9 @@
       ],
       "warnings": [],
       "pauCv": "2026 ORDINARIA / B"
+    },
+    "verifiedGrammar": {
+      "gram.concordancia.nominal": "militaribus equis"
     }
   },
   {
@@ -4282,6 +5019,12 @@
       ],
       "warnings": [],
       "pauCv": "2026 EXTRAORDINARIA / A"
+    },
+    "verifiedGrammar": {
+      "gram.ablativo.absoluto": "vastatis omnibus eorum agris",
+      "gram.part.perfecto.pasivo": "vastatis",
+      "gram.relativo": "quae proxime bellum fecerant",
+      "gram.pron.relativo": "quae"
     }
   },
   {
@@ -4347,6 +5090,10 @@
       ],
       "warnings": [],
       "pauCv": "2026 EXTRAORDINARIA / B"
+    },
+    "verifiedGrammar": {
+      "gram.agente": "ab Hannibale Italia liberata est",
+      "gram.voz.pasiva": "liberata est"
     }
   }
 ]
