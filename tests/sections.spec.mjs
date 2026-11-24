@@ -625,6 +625,34 @@ test('un Word importado desde Cuadernos se guarda en el banco con sus marcas', a
   await expect(frame.locator('.modal').last()).toContainText('tractum est');
   await frame.getByRole('button', { name: 'Volver a la importación' }).click();
   await expect(review).toBeVisible();
+
+  // Editar el Word importado en la misma ficha, sin generar una copia.
+  const originalId = edition.placements[0].source.sourceId;
+  await page.reload();
+  const card = frame.locator('.atl-bank-card').first();
+  await expect(card).toBeVisible();
+  await card.click();
+  await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+  const editor = frame.locator('.modal').last();
+  const revisedLatin = 'Finito bello, Romani legatos in Aegyptum miserunt.';
+  await editor.getByRole('textbox', { name: 'Texto latino' }).fill(revisedLatin);
+  let warning = '';
+  page.once('dialog', prompt => { warning = prompt.message(); return prompt.accept(); });
+  await editor.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(editor).toBeHidden();
+  expect(warning).toMatch(/misma ficha/i);
+  const result = await frame.locator('html').evaluate(async (_, id) => {
+    const { IndexedDbCorpusRepository } = await import('../storage/indexeddb-corpus-repository.js');
+    const { WorkspaceRepository } = await import('../storage/workspace-repository.js');
+    const corpus = (await new IndexedDbCorpusRepository().load()).corpus;
+    const original = (await new WorkspaceRepository().listEditions())
+      .find(item => item.edition.title === 'Cuaderno Word');
+    return { texts: corpus.texts.map(t => ({ id: t.id, latin: t.latin, imported: Boolean(t.teacherDocx) })),
+      notebookLatin: original.edition.placements[0].text.latin, id };
+  }, originalId);
+  expect(result.texts).toHaveLength(1);
+  expect(result.texts[0]).toEqual({ id: originalId, latin: revisedLatin, imported: false });
+  expect(result.notebookLatin).toContain('tractum est');
 });
 
 async function clickExamToolbar(frame, selector) {
@@ -2019,4 +2047,89 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
   } finally {
     await destination.close();
   }
+});
+
+test('etiquetas por curso: filtrar el Banco y excluir un curso en un cuaderno persistente', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  async function tagCourse(title, course) {
+    await bank.getByRole('button', { name: new RegExp('^' + title + ' ') }).click();
+    await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+    const editor = frame.locator('.modal').last();
+    await editor.getByRole('checkbox', { name: course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato' }).check();
+    await editor.getByRole('button', { name: 'Guardar cambios' }).click();
+    await expect(editor).toBeHidden();
+  }
+  await tagCourse('Uno', '1bach');
+  await tagCourse('Dos', '2bach');
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  const filter = bank.getByRole('combobox', { name: 'Filtrar textos por curso' });
+  await filter.selectOption('1bach');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(1);
+  await expect(bank.locator('.atl-bank-card').first()).toContainText('Uno');
+  await filter.selectOption('2bach');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(1);
+  await expect(bank.locator('.atl-bank-card').first()).toContainText('Dos');
+
+  await page.getByRole('tab', { name: 'Cuadernos' }).click();
+  page.once('dialog', dialog => dialog.accept('Cuaderno de segundo'));
+  await frame.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
+  const exclude = frame.getByRole('combobox', { name: 'Curso excluido del cuaderno' });
+  await exclude.selectOption('1bach');
+  await frame.getByRole('button', { name: 'Banco propio', exact: true }).click();
+  const chooser = frame.locator('.original-bank-picker');
+  await expect(chooser.getByRole('checkbox', { name: 'Seleccionar «Uno»' })).toHaveCount(0);
+  await expect(chooser.getByRole('checkbox', { name: 'Seleccionar «Dos»' })).toBeVisible();
+  await chooser.getByRole('checkbox', { name: 'Seleccionar «Dos»' }).check();
+  await chooser.getByRole('button', { name: 'Añadir seleccionados (1)' }).click();
+  await expect(chooser).toBeHidden();
+  const notebook = await notebookSnapshot(frame, 'Cuaderno de segundo');
+  expect(notebook.edition.excludedCourse).toBe('1bach');
+  expect(notebook.edition.placements.map(p => p.source.sourceId)).toEqual(['doc.dos']);
+  await page.reload();
+  const row = frame.locator('.cuaderno-home-card').filter({ hasText: 'Cuaderno de segundo' });
+  await row.getByRole('button', { name: 'Abrir' }).click();
+  await expect(frame.getByRole('combobox', { name: 'Curso excluido del cuaderno' })).toHaveValue('1bach');
+});
+
+test('la copia de Dropbox incluye las etiquetas automáticas además de las confirmadas', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  await frame.getByRole('button', { name: 'Pegar en el banco' }).click();
+  const editor = frame.locator('.modal').last();
+  await editor.getByRole('textbox', { name: 'Título' }).fill('Posesivos para Dropbox');
+  await editor.getByRole('textbox', { name: 'Texto latino' }).fill('Suas copias duxit.');
+  await editor.getByRole('button', { name: 'Guardar en el banco' }).click();
+  await expect(frame.getByText('Posesivos · Automática', { exact: true })).toBeVisible();
+  const result = await page.evaluate(async () => {
+    const { readSyncData, validateSyncData } = await import('./backup-store.js');
+    const { data } = await readSyncData();
+    const clean = validateSyncData(data);
+    const texts = Object.values(clean.editor).flatMap(stores =>
+      stores.corpus.flatMap(([, value]) => value.corpus.texts));
+    const reviews = clean.bankReviews ?? [];
+    const automatic = reviews.flatMap(([, review]) => review.pending)
+      .filter(row => row.state === 'automatic');
+    return {
+      retainedManual: texts.some(text => text.id === 'doc.uno' && text.tagIds.includes('gram.ablativo.absoluto')),
+      courseFieldStable: texts.every(text => text.courseIds === undefined || Array.isArray(text.courseIds)),
+      automatic: automatic.map(row => row.tagId),
+      versions: reviews.map(([, review]) => review.version),
+      compact: automatic.every(row => row.evidence.length === 0 && row.alternatives.length === 0)
+    };
+  });
+  expect(result.retainedManual).toBe(true);
+  expect(result.courseFieldStable).toBe(true);
+  expect(result.automatic).toContain('gram.pron.posesivo');
+  expect(result.versions).toContain(2);
+  expect(result.compact).toBe(true);
+});
+
+test('el mensaje de Dropbox completado se oculta sin borrar otras notificaciones', async ({ page }) => {
+  await page.goto(path);
+  await page.evaluate(() => sessionStorage.setItem('atl-v1:dropbox:completed', 'true'));
+  await page.reload();
+  await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+  await expect(page.locator('#app-status')).toBeHidden({ timeout: 10000 });
 });

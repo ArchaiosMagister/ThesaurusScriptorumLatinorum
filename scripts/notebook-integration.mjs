@@ -225,8 +225,8 @@ window.addEventListener('atl-view', () => {
             const loaded = primary ? historical : await workspace.loadCorpus();
             const current = loaded.corpus.texts.find(t => t.id === source.id);
             const vocabulary = glossary.read();`);
-  replace('            if (same) {', '            if (same && data.difficulty === (current.difficulty ?? null) && JSON.stringify(data.selectividad) === JSON.stringify(current.selectividad ?? null) &&
-                JSON.stringify(data.courseIds) === JSON.stringify(current.courseIds ?? [])) {');
+  replace('            if (same) {', `            if (same && data.difficulty === (current.difficulty ?? null) && JSON.stringify(data.selectividad) === JSON.stringify(current.selectividad ?? null) &&
+                JSON.stringify(data.courseIds) === JSON.stringify(current.courseIds ?? [])) {`);
   replace('const saveCopy = linked || (changedLatin && Boolean(current.teacherDocx));',
     `const saveCopy = linked && !same && !current.teacherDocx;
             if (changedLatin && current.teacherDocx &&
