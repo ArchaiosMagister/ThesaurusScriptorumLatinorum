@@ -2172,3 +2172,35 @@ test('el buscador deja a mano curso, autor y etiquetas y permite limpiar la bús
   await bank.getByRole('button', { name: 'Más filtros' }).click();
   await expect(bank.getByRole('combobox', { name: 'Filtrar textos por obra' })).toBeHidden();
 });
+
+test('una restauración más nueva fallida revierte los almacenes ya escritos', async({page})=>{
+  await page.goto(path);
+  const bank=await seedBank(page);
+  const result=await page.evaluate(async()=>{
+    const {captureBackup,readBackupFile,planRestore,restoreBackup}=await import('./backup-store.js');
+    const {IndexedDbCorpusRepository}=await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+    const repo=new IndexedDbCorpusRepository();
+    localStorage.setItem('atl-v1:examinator.asig','Inicial');
+    const initial=await captureBackup();
+    const {corpus,revision}=await repo.load();
+    await repo.save({...corpus,texts:corpus.texts.map(t=>({...t,title:t.title+' nuevo'}))},revision);
+    localStorage.setItem('atl-v1:examinator.asig','Actualizada');
+    const newer=await captureBackup();
+    const db=await new Promise((resolve,reject)=>{const request=indexedDB.open('atl-v1:cuaderno-textos-latinos',1);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+    await new Promise((resolve,reject)=>{const tx=db.transaction('corpus','readwrite');tx.objectStore('corpus').put(initial.payload.databases['atl-v1:cuaderno-textos-latinos'].corpus[0][1]);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
+    db.close();
+    localStorage.setItem('atl-v1:examinator.asig','Inicial');
+    const payload=await readBackupFile(JSON.stringify(newer));
+    const plan=await planRestore(payload);
+    const original=Storage.prototype.setItem;
+    let failed=false,message='';
+    Storage.prototype.setItem=function(key,value){
+      if(key==='atl-v1:examinator.asig'&&value==='Actualizada')throw Error('fallo de escritura simulado');
+      return original.call(this,key,value);
+    };
+    try {await restoreBackup(payload,plan);}catch(error){failed=true;message=error.message;}
+    finally{Storage.prototype.setItem=original;}
+    return {comparison:plan.comparison,failed,message,restored:(await captureBackup()).contentHash===initial.contentHash};
+  });
+  expect(result).toMatchObject({comparison:'newer',failed:true,message:'fallo de escritura simulado',restored:true});
+});
