@@ -10,6 +10,7 @@ export function integrateOriginValidation(source) {
             invalid('corpus.pauCvSeedVersion', 'versión de banco PAU CV inválida');
         corpus.pauCvSeedVersion = data.pauCvSeedVersion;
     }
+    corpus.texts = corpus.texts.map(normalizeSelectividadAuthor);
     uniqueIds(corpus.texts, 'texts');`);
   source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv']);");
   source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }) };");
@@ -21,6 +22,17 @@ export function integrateOriginValidation(source) {
         ...(data.selectividad === undefined ? {} : { selectividad: selectividad(data.selectividad, path + '.selectividad') }),
          ...(data.courseIds === undefined ? {} : { courseIds: studyCourses(data.courseIds, path + '.courseIds') }),
         ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(`) + `
+
+function normalizeSelectividadAuthor(text) {
+    if (!text.selectividad && !text.teacherDocx?.pauCv) return text;
+    const canonical = author => typeof author === 'string' && /^c[eé]sar$/iu.test(author.trim()) ? 'Julio César' : author;
+    const author = canonical(text.source.author);
+    const doc = text.teacherDocx;
+    const docAuthor = canonical(doc?.author);
+    if (author === text.source.author && docAuthor === doc?.author) return text;
+    return { ...text, source: { ...text.source, author },
+        ...(doc && { teacherDocx: { ...doc, author: docAuthor } }) };
+}
 
 function studyCourses(value, path) {
     if (!Array.isArray(value) || value.length > 2 ||

@@ -6,6 +6,8 @@ const rows=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',
 const empty=()=>({schemaVersion:1,texts:[],tags:[],notebooks:[]});
 test('44 exámenes, 88 fichas, 12 con léxico; marcas exactas, reservas y convocatorias independientes',()=>{
  assert.equal(rows.length,88);
+ assert.equal(rows.filter(x=>x.doc.author==='Julio César').length,43);
+ assert.equal(rows.filter(x=>x.doc.author==='César').length,0);
  assert.equal(new Set(rows.map(x=>seedId(x.doc))).size,88);
  assert.equal(rows.filter(x=>x.model==='actual').length,12);
  assert.equal(rows.filter(x=>x.session.includes('reserva')).length,4);
