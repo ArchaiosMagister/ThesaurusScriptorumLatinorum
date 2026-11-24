@@ -7,6 +7,79 @@ export function integrateNotebook(source) {
     source = source.replace(original, () => replacement);
   };
 
+
+  // Catalogue presentation belongs to the integrated app, not the pinned upstream.
+  replace("import { openSupabaseSyncModal } from './supabase-sync-modal.js';\n", '');
+  const syncStart = source.indexOf("    const sync = el('details', 'cuaderno-home-sync');");
+  const syncEnd = source.indexOf('    home.append(sync);', syncStart);
+  if (syncStart < 0 || syncEnd < 0) throw Error('Revisar la retirada de Supabase de Cuadernos.');
+  source = source.slice(0, syncStart) + source.slice(syncEnd + '    home.append(sync);'.length);
+  replace("    home.append(el('h3', '', 'Cuaderno de textos latinos'));", "    home.classList.add('atl-notebook-catalog');");
+  replace("    heading.append(el('h4', '', 'Mis cuadernos'));", "    const headingCopy = el('div', 'atl-notebook-heading-copy');\n    headingCopy.append(el('span', 'atl-notebook-eyebrow', 'BIBLIOTECA PERSONAL'), el('h4', '', 'Mis cuadernos'));\n    heading.append(headingCopy);");
+  replace("    const grid = el('div', 'cuaderno-home-grid');", "    const grid = el('div', 'cuaderno-home-grid');\n    grid.setAttribute('aria-label', 'Cuadernos guardados');");
+  replace("    if (!saved.length)\n        grid.append(el('p', 'muted', 'No hay cuadernos todavía. Puedes crear uno nuevo.'));", "    headingCopy.append(el('p', 'muted', saved.length + (saved.length === 1 ? ' cuaderno guardado' : ' cuadernos guardados')));\n    if (!saved.length)\n        grid.append(el('p', 'atl-notebook-empty muted', 'No hay cuadernos todavía. Puedes crear uno nuevo.'));");
+  const cardStart = source.indexOf("        card.append(el('h5', '', edition.title));");
+  const cardEnd = source.indexOf('        if (edition.legacyNotebookId !== null)', cardStart);
+  if (cardStart < 0 || cardEnd < 0) throw Error('Revisar el catálogo de cuadernos.');
+  source = source.slice(0, cardStart) + `        const cover = el('div', 'atl-notebook-card-main');
+        const title = el('h5');
+        const openTitle = button(edition.title, () => openNotebook(edition.id), 'atl-notebook-title');
+        openTitle.setAttribute('aria-label', 'Abrir cuaderno «' + edition.title + '»');
+        title.append(openTitle);
+        const count = el('span', 'atl-notebook-count', edition.placements.length + (edition.placements.length === 1 ? ' texto' : ' textos'));
+        cover.append(title, count);
+        const meta = el('dl', 'atl-notebook-meta');
+        meta.append(el('dt', '', 'Curso'), el('dd', '', edition.notebookCourse || 'Sin especificar'),
+            el('dt', '', 'Curso académico'), el('dd', '', edition.academicYear || 'Sin especificar'));
+        card.append(cover, meta);
+` + source.slice(cardEnd);
+  replace("        card.append(buttons);", "        buttons.append(button('Editar datos', () => editNotebookMetadata(record), 'hbtn'));\n        card.append(buttons);");
+  replace('function renderHome() {', `async function editNotebookMetadata(record) {
+    const edition = record.edition;
+    const content = el('div', 'atl-notebook-metadata-form');
+    const field = (label, value, placeholder, maxLength) => {
+        const wrapper = el('label', '');
+        const input = el('input');
+        input.type = 'text';
+        input.value = value;
+        input.placeholder = placeholder;
+        input.maxLength = maxLength;
+        wrapper.append(el('span', '', label), input);
+        content.append(wrapper);
+        return input;
+    };
+    const course = field('Curso', edition.notebookCourse ?? '', 'Ej. 2.º de Bachillerato', 100);
+    const year = field('Curso académico', edition.academicYear ?? '', 'Ej. 2026-2027', 20);
+    const error = el('p', 'small');
+    error.setAttribute('role', 'alert');
+    content.append(error);
+    let saving = false;
+    const modal = M.modal('Datos de «' + edition.title + '»', content, [
+        { label: 'Cancelar' },
+        { label: 'Guardar datos', primary: true, onclick: async () => {
+            if (saving) return false;
+            saving = true;
+            try {
+                if (!await composer.flush()) throw Error('Hay cambios pendientes de guardar.');
+                const timestamp = new Date().toISOString();
+                await workspace.commitEdition(edition.id, record.revision,
+                    { command: 'ui.edit-notebook-metadata', targetId: edition.id, timestamp },
+                    previous => {
+                        if (!previous) throw Error('El cuaderno ya no existe.');
+                        return { ...previous, updatedAt: timestamp, notebookCourse: course.value.trim(), academicYear: year.value.trim() };
+                    });
+                await reload();
+                render();
+                return true;
+            } catch (cause) {
+                error.textContent = 'No se han guardado los datos: ' + (cause.message || String(cause));
+                return false;
+            } finally { saving = false; }
+        }}
+    ]);
+}
+function renderHome() {`);
+
   source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
