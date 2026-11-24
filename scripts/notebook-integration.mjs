@@ -80,11 +80,11 @@ export function integrateNotebook(source) {
 }
 function renderHome() {`);
 
-  source = "import { installPauCvSeed, pauCvIdentity } from './atl-pau-cv-seed.js';\n" + source;
+  source = "import { installPauCvSeed, pauCvIdentity, isVerifiedPauTag } from './atl-pau-cv-seed.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
   replace('        await composer.open();\n        wireButtons();', `        await composer.open();
     try {
-        if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus })) await reload();
+        if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus, grammarCatalogue: allGrammarTags })) await reload();
     } catch (error) {
         console.warn('Banco inicial PAU CV:', error);
         M.toast('No se ha podido incorporar el banco inicial PAU CV. Tus datos no se han modificado.', 7000);
@@ -867,6 +867,6 @@ window.addEventListener('atl-view', () => {
         if (automatic.children.length > 1) result.append(automatic);`);
   replace('choose.value = selections.get(key) ?? proposal.tagId;', 'choose.value = selections.get(key) ?? acceptedTag;');
   replace('            const acceptedTag = corrected.get(key) ?? proposal.tagId;',
-    "            if (!bankTagVisible(proposal.tagId) && !proposal.tagId.startsWith('gram.verbo.') && proposal.tagId !== 'gram.ut') continue;\n            const acceptedTag = corrected.get(key) ?? proposal.tagId;");
+    "            if (!bankTagVisible(proposal.tagId) && !proposal.tagId.startsWith('gram.verbo.') && proposal.tagId !== 'gram.ut') continue;\n            if (isVerifiedPauTag(text, proposal.tagId)) continue;\n            const acceptedTag = corrected.get(key) ?? proposal.tagId;");
   return source;
 }

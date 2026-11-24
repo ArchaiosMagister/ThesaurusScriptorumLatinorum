@@ -159,3 +159,25 @@ test('los 88 textos PAU conservan sus marcas y datos originales en el Word de Cu
  assert.equal(modern,12);
  assert.equal(compounds,11);
 });
+
+test('etiquetado filológico PAU: catálogo real, evidencias literales y corpus validado',async()=>{
+ const {prepareSeed,isPristineSeed,isVerifiedPauTag}=await import('../dist/modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js');
+ const {validateCorpus}=await import('../dist/modulos/cuaderno-integrado/core/validation.js');
+ const {allGrammarTags}=await import('../dist/modulos/cuaderno-integrado/core/grammar-tags.js');
+ const {bankTagAssignable}=await import('../dist/modulos/cuaderno-integrado/ui/atl-bank-curriculum.js');
+ const data=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',import.meta.url),'utf8'));
+ const empty=validateCorpus({schemaVersion:1,texts:[],tags:[],notebooks:[]});
+ const catalogue=allGrammarTags(empty);
+ for(const row of data)for(const [id,span] of Object.entries(row.verifiedGrammar)){
+   assert.ok(catalogue.some(tag=>tag.id===id)&&bankTagAssignable(id),id);
+   assert.ok(row.doc.latin.includes(span));
+ }
+ const result=prepareSeed(empty,[],data,validateCorpus,catalogue);
+ assert.equal(result.texts.length,88);
+ assert.equal(result.texts.reduce((n,t)=>n+t.tagIds.length,0),571);
+ assert.ok(result.texts.every(t=>t.tagIds.length));
+ assert.ok(isPristineSeed(result));
+ assert.ok(result.texts.every(t=>t.tagIds.every(id=>isVerifiedPauTag(t,id))));
+ const changed={...result,texts:result.texts.map((t,i)=>i?t:{...t,tagIds:[]})};
+ assert.ok(!isPristineSeed(changed));
+});
