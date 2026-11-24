@@ -549,7 +549,7 @@ test('Cuadernos incorpora varios pasajes y actualiza solo la copia elegida', asy
   ).toEqual(['doc.uno']);
   await page.reload();
   const card = frame.locator('.cuaderno-home-card').filter({ hasText: 'Lecturas compartidas' });
-  await card.getByRole('button', { name: 'Abrir' }).click();
+  await card.getByRole('button', { name: 'Abrir', exact: true }).click();
   expect((await notebookSnapshot(frame, 'Lecturas compartidas')).edition.placements[0]).toEqual(before.edition.placements[0]);
   await page.getByRole('tab', { name: 'Banco de textos' }).click();
   await expect(frame.getByText('4 textos distintos', { exact: true })).toBeVisible();
@@ -2094,7 +2094,7 @@ test('etiquetas por curso: filtrar el Banco y excluir un curso en un cuaderno pe
   expect(notebook.edition.placements.map(p => p.source.sourceId)).toEqual(['doc.dos']);
   await page.reload();
   const row = frame.locator('.cuaderno-home-card').filter({ hasText: 'Cuaderno de segundo' });
-  await row.getByRole('button', { name: 'Abrir' }).click();
+  await row.getByRole('button', { name: 'Abrir', exact: true }).click();
   await expect.poll(async () => (await notebookSnapshot(frame, 'Cuaderno de segundo')).edition.excludedCourse).toBe('1bach');
   await frame.locator('.edition-menu-nav').getByRole('button', { name: 'Organizar cuaderno', exact: true }).click();
   await expect(frame.getByRole('combobox', { name: 'Curso excluido del cuaderno' })).toHaveValue('1bach');
