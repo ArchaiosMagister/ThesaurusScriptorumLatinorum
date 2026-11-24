@@ -1,4 +1,4 @@
-import { expect, test } from './isolated-bank.mjs';
+import { expect, test, isolateBank } from './isolated-bank.mjs';
 
 const path = '/ThesaurusScriptorumLatinorum/';
 
@@ -990,6 +990,8 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
   expect(buffer.toString()).not.toContain('configuración privada de prueba');
 
   const fresh = await browser.newContext();
+
+  await isolateBank(fresh);
   try {
     const restored = await fresh.newPage();
     await restored.goto(new URL(path, page.url()).href);
@@ -1039,6 +1041,7 @@ test('el panel de copias migra los formatos anteriores v1 y v2 de Cuaderno', asy
   });
   for (const [index, backup] of backups.entries()) {
     const fresh = await browser.newContext();
+    await isolateBank(fresh);
     try {
       const copy = await fresh.newPage();
       await copy.goto(new URL(path, page.url()).href);
@@ -1738,6 +1741,7 @@ test('las copias manuales distinguen una versión idéntica, nueva, antigua y di
   await page.evaluate(() => localStorage.setItem('atl-v1:examinator.asig', 'Versión inicial'));
   const initial = await capture(page);
   const context = await browser.newContext();
+  await isolateBank(context);
   try {
     const other = await context.newPage();
     await other.goto(page.url());
@@ -1884,6 +1888,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
   let uploads = 0;
   let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
+  await isolateBank(destination);
   try {
     for (const context of [page.context(), destination]) {
       await context.route('https://www.dropbox.com/oauth2/authorize?*', async route => {

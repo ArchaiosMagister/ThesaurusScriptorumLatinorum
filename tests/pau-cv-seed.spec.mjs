@@ -16,4 +16,11 @@ test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',
  await bank.getByRole('searchbox',{name:/Buscar/}).first().fill('');
  await page.reload();
  await expect(bank.getByText('Mostrando 88 de 88 textos', {exact:true})).toBeVisible();
+ await bank.getByRole('searchbox',{name:/Buscar/}).first().fill('CATÓN RECIBE EL GOBIERNO');
+ await card.click();
+ page.once('dialog',prompt=>prompt.accept());
+ await modal.getByRole('button',{name:'Eliminar del banco',exact:true}).click();
+ await expect(modal).toBeHidden();
+ await page.reload();
+ await expect(bank.getByText('Mostrando 87 de 87 textos',{exact:true})).toBeVisible();
 });
