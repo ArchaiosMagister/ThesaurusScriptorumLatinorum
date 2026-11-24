@@ -57,3 +57,32 @@ test('etiquetar recorre los resultados filtrados y guarda antes de avanzar', asy
  await expect(modal.locator('.atl-tag-heading h3')).toHaveText('A primero');
  await expect(modal.locator('.cuaderno-bank-current')).toContainText(/Ablativo absoluto/i);
 });
+
+test('una edición concurrente de etiquetas no se sobrescribe',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ const modal=frame.locator('.modal').last();
+ await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+ await modal.getByRole('textbox',{name:'Título',exact:true}).fill('Etiquetas simultáneas');
+ await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Caesar, acceptis litteris, profectus est.');
+ await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+ await bank.getByRole('button',{name:'Etiquetar «Etiquetas simultáneas»',exact:true}).click();
+ await modal.getByRole('searchbox',{name:'Buscar etiqueta en el catálogo'}).fill('ablativo absoluto');
+ await modal.locator('.cuaderno-bank-tag-options').getByRole('checkbox',{name:/Ablativo absoluto/i}).first().check();
+ await frame.locator('html').evaluate(async()=>{
+  const {IndexedDbCorpusRepository}=await import('../storage/indexeddb-corpus-repository.js');
+  const {attachGrammarTags}=await import('../core/grammar-tags.js');
+  const repo=new IndexedDbCorpusRepository();
+  const {corpus,revision}=await repo.load();
+  await repo.save(attachGrammarTags(corpus,corpus.texts[0].id,['gram.participio']),revision);
+ });
+ await modal.getByRole('button',{name:'Guardar etiquetas',exact:true}).click();
+ await expect(frame.locator('.toast').last()).toContainText('cambiaron en otra pestaña');
+ await expect(modal).toBeVisible();
+ const tags=await frame.locator('html').evaluate(async()=>{
+  const {IndexedDbCorpusRepository}=await import('../storage/indexeddb-corpus-repository.js');
+  return (await new IndexedDbCorpusRepository().load()).corpus.texts[0].tagIds;
+ });
+ expect(tags).toEqual(['gram.participio']);
+});

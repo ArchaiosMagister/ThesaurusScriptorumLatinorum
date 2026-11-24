@@ -1,3 +1,4 @@
+import {isolateAnalysis} from './isolated-analysis.mjs';
 import {expect,test} from '@playwright/test';
 test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',async({page})=>{
  await page.goto('/ThesaurusScriptorumLatinorum/');
@@ -96,6 +97,7 @@ test('orden por año PAU y convocatoria visible en las tarjetas y la ficha',asyn
 });
 
 test('una copia integral con bajas PAU sustituye el banco de fábrica sin resucitar fichas',async({page,browser})=>{
+ await isolateAnalysis(page.context());
  await page.goto('/ThesaurusScriptorumLatinorum/');
  const frame=page.frameLocator('#panel-cuaderno iframe');
  const bank=frame.getByRole('region',{name:'Banco de textos propios'});
@@ -108,6 +110,7 @@ test('una copia integral con bajas PAU sustituye el banco de fábrica sin resuci
  });
  const backup=await page.evaluate(async()=> (await import('./backup-store.js')).captureBackup());
  const context=await browser.newContext();
+ await isolateAnalysis(context);
  try {
   const target=await context.newPage();
   await target.goto(page.url());

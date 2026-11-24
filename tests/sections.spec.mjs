@@ -1,3 +1,4 @@
+import {isolateAnalysis} from './isolated-analysis.mjs';
 import { expect, test, isolateBank } from './isolated-bank.mjs';
 
 const path = '/ThesaurusScriptorumLatinorum/';
@@ -2174,6 +2175,7 @@ test('el buscador deja a mano curso, autor y etiquetas y permite limpiar la bús
 });
 
 test('una restauración más nueva fallida revierte los almacenes ya escritos', async({page})=>{
+  await isolateAnalysis(page.context());
   await page.goto(path);
   const bank=await seedBank(page);
   const result=await page.evaluate(async()=>{
