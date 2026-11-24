@@ -59,3 +59,11 @@ test('convocatoria original, reserva y orden cronológico de PAU',()=>{
  assert.deepEqual([...rows].sort((a,b)=>compareSelectividadYear(a,b)),[old,september,ordinary,reserve,recent,undated]);
  assert.deepEqual([...rows].sort((a,b)=>compareSelectividadYear(a,b,true)),[recent,ordinary,reserve,old,september,undated]);
 });
+
+test('excluir Selectividad conserva solo los textos no PAU',()=>{
+ const pau={selectividad:{year:2026,community:'Comunidad Valenciana'}};
+ assert.equal(matchesSelectividad(pau,'','',false,true),false);
+ assert.equal(matchesSelectividad({},'','',false,true),true);
+ assert.equal(matchesSelectividad({selectividad:{}},'','',false,true),false);
+ assert.equal(matchesSelectividad({},'','',false,false),true);
+});

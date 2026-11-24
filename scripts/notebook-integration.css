@@ -1234,3 +1234,39 @@
   #editor .atl-bank .atl-filter-tools { grid-template-columns:repeat(2,minmax(0,1fr)); }
   #editor .atl-bank .atl-filter-tools .atl-filter-reset { grid-column:1/-1; }
 }
+
+/* Keep the PAU shortcuts together and the selection summary anchored. */
+@media screen {
+  #editor .atl-bank .atl-filter-tools {
+    grid-template-columns: repeat(4,minmax(0,1fr));
+  }
+  #editor .atl-bank .atl-bank-search-panel .atl-bank-results-header {
+    display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);
+    align-items:start; gap:.5rem;
+  }
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-result-count {
+    align-self:start; min-height:40px; display:flex; align-items:center;
+    min-width:0;
+  }
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk,
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk:not([open]),
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk[open] {
+    width:100%; min-width:0; box-sizing:border-box; margin:0;
+    padding:.25rem .45rem; flex-basis:auto;
+  }
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk > summary,
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk:not([open]) > summary {
+    box-sizing:border-box; padding:.25rem; min-height:32px;
+    line-height:24px; cursor:pointer;
+  }
+  #editor .atl-bank .atl-bank-results-header > .cuaderno-bank-bulk > summary:focus-visible {
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+}
+@media screen and (max-width:760px) {
+  #editor .atl-bank .atl-filter-tools { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #editor .atl-bank .atl-filter-tools .atl-filter-reset { grid-column:auto; }
+}
+@media screen and (max-width:480px) {
+  #editor .atl-bank .atl-bank-search-panel .atl-bank-results-header { grid-template-columns:minmax(0,1fr); }
+}

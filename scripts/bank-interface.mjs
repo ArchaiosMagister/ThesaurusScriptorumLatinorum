@@ -98,7 +98,7 @@ export function modernizeBank(source) {
         bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
     moreFilters.append(el('h5', 'atl-facet-heading', 'Procedencia y uso'));
     const examFields = el('div', 'atl-bank-more-fields');
-    examFields.append(filters.examLabel, bankField('Año de Selectividad', filters.examYear, ''),
+    examFields.append(filters.examLabel, filters.excludeExamLabel, bankField('Año de Selectividad', filters.examYear, ''),
         bankField('Comunidad autónoma', filters.examCommunity, ''));
     moreFilters.append(filterFields, el('h5', 'atl-facet-heading', 'Selectividad'), examFields);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
@@ -133,16 +133,19 @@ export function modernizeBank(source) {
     filterToggle.replaceChildren(el('span', '', 'Más filtros'), filterCount);
     const filterTools = el('div', 'atl-filter-tools');
     const examShortcut = button('Solo Selectividad', () => {
-        const check = filters.examLabel.querySelector('input');
-        check.checked = !check.checked;
-        populate();
+        filters.setExamMode(filters.read().exam ? 'all' : 'only');
     }, 'hbtn atl-exam-shortcut');
+    const excludeExamShortcut = button('Excluir Selectividad', () => {
+        filters.setExamMode(filters.read().excludeExam ? 'all' : 'exclude');
+    }, 'hbtn atl-filter-switch');
+    excludeExamShortcut.setAttribute('aria-label', 'Excluir Selectividad');
+    excludeExamShortcut.setAttribute('aria-pressed', String(filters.read().excludeExam));
     examShortcut.setAttribute('aria-label', 'Solo Selectividad');
     examShortcut.setAttribute('aria-pressed', String(filters.read().exam));
     filterTools.setAttribute('aria-label', 'Controles de filtrado');
     examShortcut.classList.add('atl-filter-switch');
     resetBankFilters.classList.add('atl-filter-reset');
-    filterTools.append(examShortcut, filterToggle, resetBankFilters);
+    filterTools.append(examShortcut, excludeExamShortcut, filterToggle, resetBankFilters);
     resultsHeader.append(bankResultCount);
     searchPanel.append(filterTools, quick, filterChips, moreFilters, resultsHeader);`);
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
@@ -176,6 +179,7 @@ export function modernizeBank(source) {
   replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
   replace('        const isFiltered = Boolean(search.value.trim()', `        filterChips.replaceChildren();
         examShortcut.setAttribute('aria-pressed', String(criteria.exam));
+        excludeExamShortcut.setAttribute('aria-pressed', String(criteria.excludeExam));
         searchClear.hidden = !search.value;
         const clearFacet = (label, control, value) => {
             const chip = button(label + ' ×', () => {
@@ -199,6 +203,7 @@ export function modernizeBank(source) {
         activeSelect(filters.examCommunity, 'Comunidad');
         if (criteria.reference.trim()) clearFacet('Referencia: ' + criteria.reference.trim(), filters.reference, '');
         if (criteria.exam) clearFacet('Solo Selectividad', filters.examLabel.querySelector('input'), '');
+        if (criteria.excludeExam) clearFacet('Excluir Selectividad', filters.excludeExamLabel.querySelector('input'), '');
         if (criteria.includePending) {
             const chip = button('Propuestas pendientes ×', () => {
                 filters.panel.querySelector('.atl-bank-tag-controls input[type="checkbox"]').checked = false;
