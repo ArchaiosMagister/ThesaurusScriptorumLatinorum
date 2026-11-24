@@ -35,6 +35,7 @@ test('importar PDF PAU CV crea las dos fichas con metadatos y evita repetir la m
     await importButton.click();
     await (await chooser).setFiles({name:'pau-prueba.pdf',mimeType:'application/pdf',buffer:pdfFixture()});
     const modal=frame.locator('.modal').last();
+    await expect(modal.getByRole('status')).toContainText('2 fichas detectadas', { timeout: 20000 });
     await expect(modal.getByRole('textbox',{name:'Título A',exact:true})).toHaveValue('TÍTULO DE PRUEBA A');
     await expect(modal.getByRole('textbox',{name:'Formas morfológicas B',exact:true})).toHaveValue('ego, venissem, menses, renovavi');
     await modal.getByRole('button',{name:'Importar fichas al banco'}).click();

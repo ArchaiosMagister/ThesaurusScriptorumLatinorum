@@ -6,6 +6,7 @@ export function importPauCv({modal,save,toast}) {
     const root=document.createElement('div');root.className='atl-pau-import';
     const status=document.createElement('p');status.setAttribute('role','status');root.append(status);
     let records=[],busy=true;
+    const errors=[];
     const submit=document.createElement('button');submit.type='button';submit.className='hbtn primary';submit.textContent='Importar fichas al banco';submit.disabled=true;
     const popup=modal('Importar PDF · PAU CV',root,[{label:'Cancelar'}],{width:'min(1000px,96vw)',noFocus:true});
     const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
@@ -62,9 +63,9 @@ export function importPauCv({modal,save,toast}) {
           section.append(shared);
         }
         root.append(section);
-      } catch(error){root.append(el('p',file.name+': '+error.message));}
+      } catch(error){const message=file.name+': '+error.message;errors.push(message);root.append(el('p',message));}
     }
-    busy=false;status.textContent=records.length+' fichas detectadas. Revisa antes de guardar.';submit.disabled=!records.length;root.append(submit);
+    busy=false;status.textContent=records.length+' fichas detectadas. Revisa antes de guardar.'+(errors.length?' '+errors.join(' · '):'');submit.disabled=!records.length;root.append(submit);
     submit.addEventListener('click',async()=>{
       if(busy)return;busy=true;submit.disabled=true;
       try{const result=await save(records.map(r=>r.read()));popup.close();toast(result+' fichas nuevas importadas.');}

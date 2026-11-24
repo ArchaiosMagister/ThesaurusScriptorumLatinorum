@@ -104,7 +104,7 @@ export async function readPauCvPdf(file) {
       const content=await page.getTextContent();
       const groups=[];
       for(const item of content.items){
-        if(!item.str?.trim())continue;
+        if(typeof item.str !== 'string' || !item.str.length)continue;
         const [,, , ,x,y]=pdfjs.Util.transform(viewport.transform,item.transform);
         const size=Math.hypot(item.transform[2],item.transform[3]);
         let group=groups.find(g=>Math.abs(g.y-y)<5);
@@ -123,8 +123,8 @@ export async function readPauCvPdf(file) {
       }
       const rows=groups.map(g=>{
         g.items.sort((a,b)=>a.x-b.x);
-        const size=Math.max(...g.items.map(t=>t.size));
-        const items=g.items.filter(t=>t.size>=size*.79);
+        const size=Math.max(...g.items.filter(t=>t.text.trim()).map(t=>t.size),0);
+        const items=g.items.filter(t=>t.size>=size*.79 || /^\s+$/u.test(t.text));
         let text='';
         for(const t of items){const prev=items[items.indexOf(t)-1];if(prev&&t.x-prev.x-prev.width>2&&!/\s$/u.test(text))text+=' ';text+=t.text;}
         const underlines=[];
