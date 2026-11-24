@@ -321,13 +321,13 @@ test('agrupa los infinitivos y aplica tiempo y voz sobre la misma forma', async 
     await modal.getByRole('button', { name: 'Añadir infinitivo' }).click();
   }
   await edit('Uno');
-  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await expect(modal.locator('.cuaderno-bank-manual')).toHaveAttribute('open', '');
   await assign('presente', 'activo');
   await assign('perfecto', 'pasivo');
   await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
   await expect(modal).toBeHidden();
   await edit('Dos');
-  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await expect(modal.locator('.cuaderno-bank-manual')).toHaveAttribute('open', '');
   await assign('presente', 'pasivo');
   await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
   await bank.getByRole('button', { name: 'Más filtros' }).click();
@@ -476,6 +476,9 @@ test('el control de actualización de la cabecera comprueba la PWA unificada', a
   await expect(update).toBeVisible();
   await update.click();
   await expect(page.locator('#app-status')).toContainText(/actualizada|actualización|versión/i);
+  if (await page.locator('#app-status').textContent() === 'La aplicación está actualizada.') {
+    await expect(page.locator('#app-status')).toBeHidden({ timeout: 10000 });
+  }
 });
 
 async function notebookSnapshot(frame, title) {

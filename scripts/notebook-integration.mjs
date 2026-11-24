@@ -82,7 +82,7 @@ function renderHome() {`);
 
   source = "import { installPauCvSeed } from './atl-pau-cv-seed.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
-  replace('    await composer.open();\n    wireButtons();', `    await composer.open();
+  replace('        await composer.open();\n        wireButtons();', `        await composer.open();
     try {
         if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus })) await reload();
     } catch (error) {
