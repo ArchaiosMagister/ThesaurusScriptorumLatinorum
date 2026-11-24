@@ -668,7 +668,7 @@ window.addEventListener('atl-view', () => {
             read.addEventListener('click', () => openBankTextEditor(text, restoreFocus, navigation));
             const openReader = () => openBankReader({
                 texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),
-                edit: item => openBankTextEditor(item, restoreFocus, navigation), tag: tagBankText, remove: removeBankText, usage: showTextUses,
+                edit: item => openBankTextEditor(item, restoreFocus, navigation), tag: item => tagBankText(item, restoreFocus, navigation), remove: removeBankText, usage: showTextUses,
                 pendingTags: bankState.includePending ? pendingIndex : undefined, automaticFor, difficultyFor,
                 isProtected: item => protectedIds.has(item.id),
                 onClose: restoreFocus,
