@@ -46,9 +46,9 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   origin.addEventListener('change', onChange);
   const course = element('select');
   course.setAttribute('aria-label', 'Filtrar textos por curso');
-  course.append(new Option('Ambos cursos', ''), new Option('1.º Bachillerato', '1bach'),
-    new Option('2.º Bachillerato', '2bach'));
-  course.value = ['1bach', '2bach'].includes(state.course) ? state.course : '';
+  course.append(new Option('Todos los cursos', ''), new Option('1.º Bachillerato', '1bach'),
+    new Option('2.º Bachillerato', '2bach'), new Option('Sin curso asignado', 'unassigned'));
+  course.value = ['1bach', '2bach', 'unassigned'].includes(state.course) ? state.course : '';
   course.addEventListener('change', onChange);
   const usage = element('select');
   usage.setAttribute('aria-label', 'Filtrar textos por uso');

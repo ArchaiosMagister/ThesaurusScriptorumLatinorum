@@ -480,7 +480,8 @@ window.addEventListener('atl-view', () => {
             if (difficultySelect.value && String(difficultyFor(t).level) !== difficultySelect.value) return false;
             if (!matchesSelectividad(t, examYear, examCommunity, exam)) return false;
             if (work && t.source.work?.trim() !== work) return false;
-            if (course && !(t.courseIds ?? []).includes(course)) return false;
+            if (course === 'unassigned' ? (t.courseIds ?? []).length > 0 :
+                course && !(t.courseIds ?? []).includes(course)) return false;
             if (referenceNeedle && !foldLatin(t.source.reference ?? '').includes(referenceNeedle)) return false;
             if (origin && (t.origin?.kind ?? 'unknown') !== origin) return false;
             if (usage && usedSourceIds.has(t.id) !== (usage === 'used')) return false;
