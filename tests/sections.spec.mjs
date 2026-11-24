@@ -1139,7 +1139,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const review = frame.locator('.modal').last();
-  const candidate = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Pendiente' }).first();
+  const candidate = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Perfecto de indicativo pasivo · Pendiente' }).first();
   await expect(candidate).toBeVisible({ timeout: 45000 });
   await review.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await page.reload();
@@ -1154,7 +1154,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   const include = bank.getByRole('checkbox', { name: 'Incluir propuestas pendientes de Collatinus' });
   await include.check();
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 1');
-  await expect(bank.getByText('Pendiente: Voz pasiva', { exact: true })).toBeVisible();
+  await expect(bank.getByText('Pendiente: Perfecto de indicativo pasivo', { exact: true })).toBeVisible();
   await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await expect(frame.locator('.atl-bank-reader')).toContainText('Propuestas pendientes:');
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
@@ -1166,8 +1166,8 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await expect(review).toBeHidden();
   await include.uncheck();
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 1');
-  await expect(bank.getByText('Voz pasiva', { exact: true }).filter({ visible: true }).first()).toBeVisible();
-  await expect(bank.getByText('Pendiente: Voz pasiva', { exact: true })).toBeHidden();
+  await expect(bank.getByText('Perfecto de indicativo pasivo', { exact: true }).filter({ visible: true }).first()).toBeVisible();
+  await expect(bank.getByText('Pendiente: Perfecto de indicativo pasivo', { exact: true })).toBeHidden();
 
   await card.click();
 
@@ -1176,7 +1176,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await expect(review).toBeHidden();
   await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
-  const confirmed = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Confirmada' }).first();
+  const confirmed = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Perfecto de indicativo pasivo · Confirmada' }).first();
   await confirmed.locator(':scope > summary').click();
   await expect(review.locator('.cuaderno-review-passage mark')).toHaveText('Amatus est');
 });
@@ -2286,7 +2286,7 @@ test('la copia de Dropbox incluye las etiquetas automáticas además de las conf
   expect(result.retainedManual).toBe(true);
   expect(result.courseFieldStable).toBe(true);
   expect(result.automatic).toContain('gram.pron.posesivo');
-  expect(result.versions).toContain(3);
+  expect(result.versions).toContain(4);
   expect(result.compact).toBe(true);
 });
 

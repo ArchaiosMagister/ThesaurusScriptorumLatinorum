@@ -2,7 +2,7 @@ import { isTemplateKey, validateTemplate } from './curriculum-templates.js';
 import { emptyCorpus } from './modulos/cuaderno-integrado/core/model.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { allGrammarTags } from './modulos/cuaderno-integrado/core/grammar-tags.js';
-import { isRetiredTag } from './modulos/cuaderno-integrado/ui/atl-bank-curriculum.js';
+import { isRetiredTag, compactGrammarTags } from './modulos/cuaderno-integrado/ui/atl-bank-curriculum.js';
 import { bankReviewKey, readBankReview } from './modulos/cuaderno-integrado/ui/atl-bank-review.js';
 import { findPossibleDuplicates, normalizedLatinKey } from './modulos/cuaderno-integrado/core/text-duplicates.js';
 
@@ -81,7 +81,7 @@ export async function tagChanges(incoming, local, proposals, storage, removeCust
     const proposed = proposals.get(text.id);
     const original = current?.tagIds ?? text.tagIds;
     const kept = removeCustom ? [] : original.filter(id => catalogue.get(id)?.kind === 'custom');
-    const next = [...new Set([...proposed, ...kept])];
+    const next = compactGrammarTags([...proposed, ...kept]);
     const added = next.filter(id => !original.includes(id));
     const removed = original.filter(id => !next.includes(id));
     const row = { id: text.id, title: current?.title ?? text.title, added, removed,

@@ -1,4 +1,4 @@
-export const rulesVersion = 3;
+export const rulesVersion = 4;
 
 const lemmaOf = candidate => candidate.lemma.split(',')[0].normalize('NFD')
   .replace(/\p{M}/gu, '').toLowerCase();
@@ -66,7 +66,7 @@ export function contextualBankAnalysis(latin, tokens, propose) {
           evidence: [describe(participle), describe(auxiliary), 'Participio nominativo y auxiliar sum adyacente, en el mismo número'],
           alternatives: [...readings[index], ...readings[index + 1]].filter(row => !pair.includes(row)).map(describe) };
         contextual.push(compound);
-        if (voice === 'pasivo') contextual.push({ ...compound, tagId: 'gram.voz.pasiva' });
+
       }
     }
     const agreement = determinant && features(determinant);
@@ -79,7 +79,7 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     const isParticiple = determinant.morph.startsWith('participio de ');
     const automatic = isPossessive || readings[determinerIndex].every(row =>
       row.candidate.lid === determinant.candidate.lid);
-    contextual.push({ start: first.s, end: second.e, tagId: isPossessive ? 'gram.pron.posesivo' : 'gram.concordancia.nominal',
+    if (isPossessive) contextual.push({ start: first.s, end: second.e, tagId: 'gram.pron.posesivo',
       evidence, alternatives, state: automatic ? 'automatic' : 'pending' });
     if (!isParticiple) continue;
     const separated = tokens[index + 2]?.pb === ',' && tokens[index + 2].sent === second.sent;
@@ -93,9 +93,9 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     return { ...token, cands: row ? [{ ...row.candidate, morphos: [row.morph] }] : [] };
   });
   const positions = new Map(tokens.map((token, index) => [token.s, index]));
-  const securePassiveEnds = new Set(contextual.filter(row => row.state === 'automatic' &&
-    row.tagId.endsWith('.pasivo')).map(row => row.end));
+  const genericTags = new Set(['gram.concordancia.nominal', 'gram.voz.pasiva', 'gram.deponente', 'gram.subjuntivo']);
   const proposals = propose(latin, narrowed).filter(proposal =>
+    !genericTags.has(proposal.tagId) &&
     !contextual.some(row => row.tagId === proposal.tagId && row.start === proposal.start && row.end === proposal.end) &&
     !(proposal.tagId === 'gram.part.perfecto.pasivo' && compoundParticiples.has(proposal.start))).map(proposal => {
     const first = positions.get(proposal.start);
@@ -106,8 +106,6 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     const unanimous = local.length > 0 && local.every(index => selected[index] && readings[index].every(row =>
       row.morph === selected[index].morph && row.candidate.pos === selected[index].candidate.pos &&
       (proposal.tagId === 'gram.subjuntivo' || describe(row) === describe(selected[index]))));
-    if (proposal.tagId === 'gram.voz.pasiva' && securePassiveEnds.has(proposal.end))
-      return { ...proposal, alternatives, syntaxReview: false, state: 'automatic' };
     return { ...proposal, alternatives, state: !proposal.syntaxReview && unanimous ? 'automatic' : 'pending' };
   });
   const personalForms = selected.flatMap((row, index) => {

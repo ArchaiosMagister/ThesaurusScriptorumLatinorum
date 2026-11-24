@@ -15,8 +15,26 @@ export const communities = [
   'País Vasco', 'Región de Murcia'
 ];
 
-const retiredTags = new Set(['gram.interrogativa.indirecta', 'gram.gerundio', 'gram.gerundivo']);
+const retiredTags = new Set(['gram.interrogativa.indirecta', 'gram.gerundio', 'gram.gerundivo', 'gram.concordancia.nominal']);
 export const isRetiredTag = id => retiredTags.has(id);
+export const grammarGroupIds = new Set(['gram.voz.pasiva', 'gram.deponente', 'gram.subjuntivo']);
+export const isGrammarGrouping = id => grammarGroupIds.has(id);
+const finiteForm = /^gram\.verbo\.[^.]+\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u;
+// The generic labels remain stable search/template IDs, not new assignments.
+export function matchesGrammarGrouping(id, group) {
+  if (!isGrammarGrouping(group)) return false;
+  if (id === group) return true; // old confirmed tags still work
+  const finite = finiteForm.exec(id);
+  if (group === 'gram.subjuntivo') return finite?.[1] === 'subjuntivo';
+  if (group === 'gram.voz.pasiva') return finite?.[2] === 'pasivo' ||
+    /^gram\.inf\.(presente|perfecto|futuro)\.pasivo$/u.test(id);
+  return finite?.[2] === 'deponente' || id === 'gram.part.perfecto.deponente' ||
+    /^gram\.inf\.(presente|perfecto|futuro)\.deponente$/u.test(id);
+}
+export function compactGrammarTags(ids) {
+  return [...new Set(ids)].filter(id => id !== 'gram.concordancia.nominal' &&
+    (!isGrammarGrouping(id) || !ids.some(other => other !== id && matchesGrammarGrouping(other, id))));
+}
 
 const hiddenTags = new Set([
   'gram.oracion', 'gram.formas', 'gram.pronombres', 'gram.funciones', 'gram.verbo',
@@ -36,7 +54,7 @@ export const infinitiveVoices = ['activo', 'pasivo', 'deponente'];
 const infinitiveForm = /^gram\.inf\.(presente|perfecto|futuro)(?:\.(activo|pasivo|deponente))?$/u;
 const infinitiveVoice = /^gram\.inf\.(activo|pasivo|deponente)$/u;
 export const isInfinitiveTag = id => id === infinitiveId || infinitiveForm.test(id) || infinitiveVoice.test(id);
-export const bankTagAssignable = id => bankTagVisible(id) && (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
+export const bankTagAssignable = id => !isGrammarGrouping(id) && (bankTagVisible(id) || Boolean(finiteForm.test(id))) && (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
 export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' &&
   (tag.id === infinitiveId || (bankTagVisible(tag.id) && !isInfinitiveTag(tag.id))));
 
