@@ -94,6 +94,14 @@
       <button type="button" id="dropbox-disconnect" class="dropbox-secondary" hidden disabled>Cerrar sesión de Dropbox</button>
     </div>
     <p id="dropbox-status" role="status" aria-live="polite"></p>
+    <section id="dropbox-conflict" aria-labelledby="dropbox-conflict-title" hidden>
+      <h3 id="dropbox-conflict-title" tabindex="-1">Elige qué versión conservar en caso de conflicto</h3>
+      <p>La versión elegida sustituirá los datos en conflicto en ambos sitios. Los cambios que se puedan combinar se conservarán.</p>
+      <div class="dropbox-actions">
+        <button type="button" id="dropbox-keep-remote" class="dropbox-primary">Conservar versión de Dropbox</button>
+        <button type="button" id="dropbox-keep-local" class="dropbox-secondary">Conservar versión de este dispositivo</button>
+      </div>
+    </section>
     <form method="dialog" class="dropbox-footer">
       <button type="button" id="dropbox-back" class="dropbox-secondary">Copias de seguridad</button>
       <button class="dropbox-secondary" autofocus>Cerrar</button>

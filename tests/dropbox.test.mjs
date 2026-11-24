@@ -9,6 +9,9 @@ test('Dropbox solo sustituye el espacio editorial si sigue la revisión conocida
   assert.equal(selectEditor('a', 'b', 'b', false), 'upload');
   assert.throws(() => selectEditor('a', 'b', null, false), /difieren/);
   assert.throws(() => selectEditor('a', 'b', 'c', false), /difieren/);
+  assert.equal(selectEditor('a', 'b', 'c', false, 'remote'), 'download');
+  assert.equal(selectEditor('a', 'b', 'c', false, 'local'), 'upload');
+  assert.equal(selectEditor('a', 'b', 'b', false, 'remote'), 'upload');
 });
 
 test('Dropbox reúne los usos de ambos dispositivos y detecta modificaciones simultáneas', () => {
@@ -35,6 +38,8 @@ test('Dropbox propaga bajas conocidas en ambos sentidos y nunca las restaura sil
   assert.deepEqual(mergeUsages([['x', old]], [['x', modified]], base, fingerprint), [['x', modified]]);
   assert.throws(() => mergeUsages([], [['x', modified]], base, fingerprint), /eliminó/);
   assert.throws(() => mergeUsages([['x', modified]], [], base, fingerprint), /eliminó/);
+  assert.deepEqual(mergeUsages([['x', modified]], [], base, fingerprint, null, 'remote'), []);
+  assert.deepEqual(mergeUsages([], [['x', modified], ['y', old]], base, fingerprint, null, 'local'), [['y', old]]);
   assert.deepEqual(mergeUsages([], [['y', old]], new Map(), fingerprint), [['y', old]]);
   assert.deepEqual(mergeUsages([['y', old]], [], new Map(), fingerprint), [['y', old]]);
 });

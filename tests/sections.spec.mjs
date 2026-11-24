@@ -2085,6 +2085,43 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     await expect(reopened.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     await expect(reopened.locator('#dropbox-dialog')).toBeHidden();
     expect(renewals).toBe(1);
+    const conflictKey = 'atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64);
+    async function changeReview(view, tag) {
+      await view.evaluate(({ key, tag }) => {
+        const row = JSON.parse(localStorage.getItem(key));
+        row.rejected = ['0:4:' + tag];
+        localStorage.setItem(key, JSON.stringify(row));
+      }, { key: conflictKey, tag });
+    }
+    const sourceSync = page.locator('header').getByRole('button', { name: 'Sincronizar ahora' });
+    const keepDropbox = reopened.getByRole('button', { name: 'Conservar versión de Dropbox' });
+    const uploadsBeforeConflict = uploads;
+    await changeReview(page, 'gram.ablativo.absoluto');
+    await sourceSync.click();
+    await expect.poll(() => uploads).toBe(uploadsBeforeConflict + 1);
+    expect(remote.data.bankReviews.find(([id]) => id === conflictKey)[1].rejected).toEqual(['0:4:gram.ablativo.absoluto']);
+    await changeReview(reopened, 'gram.gerundio');
+    await shortcut.click();
+    await expect(keepDropbox).toBeVisible();
+    await expect(keepDropbox).toBeEnabled();
+    expect(uploads).toBe(uploadsBeforeConflict + 1);
+
+    // Una elección solo se aplica a las copias comparadas.
+    await changeReview(page, 'gram.infinitivo');
+    await sourceSync.click();
+    await expect.poll(() => uploads).toBe(uploadsBeforeConflict + 2);
+    await keepDropbox.click();
+    await expect(keepDropbox).toBeVisible();
+    await expect(keepDropbox).toBeEnabled();
+    expect(uploads).toBe(uploadsBeforeConflict + 2);
+    const conflictReload = reopened.waitForEvent('load');
+    await keepDropbox.click();
+    await conflictReload;
+    await expect(reopened.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(await reopened.evaluate(key => JSON.parse(localStorage.getItem(key)).rejected, conflictKey))
+      .toEqual(['0:4:gram.infinitivo']);
+    expect(uploads).toBe(uploadsBeforeConflict + 2);
+
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Vinculado');

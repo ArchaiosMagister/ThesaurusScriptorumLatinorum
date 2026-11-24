@@ -1,5 +1,5 @@
 import { applySyncData, isEmptySyncEditor, maxBackupSize, readSyncData, syncFingerprint, syncTargetRows, validateSyncData } from './backup-store.js';
-import { isRecoverableSync, mergeUsages, selectEditor } from './dropbox-plan.js';
+import { isRecoverableSync, mergeUsages, selectEditor, SyncConflict } from './dropbox-plan.js';
 
 const key = 'atl-v1:dropbox';
 const file = '/thesaurus-sync-v1.json';
@@ -158,7 +158,7 @@ async function publish(session, data, revision, hash) {
   }, body);
 }
 
-async function synchronize(session, prepareReload, report) {
+async function synchronize(session, prepareReload, report, resolution) {
   const scope = session.appKey + ':' + session.account;
   const checkpointKey = 'checkpoint:' + scope;
   const pendingKey = 'checkpoint-pending:' + scope;
@@ -204,31 +204,46 @@ async function synchronize(session, prepareReload, report) {
     location.reload();
     return;
   }
-  const editorHash = await syncFingerprint(local.data.editor);
+  const localHash = await syncFingerprint(local.data);
+  const comparison = { connection: session.id, localHash, revision: remote?.revision, remoteHash: remote?.hash };
+  const sameComparison = resolution && Object.keys(comparison).every(name => comparison[name] === resolution[name]);
+  const preference = sameComparison ? resolution.preference : undefined;
+  if (resolution && !sameComparison && !remote) {
+    throw new Error('La copia de Dropbox ya no está disponible. Se han conservado los datos de este dispositivo.');
+  }
   let data = local.data;
   if (remote) {
+    const editorHash = await syncFingerprint(local.data.editor);
     const remoteEditorHash = await syncFingerprint(remote.data.editor);
-    const action = selectEditor(editorHash, remoteEditorHash, checkpoint?.editor, isEmptySyncEditor(local.data.editor));
-    const hashes = new Map();
-    const localReviews = local.data.bankReviews ?? [];
-    const remoteReviews = remote.data.bankReviews ?? [];
-    const localTemplates = local.data.templates ?? [];
-    const remoteTemplates = remote.data.templates ?? [];
-    await Promise.all([...local.data.usages, ...remote.data.usages, ...localReviews, ...remoteReviews, ...localTemplates, ...remoteTemplates].map(async ([, row]) =>
-      hashes.set(row, await syncFingerprint(row))));
-    const bankReviews = mergeUsages(localReviews, remoteReviews, new Map(checkpoint?.bankReviews), row => hashes.get(row),
-      'La revisión gramatical de una ficha cambió en ambos dispositivos. Las dos versiones se han conservado.');
-    const templates = mergeUsages(localTemplates, remoteTemplates, new Map(checkpoint?.templates), row => hashes.get(row),
-      'Una plantilla cambió en ambos dispositivos. Las dos versiones se han conservado.');
-    data = {
-      ...(templates.length && { templates }),
-      ...(bankReviews.length && { bankReviews }),
-      editor: action === 'download' ? remote.data.editor : local.data.editor,
-      usages: mergeUsages(local.data.usages, remote.data.usages, new Map(checkpoint?.usages), row => hashes.get(row))
-    };
+    try {
+      const action = selectEditor(editorHash, remoteEditorHash, checkpoint?.editor,
+        isEmptySyncEditor(local.data.editor), preference);
+      const hashes = new Map();
+      for (const collection of ['usages', 'bankReviews', 'templates']) {
+        await Promise.all([...(local.data[collection] ?? []), ...(remote.data[collection] ?? [])].map(async ([, row]) =>
+          hashes.set(row, await syncFingerprint(row))));
+      }
+      const merge = (name, conflict) => mergeUsages(local.data[name] ?? [], remote.data[name] ?? [],
+        new Map(checkpoint?.[name]), row => hashes.get(row), conflict, preference);
+      const bankReviews = merge('bankReviews', 'La revisión gramatical de una ficha cambió en ambos dispositivos.');
+      const templates = merge('templates', 'Una plantilla cambió en ambos dispositivos.');
+      data = {
+        ...(templates.length && { templates }),
+        ...(bankReviews.length && { bankReviews }),
+        editor: action === 'download' ? remote.data.editor : local.data.editor,
+        usages: merge('usages')
+      };
+    } catch (error) {
+      if (!(error instanceof SyncConflict)) throw error;
+      error.comparison = comparison;
+      throw error;
+    }
+  }
+  if (resolution && !sameComparison) {
+    throw new Error('Una copia cambió desde la comparación. Pulsa «Sincronizar ahora» para volver a comparar.');
   }
   const hash = await syncFingerprint(data);
-  const localChanges = hash !== await syncFingerprint(local.data);
+  const localChanges = hash !== localHash;
   if (hash !== remote?.hash) await publish(session, data, remote?.revision, hash);
   if (localChanges) {
     await prepareReload();
@@ -260,6 +275,10 @@ export async function setupDropbox(prepareReload, setStatus) {
   const disconnect = document.getElementById('dropbox-disconnect');
   const appKey = document.getElementById('dropbox-app-key');
   const message = document.getElementById('dropbox-status');
+  const conflictPanel = document.getElementById('dropbox-conflict');
+  const keepRemote = document.getElementById('dropbox-keep-remote');
+  const keepLocal = document.getElementById('dropbox-keep-local');
+  let comparison;
   let busy = false;
   let completionTimer = null;
   function report(text) {
@@ -282,7 +301,8 @@ export async function setupDropbox(prepareReload, setStatus) {
     setup.hidden = connectButton.hidden = connected;
     syncButton.hidden = disconnect.hidden = !connected;
     connectButton.disabled = syncButton.disabled = disconnect.disabled = appKey.disabled = busy;
-    back.disabled = quickSync.disabled = busy;
+    back.disabled = quickSync.disabled = keepRemote.disabled = keepLocal.disabled = busy;
+    conflictPanel.hidden = !connected || !comparison;
     if (connected) quickSync.removeAttribute('aria-haspopup');
     else quickSync.setAttribute('aria-haspopup', 'dialog');
   }
@@ -291,7 +311,15 @@ export async function setupDropbox(prepareReload, setStatus) {
     busy = true;
     paint();
     try { await work(); }
-    catch (error) { report(error.message); }
+    catch (error) {
+      report(error.message);
+      if (error instanceof SyncConflict && error.comparison) {
+        comparison = error.comparison;
+        paint();
+        if (!dialog.open) openDialog();
+        document.getElementById('dropbox-conflict-title').focus();
+      }
+    }
     finally { busy = false; paint(); }
   }
   appKey.value = read(localStorage, 'appKey') ?? '';
@@ -301,6 +329,7 @@ export async function setupDropbox(prepareReload, setStatus) {
     dialog.showModal();
   }
   open.addEventListener('click', openDialog);
+  dialog.addEventListener('close', () => { comparison = undefined; paint(); });
   back.addEventListener('click', () => {
     dialog.close();
     backupDialog.showModal();
@@ -316,20 +345,26 @@ export async function setupDropbox(prepareReload, setStatus) {
   disconnect.addEventListener('click', () => {
     remove(localStorage, 'connection');
     remove(sessionStorage, 'session');
+    comparison = undefined;
     paint();
     report('Sesión de Dropbox cerrada en este navegador.');
   });
-  function syncNow() {
+  function syncNow(preference) {
+    if (busy || (preference && !comparison)) return;
+    const resolution = preference ? { ...comparison, preference } : undefined;
+    comparison = undefined;
     void run(async () => {
       const current = read(localStorage, 'connection');
       if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
       report('Comparando los datos con Dropbox…');
-      const work = () => synchronize(current, prepareReload, report);
+      const work = () => synchronize(current, prepareReload, report, resolution);
       if (navigator.locks) await navigator.locks.request(key, work);
       else await work();
     });
   }
-  syncButton.addEventListener('click', syncNow);
+  syncButton.addEventListener('click', () => syncNow());
+  keepRemote.addEventListener('click', () => syncNow('remote'));
+  keepLocal.addEventListener('click', () => syncNow('local'));
   quickSync.addEventListener('click', () => {
     if (read(localStorage, 'connection')) syncNow();
     else openDialog();

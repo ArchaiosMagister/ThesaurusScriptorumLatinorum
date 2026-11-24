@@ -1,12 +1,16 @@
-export function selectEditor(localHash, remoteHash, checkpoint, localIsEmpty) {
+export class SyncConflict extends Error {}
+
+export function selectEditor(localHash, remoteHash, checkpoint, localIsEmpty, preference) {
   if (localHash === remoteHash) return 'same';
   if (localHash === checkpoint || (!checkpoint && localIsEmpty)) return 'download';
   if (remoteHash === checkpoint) return 'upload';
-  throw new Error('El banco o los cuadernos difieren entre este dispositivo y Dropbox. Ambos se han conservado. Revisa las dos copias antes de sincronizar.');
+  if (preference === 'local') return 'upload';
+  if (preference === 'remote') return 'download';
+  throw new SyncConflict('El banco o los cuadernos difieren entre este dispositivo y Dropbox.');
 }
 
 /** Reconciliación de tres vías: ausencia + huella anterior equivale a una baja, no a un alta. */
-export function mergeUsages(local, remote, checkpoints, fingerprint, conflict = null) {
+export function mergeUsages(local, remote, checkpoints, fingerprint, conflict = null, preference) {
   const localRows = new Map(local), remoteRows = new Map(remote);
   const merged = new Map();
   const ids = new Set([...localRows.keys(), ...remoteRows.keys(), ...checkpoints.keys()]);
@@ -20,12 +24,13 @@ export function mergeUsages(local, remote, checkpoints, fingerprint, conflict = 
     const oldHash = checkpoints.get(id);
     const changedLocally = oldHash === undefined ? localHash !== null : localHash !== oldHash;
     const changedRemotely = oldHash === undefined ? remoteHash !== null : remoteHash !== oldHash;
-    if (changedLocally && changedRemotely) {
+    if (changedLocally && changedRemotely && !preference) {
       const title = localRows.get(id)?.title ?? remoteRows.get(id)?.title ?? id;
-      if (conflict) throw new Error(conflict);
-      throw new Error('El uso del examen «' + title + '» cambió o se eliminó en ambos dispositivos. Se han conservado las dos versiones.');
+      if (conflict) throw new SyncConflict(conflict);
+      throw new SyncConflict('El uso del examen «' + title + '» cambió o se eliminó en ambos dispositivos. Se han conservado las dos versiones.');
     }
-    const winner = changedLocally ? localRows : remoteRows;
+    const useLocal = changedLocally && (!changedRemotely || preference === 'local');
+    const winner = useLocal ? localRows : remoteRows;
     if (winner.has(id)) merged.set(id, winner.get(id));
   }
   return [...merged].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
