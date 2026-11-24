@@ -589,11 +589,17 @@ window.addEventListener('atl-view', () => {
     const loadAnalysis = async () => {
         const saved = await bankAnalysisIndex(corpus.texts, catalogue, isRejectedProposal);
         if (!bank.isConnected) return;
+        // Rebuild the index: a deleted cache or a changed text must not keep
+        // stale automatic tags visible from the previous refresh.
+        analysisIndex.clear();
+        pendingIndex.clear();
         for (const [id, result] of saved) setAnalysis(id, result);
         populate();
-        scheduleBankAnalysis(corpus.texts, (text, review) => {
+        scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current), (text, review) => {
             if (!bank.isConnected) return;
-            const next = visibleBankAnalysis(text, review, catalogue, isRejectedProposal);
+            const live = corpus.texts.find(item => item.id === text.id && item.latin === text.latin);
+            if (!live) return;
+            const next = visibleBankAnalysis(live, review, catalogue, isRejectedProposal);
             const previous = analysisIndex.get(text.id);
             setAnalysis(text.id, next);
             if (JSON.stringify(previous) !== JSON.stringify(next) && (previous || next.automatic.length || next.pending.length))

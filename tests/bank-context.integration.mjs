@@ -77,3 +77,20 @@ test('pasajes de César, Cicerón y Virgilio sin falsos positivos sintácticos',
   assert.ok(find(virgil, 'qui', 'pron.relativo'));
   assert.ok(!virgil.some(row => row.fragment === 'Arma' && row.tagId.includes('imperativo')));
 });
+
+test('al recuperar una versión anterior del latín se preservan las decisiones de esa versión', async()=>{
+ const {bankReviewKey, carryBankReview, readBankReview, mergeCarriedReview}=await import('../dist/modulos/cuaderno-integrado/ui/atl-bank-review.js');
+ const values=new Map();
+ const storage={getItem:key=>values.get(key)??null,setItem:(key,value)=>values.set(key,value)};
+ const old={id:'doc.audit',latin:'Gallia est clara.'};
+ const current={id:old.id,latin:'Gallia est magna.'};
+ const row={start:0,end:6,tagId:'gram.concordancia.nominal',evidence:[],alternatives:[],state:'pending'};
+ const key='0:6:gram.concordancia.nominal';
+ const before={version:2,rejected:[key],corrected:[],pending:[row]};
+ const destination={version:2,rejected:[],corrected:[[key,'gram.pron.posesivo']],pending:[row]};
+ assert.deepEqual(mergeCarriedReview(destination,before),destination);
+ storage.setItem(await bankReviewKey(current),JSON.stringify(before));
+ storage.setItem(await bankReviewKey(old),JSON.stringify(destination));
+ await carryBankReview(current,old,storage);
+ assert.deepEqual(readBankReview(await bankReviewKey(old),old.latin,storage),destination);
+});

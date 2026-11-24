@@ -78,12 +78,29 @@ export async function analyzeBankText(text, analyze, classify, isCurrent) {
   return result;
 }
 
+// The destination may already have a review (e.g. when restoring earlier Latin).
+// Its decisions have priority for that exact text; only add unambiguous anchors.
+export function mergeCarriedReview(existing, carried) {
+  const rejected = new Set(existing.rejected);
+  const corrected = new Map(existing.corrected);
+  const pending = new Map(existing.pending.map(row => [proposalKeyFor(row), row]));
+  for (const key of carried.rejected) if (!corrected.has(key)) rejected.add(key);
+  for (const [key, tag] of carried.corrected) if (!rejected.has(key) && !corrected.has(key)) corrected.set(key, tag);
+  for (const row of carried.pending) if (!pending.has(proposalKeyFor(row))) pending.set(proposalKeyFor(row), row);
+  return {...existing, rejected:[...rejected], corrected:[...corrected], pending:[...pending.values()]};
+}
+
 export async function carryBankReview(previous, next, storage = localStorage) {
   const before = readBankReview(await bankReviewKey(previous), previous.latin, storage);
   if (!before.corrected.length && !before.pending.length && !before.rejected.length) return 0;
   const key = await bankReviewKey(next);
   if (previous.latin === next.latin) {
-    if (previous.id !== next.id) storage.setItem(key, JSON.stringify(before));
+    if (previous.id !== next.id) {
+      const existing = readBankReview(key, next.latin, storage);
+      const merged = mergeCarriedReview(existing, before);
+      if (existing.version === undefined && before.version !== undefined) merged.version = before.version;
+      storage.setItem(key, JSON.stringify(merged));
+    }
     return 0;
   }
 
@@ -109,6 +126,9 @@ export async function carryBankReview(previous, next, storage = localStorage) {
     if (wasRejected) rejected.push(proposalKeyFor(moved));
     if (tag) corrected.push([proposalKeyFor(moved), tag]);
   }
-  if (corrected.length || rejected.length) storage.setItem(key, JSON.stringify({ pending, corrected, rejected }));
+  if (corrected.length || rejected.length) {
+    const existing = readBankReview(key, next.latin, storage);
+    storage.setItem(key, JSON.stringify(mergeCarriedReview(existing, { pending, corrected, rejected })));
+  }
   return reviewRequired;
 }
