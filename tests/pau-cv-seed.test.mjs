@@ -37,3 +37,7 @@ test('la identidad PAU conserva convocatoria, reserva y opción aunque se edite 
  assert.equal(pauCvIdentity({selectividad:{year:2026},notes:'PAU CV · ORDINARIA 2026 · Opción A\nContexto'}),identity('2026 junio / A'));
  assert.equal(pauCvIdentity({notes:'PAU CV · ORDINARIA 2026 · Opción A'}),'');
 });
+
+test('la identidad independiente de PAU sobrevive a la retirada de las marcas y a la edición de notas',()=>{
+ assert.equal(pauCvIdentity({pauCv:'2025 JUNIO / A',notes:'Notas docentes',selectividad:{year:2025}}),pauCvIdentity({teacherDocx:{pauCv:'2025 ORDINARIA / A'}}));
+});

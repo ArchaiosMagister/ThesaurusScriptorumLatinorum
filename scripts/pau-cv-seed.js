@@ -6,7 +6,7 @@ export const seedId = doc => 'pau.cv.' + doc.pauCv.toLowerCase().replace(/[^a-z0
 const identity = value => String(value ?? '').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 const comparable = value => identity(value).replace(/\bextraordinaria\b/g,'julio').replace(/\bordinaria\b/g,'junio');
 export function pauCvIdentity(text) {
-  const raw = text.teacherDocx?.pauCv;
+  const raw = text.pauCv ?? text.teacherDocx?.pauCv;
   if (typeof raw === 'string' && /^\d{4}\s+.+\s*\/\s*[AB]$/iu.test(raw)) return comparable(raw);
   if (!text.selectividad) return '';
   const note = /^PAU CV\s*·\s*(.+?)\s+(\d{4})\s*·\s*Opción\s+([AB])\b/iu.exec(text.notes ?? '');

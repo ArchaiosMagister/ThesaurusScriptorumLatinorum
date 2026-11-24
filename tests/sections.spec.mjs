@@ -502,6 +502,9 @@ test('Cuadernos incorpora varios pasajes y actualiza solo la copia elegida', asy
   await picker.getByRole('checkbox', { name: 'Seleccionar «Dos»' }).check();
   await picker.getByRole('button', { name: 'Añadir seleccionados (2)' }).click();
   await expect(picker).toBeHidden();
+  // The asynchronous Collatinus enrichment must finish before comparing
+  // the complete snapshot; saving the bank source is not its trigger.
+  await expect.poll(async () => (await notebookSnapshot(frame, 'Lecturas compartidas')).edition.placements.every(p => p.vocabulary.length > 0), {timeout:30000}).toBe(true);
   const before = await notebookSnapshot(frame, 'Lecturas compartidas');
   expect(before.edition.placements.map(item => item.source.sourceId)).toEqual(['doc.uno', 'doc.dos']);
   expect(before.edition.placements[1].grammaticalTagIds).toContain('gram.ablativo.absoluto');
@@ -2184,6 +2187,7 @@ test('una restauración más nueva fallida revierte los almacenes ya escritos', 
     const repo=new IndexedDbCorpusRepository();
     localStorage.setItem('atl-v1:examinator.asig','Inicial');
     const initial=await captureBackup();
+    const initialAncestry=localStorage.getItem('atl-v1:backup-ancestry');
     const {corpus,revision}=await repo.load();
     await repo.save({...corpus,texts:corpus.texts.map(t=>({...t,title:t.title+' nuevo'}))},revision);
     localStorage.setItem('atl-v1:examinator.asig','Actualizada');
@@ -2192,6 +2196,7 @@ test('una restauración más nueva fallida revierte los almacenes ya escritos', 
     await new Promise((resolve,reject)=>{const tx=db.transaction('corpus','readwrite');tx.objectStore('corpus').put(initial.payload.databases['atl-v1:cuaderno-textos-latinos'].corpus[0][1]);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});
     db.close();
     localStorage.setItem('atl-v1:examinator.asig','Inicial');
+    localStorage.setItem('atl-v1:backup-ancestry',initialAncestry);
     const payload=await readBackupFile(JSON.stringify(newer));
     const plan=await planRestore(payload);
     const original=Storage.prototype.setItem;

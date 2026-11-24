@@ -102,7 +102,7 @@ function renderHome() {`);
             const id = 'doc.' + crypto.randomUUID();
             next = upsertText(next, { title: doc.title, latin: doc.latin, author: doc.author,
                 work: doc.work, reference: doc.reference, notes: ['PAU CV · ' + session + ' ' + year + ' · Opción ' + option, notes].filter(Boolean).join('\\n'),
-                selectividad: {year, community: 'Comunidad Valenciana'}, courseIds: ['2bach'], origin: {kind:'own'} }, id, new Date().toISOString());
+                selectividad: {year, community: 'Comunidad Valenciana'}, pauCv: doc.pauCv, courseIds: ['2bach'], origin: {kind:'own'} }, id, new Date().toISOString());
             next = validateCorpus({...next,texts:next.texts.map(t => t.id === id ? {...t,teacherDocx:doc} : t)});
             if (key) identities.add(key);count++;
         }
@@ -484,6 +484,9 @@ window.addEventListener('atl-view', () => {
   const editorSaveEnd = source.indexOf('    const remove = button(', editorSaveStart);
   if (editorSaveStart < 0 || editorSaveEnd < 0) throw Error('Revisar guardado de la ficha.');
   let editorSave = source.slice(editorSaveStart, editorSaveEnd);
+  const notesField = "const field = key === 'latin' ? el('textarea') : el('input');";
+  if (editorSave.split(notesField).length !== 2) throw Error('Revisar campo de notas de ficha.');
+  editorSave = editorSave.replace(notesField, "const field = key === 'latin' || key === 'notes' ? el('textarea') : el('input');");
   const saveBegin = "const save = button('Guardar cambios', async () => {";
   const existingTry = '        save.disabled = true;\n        try {';
   if (editorSave.split(saveBegin).length !== 2 || editorSave.split(existingTry).length !== 2)
