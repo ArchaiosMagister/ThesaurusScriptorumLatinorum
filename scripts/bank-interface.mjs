@@ -137,6 +137,7 @@ export function modernizeBank(source) {
         check.checked = !check.checked;
         populate();
     }, 'hbtn atl-exam-shortcut');
+    examShortcut.setAttribute('aria-label', 'Solo Selectividad');
     examShortcut.setAttribute('aria-pressed', String(filters.read().exam));
     filterTools.setAttribute('aria-label', 'Controles de filtrado');
     examShortcut.classList.add('atl-filter-switch');
