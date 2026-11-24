@@ -1,4 +1,4 @@
-import { bankTagAssignable, bankTagVisible, infinitiveId, infinitiveTenses, infinitiveVoices, isInfinitiveTag } from './atl-bank-curriculum.js';
+import { bankTagAssignable, bankTagVisible, infinitiveId, infinitiveTenses, infinitiveVoices, isInfinitiveTag, selectividadLabel } from './atl-bank-curriculum.js';
 import { communitySelect } from './atl-bank-planner.js';
 import { GRAMMAR_GROUP_IDS, matchesGrammarTag } from '../core/grammar-tags.js';
 import { foldLatin } from '../core/library.js';
@@ -322,8 +322,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     title.textContent = text.title;
     reference.textContent = [text.source.author, text.source.work, text.source.reference].filter(Boolean).join(' · ');
     exam.hidden = !text.selectividad;
-    exam.textContent = text.selectividad
-      ? ['Selectividad', text.selectividad.year, text.selectividad.community].filter(Boolean).join(' · ') : '';
+    exam.textContent = selectividadLabel(text);
     const assessment = difficultyFor(text);
     difficulty.textContent = 'Dificultad ' + difficultyText(assessment.level) + ' · ' +
       (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
