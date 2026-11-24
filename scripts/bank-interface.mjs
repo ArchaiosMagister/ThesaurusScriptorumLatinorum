@@ -130,7 +130,7 @@ export function modernizeBank(source) {
     const filterCount = el('span', 'atl-filter-count');
     filterCount.textContent = '0';
     filterCount.setAttribute('aria-hidden', 'true');
-    filterToggle.append(filterCount);
+    filterToggle.replaceChildren(el('span', '', 'Más filtros'), filterCount);
     const filterTools = el('div', 'atl-filter-tools');
     const examShortcut = button('Solo Selectividad', () => {
         const check = filters.examLabel.querySelector('input');

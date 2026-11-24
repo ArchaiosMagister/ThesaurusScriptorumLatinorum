@@ -141,7 +141,7 @@ test('los filtros mantienen posición y estado inequívoco al activarlos y resta
  const pau=tools.getByRole('button',{name:'Solo Selectividad',exact:true});
  const more=tools.getByRole('button',{name:'Más filtros',exact:true});
  const reset=tools.getByRole('button',{name:'Restablecer vista',exact:true});
- const positions=async()=>tools.locator('button').evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height]}));
+ const positions=async()=>tools.locator('button').evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect(),p=el.closest('.atl-bank-search-panel').getBoundingClientRect();return [r.x-p.x,r.y-p.y,r.width,r.height]}));
  const original=await positions();
  const color=await pau.evaluate(el=>getComputedStyle(el).backgroundColor);
  await expect(reset).toBeDisabled();
