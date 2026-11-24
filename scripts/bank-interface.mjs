@@ -145,7 +145,7 @@ export function modernizeBank(source) {
         removeSelected.disabled = selectedForRemoval.size === 0;`);
   replace('            rowSummary.append(selection);', `            const footer = el('div', 'atl-bank-card-footer');
             const actions = el('div', 'atl-bank-card-actions');
-            const tagAction = button('Etiquetar', () => tagBankText(text), 'tbtn sm');
+            const tagAction = button('Etiquetar', () => tagBankText(text, restoreFocus, navigation), 'tbtn sm');
             tagAction.setAttribute('aria-label', 'Etiquetar «' + text.title + '»');
             const readAction = button('Leer', openReader, 'tbtn sm');
             readAction.setAttribute('aria-label', 'Leer «' + text.title + '»');
@@ -227,6 +227,89 @@ export function modernizeBank(source) {
     "const chip = button(nameOf(id) + ' ×', () => setTag(id, false), 'grammar-chip');\n            chip.setAttribute('aria-label', 'Quitar «' + nameOf(id) + '»');");
   editor = editor.replace("        label.append(check, el('span', '', ('· '.repeat(catalogDepth(tag, all))) + tag.label));",
     "        label.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(tag.id, group, all)) ?? 'custom';\n        label.append(check, el('span', '', ('· '.repeat(catalogDepth(tag, all))) + tag.label));");
+  // Preserve the original save body, but share it between Save and navigation.
+  const tagReplace = (from, to) => {
+    if (editor.split(from).length !== 2) throw Error('Revisar navegación de etiquetas: ' + from);
+    editor = editor.replace(from, () => to);
+  };
+  tagReplace('function tagBankText(text) {', 'function tagBankText(text, onClose, navigation) {');
+  tagReplace('    const reviewReady = bankReviewKey(text).then(key => {',
+    "    const initialTags = JSON.stringify([...selected].sort());\n" +
+    "    const decisionFingerprint = () => JSON.stringify([[...rejected].sort(), [...corrected].sort(([a], [b]) => a.localeCompare(b))]);\n" +
+    "    let initialDecisions = decisionFingerprint();\n" +
+    "    const dirty = () => JSON.stringify([...selected].sort()) !== initialTags || decisionFingerprint() !== initialDecisions;\n" +
+    "    const reviewReady = bankReviewKey(text).then(key => {");
+  tagReplace('        if (pending.length) renderProposals();', '        initialDecisions = decisionFingerprint();\n        if (pending.length) renderProposals();');
+  const modalStart = editor.indexOf("    const dialog = M.modal('Etiquetas de «'");
+  const saveStart = editor.indexOf("{ label: 'Guardar etiquetas', primary: true, onclick: async () => {", modalStart);
+  const endMatch = /\}\s*\}\s*\], \{ width: 'min\(1440px, 98vw\)'/u.exec(editor.slice(saveStart));
+  const saveEnd = endMatch ? saveStart + endMatch.index : -1;
+  if (modalStart < 0 || saveStart < 0 || saveEnd < saveStart) throw Error('Revisar guardado y navegación de etiquetas.');
+  const saveBody = editor.slice(saveStart + "{ label: 'Guardar etiquetas', primary: true, onclick: async () => {".length, saveEnd);
+  const afterModal = editor.indexOf("dialog.el.classList.add('atl-bank-tag-modal');", saveEnd);
+  if (afterModal < 0) throw Error('Revisar clase del etiquetador.');
+  editor = editor.slice(0, modalStart) + `    const ordered = navigation?.results() ?? [text];
+    const index = ordered.findIndex(item => item.id === text.id);
+    let destination = null, saving = false, allowClose = false;
+    const nav = el('nav', 'atl-edit-nav atl-tag-nav');
+    nav.setAttribute('aria-label', 'Navegar por los textos filtrados');
+    const position = el('span', 'atl-edit-position');
+    position.textContent = index < 0 ? 'Fuera del filtro' : (index + 1) + ' de ' + ordered.length;
+    const persist = async () => {${saveBody}};
+    const save = async () => {
+        if (saving) return false;
+        saving = true;
+        panel.inert = true;
+        try {
+            await persist();
+            allowClose = true;
+            return true;
+        } catch (error) {
+            destination = null;
+            M.toast('No se han guardado las etiquetas: ' + (error.message || String(error)), 6500);
+            return false;
+        } finally {
+            saving = false;
+            panel.inert = false;
+        }
+    };
+    const move = async offset => {
+        if (saving || index < 0) return;
+        const target = ordered[index + offset];
+        if (!target) return;
+        await reviewReady;
+        if (saving || !panel.isConnected) return;
+        if (dirty()) {
+            if (!window.confirm('Hay etiquetas sin guardar. ¿Guardarlas y abrir la otra ficha?')) return;
+            destination = target.id;
+            if (!await save()) return;
+        } else {
+            destination = target.id;
+            allowClose = true;
+        }
+        dialog.close();
+    };
+    const previous = button('Anterior', () => move(-1), 'hbtn atl-edit-nav-button');
+    const next = button('Siguiente', () => move(1), 'hbtn atl-edit-nav-button');
+    previous.disabled = index <= 0;
+    next.disabled = index < 0 || index >= ordered.length - 1;
+    nav.append(previous, position, next);
+    const guard = () => allowClose || (!saving && (!dirty() || window.confirm('¿Cerrar sin guardar los cambios de etiquetas?')));
+    const afterClose = () => {
+        if (!destination) { onClose?.(); return; }
+        const id = destination;
+        destination = null;
+        queueMicrotask(() => {
+            const target = (navigation?.results() ?? []).find(item => item.id === id);
+            if (target) tagBankText(target, onClose, navigation);
+            else { onClose?.(); M.toast('El texto ya no coincide con los filtros activos.'); }
+        });
+    };
+    const dialog = M.modal('Etiquetas de «' + text.title + '»', panel, [
+        { label: 'Cancelar' }, { label: 'Guardar etiquetas', primary: true, onclick: save }
+    ], { width: 'min(1440px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose });
+    dialog.el.classList.add('atl-bank-tag-modal');
+    dialog.el.querySelector('.mh').insertBefore(nav, dialog.el.querySelector('.xbtn'));` + editor.slice(afterModal + "dialog.el.classList.add('atl-bank-tag-modal');".length);
   source = source.slice(0, tagStart) + editor + source.slice(tagEnd);
   return source;
 }

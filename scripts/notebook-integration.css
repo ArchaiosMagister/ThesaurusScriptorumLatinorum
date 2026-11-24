@@ -1140,3 +1140,12 @@
   .atl-tag-passage-column,.atl-tag-catalog-column { padding:.75rem; }
   .atl-bank-tag-modal .cuaderno-review-passage p { font-size:1.05rem; }
 }
+
+@media screen {
+ .atl-bank-tag-modal .mh { flex-wrap:wrap; gap:.5rem; }
+ .atl-bank-tag-modal .mh h2 { flex:1; min-width:10rem; overflow-wrap:anywhere; }
+ .atl-bank-tag-modal .atl-tag-nav { flex:none; }
+}
+@media screen and (max-width:740px) {
+ .atl-bank-tag-modal .atl-tag-nav { order:3; width:100%; justify-content:space-between; }
+}
