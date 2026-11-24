@@ -1162,3 +1162,75 @@
     outline: 2px solid var(--accent); outline-offset: 2px;
   }
 }
+
+/* Bank controls: reserve their row and indicator space. Hover is not selection. */
+@media screen {
+  #editor .atl-bank .atl-filter-tools {
+    display:grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+    align-items:stretch; gap:.45rem; margin:0; width:100%;
+  }
+  #editor .atl-bank .atl-filter-tools button {
+    display:inline-flex; justify-content:center; align-items:center; gap:.35rem;
+    min-width:0; min-height:44px; margin:0; padding:.45rem .5rem;
+    font:650 .85rem/1.2 var(--ui-font); text-align:center;
+    white-space:normal; border:1px solid var(--rule); border-radius:8px;
+    background:var(--paper); color:var(--ink); transform:none;
+    box-shadow:none;
+  }
+  #editor .atl-bank .atl-filter-tools button:active,
+  #editor .atl-bank .atl-bank-tag-chip:active { transform:none; }
+  #editor .atl-bank .atl-filter-tools .atl-filter-reset:disabled {
+    display:inline-flex; opacity:.5; cursor:default;
+  }
+  #editor .atl-bank .atl-filter-switch::before,
+  #editor .atl-bank .atl-bank-tag-chip[aria-pressed]::before {
+    content:""; display:inline-grid; place-items:center; flex:none;
+    width:1em; height:1em; box-sizing:border-box; border:1px solid currentColor;
+    border-radius:3px; background:none; font-size:1em; line-height:1;
+  }
+  #editor .atl-bank .atl-filter-switch[aria-pressed="true"]::before,
+  #editor .atl-bank .atl-bank-tag-chip[aria-pressed="true"]::before { content:"✓"; }
+  #editor .atl-bank .atl-filter-tools .atl-filter-toggle::before {
+    content:"▸"; flex:none; width:1em; text-align:center;
+  }
+  #editor .atl-bank .atl-filter-tools .atl-filter-toggle[aria-expanded="true"]::before { content:"▾"; }
+  #editor .atl-bank .atl-filter-tools .atl-filter-count {
+    display:inline-flex; align-items:center; justify-content:center;
+    flex:0 0 2.25em; width:2.25em; height:1.6em; padding:0;
+    font:650 .75rem/1 var(--ui-font); font-variant-numeric:tabular-nums;
+    color:inherit; background:transparent; border:1px solid currentColor;
+    border-radius:5px;
+  }
+  #editor .atl-bank .atl-filter-tools .atl-filter-count[data-empty="true"] { visibility:hidden; }
+  #editor .atl-bank .atl-filter-tools button[aria-expanded="true"] {
+    background:var(--paper); color:var(--ink); border-color:var(--accent);
+  }
+  #editor .atl-bank .atl-filter-tools button[aria-pressed="true"],
+  #editor .atl-bank .atl-filter-tools button[data-has-filters="true"],
+  #editor .atl-bank .atl-bank-tag-chip[aria-pressed="true"],
+  #editor .atl-bank .atl-facet-chip {
+    background:#315c49; border-color:#315c49; color:#fff;
+  }
+  #editor .atl-bank .atl-bank-tag-chip[aria-pressed="false"] {
+    background:var(--paper); color:var(--ink); border-color:var(--rule);
+  }
+  #editor .atl-bank .atl-bank-tag-chip { outline:none; }
+  #editor .atl-bank .atl-bank-tag-chip:focus-visible,
+  #editor .atl-bank .atl-filter-tools button:focus-visible {
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  #editor .atl-bank .atl-bank-more .atl-tag-option:has(input:checked) {
+    background:var(--accent-soft,var(--panel)); font-weight:650;
+    box-shadow:inset 3px 0 #315c49; border-radius:5px;
+  }
+  #editor .atl-bank .atl-bank-more .atl-tag-option { padding-inline:.4rem; }
+  #editor .atl-bank .atl-facet-chip::before { content:none; }
+}
+@media screen and (hover:hover) and (pointer:fine) {
+  #editor .atl-bank .atl-filter-tools button:not(:disabled):hover,
+  #editor .atl-bank .atl-bank-tag-chip:hover { box-shadow:inset 0 0 0 1px currentColor; }
+}
+@media screen and (max-width:480px) {
+  #editor .atl-bank .atl-filter-tools { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  #editor .atl-bank .atl-filter-tools .atl-filter-reset { grid-column:1/-1; }
+}
