@@ -279,3 +279,23 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 @media (min-width: 340px) and (max-width: 759px) {
   #app-dropbox-sync { grid-column: 2; }
 }
+
+/* Same typography, spacing and control hierarchy as the integrated editors. */
+#backup-dialog { width: min(40rem, calc(100% - 1rem)); max-height: calc(100dvh - 1.5rem); padding: clamp(.85rem, 3vw, 1.5rem); border-radius: 14px; box-shadow: 0 16px 48px rgb(0 0 0 / 25%); }
+#backup-title, #dropbox-title { color: var(--accent); font-family: 'Gentium Book Plus', 'Palatino Linotype', serif; font-size: 1.55rem; line-height: 1.2; }
+#backup-title { margin: 0; }
+.backup-intro { line-height: 1.5; margin: .65rem 0 1rem; }
+.backup-group { display: grid; gap: .55rem; padding: .85rem; margin-top: .65rem; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); }
+.backup-group h3 { font-size: .95rem; margin: 0; color: var(--accent); }
+.backup-group p { font-size: .875rem; line-height: 1.45; margin: 0; }
+#backup-dialog .backup-group label { margin: 0; font-size: .875rem; font-weight: 650; }
+.backup-primary, .backup-secondary, #backup-file::file-selector-button { border: 1px solid var(--rule); border-radius: 8px; padding: .55rem .8rem; min-height: 40px; font: inherit; font-size: .875rem; font-weight: 650; cursor: pointer; }
+.backup-primary { background: #45604e; border-color: #45604e; color: #fff; justify-self: start; }
+.backup-primary:disabled { opacity: .5; cursor: default; }
+.backup-secondary, #backup-file::file-selector-button { background: var(--panel); color: var(--ink); }
+#backup-dialog .dropbox-primary { justify-self: start; }
+#backup-file { max-width: 100%; min-width: 0; font: inherit; font-size: .85rem; }
+#backup-preview:empty { display: none; }
+#backup-preview:not(:empty) { padding: .65rem; background: var(--panel); border: 1px solid var(--rule); border-radius: 7px; }
+#backup-dialog .backup-footer { display: flex; justify-content: flex-end; border-top: 1px solid var(--rule); padding-top: .75rem; }
+#backup-dialog :is(button,input):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

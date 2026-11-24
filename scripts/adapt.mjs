@@ -76,6 +76,7 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     const adapted = adaptStorage(original, module);
     if (adapted !== original) await writeFile(file, adapted);
   }
+  const commonUI = await readFile(new URL('./common-ui.css', import.meta.url), 'utf8');
   let notebookRevision;
   let examRevision;
   const examAssets = [
@@ -479,7 +480,7 @@ export function lexicalValuesForDocument(option) {
 }
 ` : '';
     await writeFile(join(directory, page, stylesheet),
-      installControls + diagnostics + examStyles + morphologyStyles + libraryStyles + (page === notebookPage ? notebookStyles : '') + badgeAlignment);
+      installControls + diagnostics + examStyles + morphologyStyles + libraryStyles + (page === notebookPage || module === 'examinator' ? commonUI : '') + (page === notebookPage ? notebookStyles : '') + badgeAlignment);
     const workerPath = join(directory, page, module === 'examinator' ? 'sw.js' : 'service-worker.js');
     const updates = await readFile(workerPath, 'utf8');
     const worker = page === notebookPage

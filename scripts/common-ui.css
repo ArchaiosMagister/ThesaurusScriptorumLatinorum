@@ -1,0 +1,49 @@
+/* Thesaurus UI: common controls, separate from the printable document.
+   Use each module's theme tokens, not hard-coded light backgrounds. */
+@media screen {
+  :root { --atl-ui-radius: 10px; --atl-ui-gap: .65rem; --atl-ui-border: var(--rule); }
+  .modal-bg { padding: max(10px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); align-items: center; background: rgb(12 20 24 / 52%); }
+  .modal { min-width: 0; max-width: 100%; max-height: calc(100dvh - 24px); border-radius: 14px; box-shadow: 0 15px 45px rgb(0 0 0 / 22%); overflow: hidden; }
+  .modal:not(.atl-bank-editor-modal) .mh { gap: .65rem; padding: .8rem 1rem; background: var(--panel); border-bottom: 1px solid var(--rule); border-top: 3px solid var(--accent-button, #1d5466); }
+  .modal:not(.atl-bank-editor-modal) .mh h2 { min-width: 0; overflow-wrap: anywhere; font: 700 1.3rem/1.2 var(--text-font, Georgia, serif); color: var(--accent); }
+  .modal:not(.atl-bank-editor-modal) .mb { min-height: 0; padding: clamp(.8rem, 2vw, 1.3rem); overflow: auto; overscroll-behavior: contain; }
+  .modal:not(.atl-bank-editor-modal) .mf { flex-wrap: wrap; padding: .7rem 1rem; border-color: var(--rule); background: var(--paper); gap: .5rem; }
+  .modal :is(.xbtn, .hbtn, .tbtn), #lib :is(.hbtn,.tbtn) { min-height: 36px; max-width: 100%; }
+  .modal .xbtn { min-width: 36px; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
+  .modal :is(.hbtn,.tbtn):not(.primary):not(.cuaderno-ui-word):not(.cuaderno-ui-pdf):not(.cuaderno-ui-save):not(.cuaderno-ui-regen):not(.cuaderno-ui-remove):not(.cuaderno-ui-add) { border-radius: 8px; }
+  .modal .mf .hbtn { padding-inline: .9rem; font-weight: 650; white-space: normal; }
+  .modal :is(input, textarea, select), #lib :is(input,select), #editor :is(.field-control,.field input,.field select,.field textarea) { accent-color: var(--accent-button, #1d5466); }
+  .modal:not(.atl-bank-editor-modal) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]), select, textarea) {
+    min-width: 0; max-width: 100%; background: var(--control, var(--paper)); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 8px; min-height: 40px; padding: .45rem .6rem; font: inherit;
+  }
+  .modal:not(.atl-bank-editor-modal) .field { display: grid; gap: .3rem; margin-bottom: .6rem; min-width: 0; }
+  .modal:not(.atl-bank-editor-modal) .field > :is(label,span) { color: var(--ink-2); font-size: .85rem; font-weight: 650; }
+  .modal:not(.atl-bank-editor-modal) fieldset { min-width: 0; max-width: 100%; border: 1px solid var(--rule); border-radius: var(--atl-ui-radius); padding: .75rem; }
+  .modal:not(.atl-bank-editor-modal) legend { padding: 0 .3rem; font-weight: 650; color: var(--accent); }
+  .modal:not(.atl-bank-editor-modal) :is(input[type="checkbox"],input[type="radio"]) { width: 1.1rem; height: 1.1rem; flex: none; margin: 0 .25rem 0 0; vertical-align: middle; }
+  .modal:not(.atl-bank-editor-modal) input[type="file"] { max-width: 100%; color: var(--ink); }
+  .modal input[type="file"]::file-selector-button { padding: .45rem .65rem; background: var(--paper); color: var(--ink); border: 1px solid var(--rule); border-radius: 7px; font: inherit; cursor: pointer; }
+  .modal:not(.atl-bank-editor-modal) :is(button,input,textarea,select):focus-visible, #lib :is(button,input,select):focus-visible, #editor :is(.field-control,.field input,.field select,.field textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .modal:not(.atl-bank-editor-modal) .original-paste textarea { min-height: 9rem; line-height: 1.6; }
+  .modal:not(.atl-bank-editor-modal) .original-paste textarea[aria-label="Texto latino"] { font-family: var(--text-font, Georgia, serif); font-size: 1.12rem; }
+  .modal:not(.atl-bank-editor-modal) .original-paste { display: grid; gap: .45rem; }
+  .modal:not(.atl-bank-editor-modal) .original-paste .field { margin: 0; }
+  .modal:not(.atl-bank-editor-modal) .mb > :is(p,ul,ol):first-child { margin-top: 0; }
+  .modal:not(.atl-bank-editor-modal) .mb > :is(p,ul,ol):last-child { margin-bottom: 0; }
+  .modal:not(.atl-bank-editor-modal) .mb > :is(form,div,section) { min-width: 0; }
+  .modal .atl-exam-bank-list { margin-top: .65rem; }
+  .modal .atl-exam-bank-text { padding: .75rem; background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; }
+  .modal .atl-exam-bank-text strong { color: var(--accent); font: 700 1.12rem/1.25 var(--text-font, Georgia, serif); }
+  #lib .lfil, #lib .rhead { background: var(--panel); border-bottom: 1px solid var(--rule); }
+  #lib :is(.lfil,.rhead) :is(input,select) { border-radius: 8px; min-height: 36px; background: var(--control, var(--paper)); color: var(--ink); }
+  .pop { border-radius: 12px; border-color: var(--rule); box-shadow: 0 12px 34px rgb(0 0 0 / 24%); }
+  .atl-edit-import-notice { padding: .6rem .75rem; border-inline-start: 3px solid var(--accent); background: var(--panel); margin: 0; border-radius: 5px; }
+  /* Narrow iPad and phone: no Safari input zoom; no changes to preview/print. */
+  @media (max-width: 760px) {
+    .modal-bg { align-items: flex-start; }
+    .modal:not(.atl-bank-editor-modal) { max-height: calc(100dvh - 24px - env(safe-area-inset-bottom)); }
+    .modal:not(.atl-bank-editor-modal) :is(input,select,textarea):not([type="checkbox"]):not([type="radio"]) { font-size: 16px; }
+    .modal:not(.atl-bank-editor-modal) :is(.hbtn,.tbtn), #lib :is(.hbtn,.tbtn) { min-height: 40px; }
+  }
+}

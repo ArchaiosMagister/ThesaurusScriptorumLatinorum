@@ -453,6 +453,7 @@ window.addEventListener('atl-view', () => {
     };
     form.append(actions);
     actions.prepend(status);
+    for (const notice of [...form.children].filter(child => child.matches('p.small.muted'))) { notice.classList.add('atl-edit-import-notice'); main.append(notice); }
     form.addEventListener('submit', event => { event.preventDefault(); save.click(); });
     const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], {
         width: 'min(1440px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
@@ -460,6 +461,7 @@ window.addEventListener('atl-view', () => {
     modal.el.classList.add('atl-bank-editor-modal');
     modal.el.querySelector('.mh').insertBefore(nav, modal.el.querySelector('.xbtn'));
     const cancel = modal.el.querySelector('.mf button');
+    cancel.type = 'button';
     cancel.classList.add('atl-edit-cancel');
     actions.insertBefore(cancel, save);
     modal.el.querySelector('.mf').remove();
@@ -467,7 +469,14 @@ window.addEventListener('atl-view', () => {
     const finish = () => { bypassClose = true; try { rawClose(); } finally { bypassClose = false; } };
     // Existing callers assign close = modal.close after this block.
     modal.close = finish;`); 
-  replace('        finally {\n            save.disabled = false;\n        }\n    }, \'hbtn primary\');', '        finally {\n            save.disabled = false;\n            destination = null;\n        }\n    }, \'hbtn primary\');');
+  const editorSaveStart = source.indexOf('function openBankTextEditor(');
+  const editorSaveEnd = source.indexOf('    const remove = button(', editorSaveStart);
+  if (editorSaveStart < 0 || editorSaveEnd < 0) throw Error('Revisar guardado de la ficha.');
+  const editorSave = source.slice(editorSaveStart, editorSaveEnd);
+  const saveFinally = /finally\s*\{\s*save\.disabled = false;\s*\}/gu;
+  if ([...editorSave.matchAll(saveFinally)].length !== 1) throw Error('Revisar fin de guardado de ficha.');
+  source = source.slice(0, editorSaveStart) + editorSave.replace(saveFinally,
+    'finally { save.disabled = false; destination = null; }') + source.slice(editorSaveEnd);
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");
