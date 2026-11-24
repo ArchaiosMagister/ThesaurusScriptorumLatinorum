@@ -1157,6 +1157,7 @@ test('una ficha editorial recuperada admite notas y vocabulario reutilizables', 
   await card.click();
 
   const form = frame.locator('.modal').last();
+  await form.getByText('Notas y contexto', { exact: true }).click();
   await form.getByRole('textbox', { name: 'Notas de la ficha' }).fill('Nota de la ficha editorial');
   await form.getByText('Vocabulario de la ficha', { exact: true }).click();
   await form.getByRole('button', { name: 'Añadir entrada de vocabulario' }).click();
