@@ -52,3 +52,27 @@ export function replaceMark(state, mark, confirmDifferent = () => false) {
   state.subr = state.subr.map(item => item === mark ? entry(...next) : item);
   return true;
 }
+
+// Official PAU marks refer to exact UTF-16 ranges, not individual tokens.
+// Never silently replace all four originals because one span is unmappable.
+export function importPauMarks(state, marks) {
+  const imported=[], missing=[], occupied=new Set();
+  for(const mark of marks){
+    const {startUtf16:start,endUtf16:end,exact}=mark;
+    const tokens=state.tokens.filter(t=>t.s>=start&&t.e<=end);
+    if(state.texto.slice(start,end)!==exact||!tokens.length||
+      tokens[0].s!==start||tokens.at(-1).e!==end||
+      tokens.some((t,i)=>state.texto.slice(t.s,t.e)!==t.w||occupied.has(t.i)||
+        (i>0&&!/^\s+$/u.test(state.texto.slice(tokens[i-1].e,t.s))))){
+      missing.push(exact);continue;
+    }
+    tokens.forEach(t=>occupied.add(t.i));
+    if(tokens.length===1) imported.push(entry(tokens[0],morphChoiceFromToken(tokens[0],state.texto),true));
+    else {
+      const last=tokens.at(-1),reading=morphChoiceFromToken(last,state.texto);
+      const category=reading?.category==='infinitivo'?'infinitivo':reading?.category==='verbo-personal'?'verbo-personal':'manual';
+      imported.push({cat:category,category,toks:tokens.map(t=>t.i),analysis:'Forma compuesta: revisar conjuntamente',lemmaId:null,manual:true});
+    }
+  }
+  return {marks:imported.sort((a,b)=>a.toks[0]-b.toks[0]),missing};
+}

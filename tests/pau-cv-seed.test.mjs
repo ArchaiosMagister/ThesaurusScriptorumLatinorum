@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {prepareSeed,seedId,isPristineSeed} from '../scripts/pau-cv-seed.js';
+import {prepareSeed,seedId,isPristineSeed,pauCvIdentity} from '../scripts/pau-cv-seed.js';
 const rows=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',import.meta.url),'utf8'));
 const empty=()=>({schemaVersion:1,texts:[],tags:[],notebooks:[]});
 test('44 exámenes, 88 fichas, 12 con léxico; marcas exactas, reservas y convocatorias independientes',()=>{
@@ -27,4 +27,17 @@ test('instalación aditiva, no restaura bajas, no sobrescribe una ficha existent
  const next=prepareSeed({...corpus,texts:[personal]},[personal],rows,x=>x);
  assert.equal(next.texts.length,88);assert.equal(next.texts[0],personal);
  assert.ok(!isPristineSeed(next));
+});
+
+test('la identidad PAU conserva convocatoria, reserva y opción aunque se edite el texto',()=>{
+ const identity=(key)=>pauCvIdentity({teacherDocx:{pauCv:key}});
+ assert.equal(identity('2026 ORDINARIA / A'),identity('2026 junio / A'));
+ assert.notEqual(identity('2025 JUNIO / A'),identity('2025 JUNIO (reserva) / A'));
+ assert.notEqual(identity('2025 JUNIO / A'),identity('2025 JUNIO / B'));
+ assert.equal(pauCvIdentity({selectividad:{year:2026},notes:'PAU CV · ORDINARIA 2026 · Opción A\nContexto'}),identity('2026 junio / A'));
+ assert.equal(pauCvIdentity({notes:'PAU CV · ORDINARIA 2026 · Opción A'}),'');
+});
+
+test('la identidad independiente de PAU sobrevive a la retirada de las marcas y a la edición de notas',()=>{
+ assert.equal(pauCvIdentity({pauCv:'2025 JUNIO / A',notes:'Notas docentes',selectividad:{year:2025}}),pauCvIdentity({teacherDocx:{pauCv:'2025 ORDINARIA / A'}}));
 });

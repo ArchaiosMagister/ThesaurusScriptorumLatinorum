@@ -1,3 +1,4 @@
+import {isolateAnalysis} from './isolated-analysis.mjs';
 import {expect,test} from '@playwright/test';
 test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',async({page})=>{
  await page.goto('/ThesaurusScriptorumLatinorum/');
@@ -93,4 +94,39 @@ test('orden por año PAU y convocatoria visible en las tarjetas y la ficha',asyn
  await expect(first).toContainText('Selectividad · 2026 · Ordinaria · Opción A');
  await first.click();
  await expect(frame.locator('.modal').last().getByText('Convocatoria: Ordinaria · Opción A',{exact:true})).toBeVisible();
+});
+
+test('una copia integral con bajas PAU sustituye el banco de fábrica sin resucitar fichas',async({page,browser})=>{
+ await isolateAnalysis(page.context());
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await expect(bank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+ await frame.locator('html').evaluate(async()=>{
+  const {IndexedDbCorpusRepository}=await import('../storage/indexeddb-corpus-repository.js');
+  const repo=new IndexedDbCorpusRepository();
+  const {corpus,revision}=await repo.load();
+  await repo.save({...corpus,texts:corpus.texts.slice(1)},revision);
+ });
+ const backup=await page.evaluate(async()=> (await import('./backup-store.js')).captureBackup());
+ const context=await browser.newContext();
+ await isolateAnalysis(context);
+ try {
+  const target=await context.newPage();
+  await target.goto(page.url());
+  const targetBank=target.frameLocator('#panel-cuaderno iframe').getByRole('region',{name:'Banco de textos propios'});
+  await expect(targetBank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+  const result=await target.evaluate(async backup=>{
+   const {readBackupFile,planRestore,restoreBackup}=await import('./backup-store.js');
+   const payload=await readBackupFile(JSON.stringify(backup));
+   const plan=await planRestore(payload);
+   if(plan.conflicts.length) return {conflicts:plan.conflicts};
+   if(!plan.pristineReplacement) return {replacement:false};
+   await restoreBackup(payload,plan);
+   return {replacement:true,conflicts:[]};
+  },backup);
+  expect(result).toEqual({replacement:true,conflicts:[]});
+  await target.reload();
+  await expect(targetBank.getByText('Mostrando 87 de 87 textos',{exact:true})).toBeVisible();
+ } finally {await context.close();}
 });

@@ -254,8 +254,23 @@ export function lexicalValuesForDocument(option) {
     const wordEntry = '  E.docx = async function (S) {';
     if (originalRender.split(wordEntry).length !== 2)
       throw new Error('Revisar el punto de exportación Word de Examinator.');
+    // Preserve the complete underline (including whitespace inside a
+    // compound form), not just the separate word tokens.
+    const compoundGap = '      if (t.s > pos) runs.push({ t: text.slice(pos, t.s) });';
+    if (originalRender.split(compoundGap).length !== 2) throw Error('Revisar subrayados compuestos en la exportación.');
     await writeFile(renderFileWord, originalRender.replace(wordEntry,
-      wordEntry + '\n    await window.atlLoadWordExporter();'));
+      wordEntry + '\n    await window.atlLoadWordExporter();')
+      .replace(compoundGap, "      if (t.s > pos) {\n" +
+        "        const gap = text.slice(pos, t.s);\n" +
+        "        const previous = toks.find(token => token.e === pos);\n" +
+        "        const together = previous && /^\\s+$/u.test(gap) && (S.subr || []).some(mark => mark.toks.includes(previous.i) && mark.toks.includes(t.i));\n" +
+        "        runs.push({ t: gap, u: Boolean(together) });\n" +
+        "      }")
+      // Imported PAU strings are already the authoritative exercise wording.
+      .replace("M.Propose.prevDisplay(S, x).trim().toLowerCase()", "(S.atlPauLexical ? String(x.txt).trim() : M.Propose.prevDisplay(S, x).trim().toLowerCase())")
+      .replace("x && M.Propose.evolDisplay(x.w)", "x && (S.atlPauLexical ? x.w : M.Propose.evolDisplay(x.w))")
+      .replace("w && M.Propose.prefDisplay(String(w).trim())", "w && (S.atlPauLexical ? String(w).trim() : M.Propose.prefDisplay(String(w).trim()))")
+      .replace("w && M.Propose.latDisplay(String(w).trim())", "w && (S.atlPauLexical ? String(w).trim() : M.Propose.latDisplay(String(w).trim()))"));
     await writeFile(join(directory, 'js', 'atl-word-loader.js'),
       await readFile(new URL('./lazy-word-loader.js', import.meta.url), 'utf8'));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
@@ -274,16 +289,23 @@ export function lexicalValuesForDocument(option) {
       S.titulo = d.bank.title;
       S.atlBankSource = { id: d.bank.id, updatedAt: d.bank.updatedAt };
       delete S.atlPauMorph;
+      if (S.atlPauLexical && !d.bank.pau) {
+        delete S.atlPauLexical;
+        S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+        P.evol(S); P.pref(S); P.latin(S);
+      }
       if (d.bank.pau) {
         const doc = d.bank.pau;
         S.subr = [];
         S.atlPauMorph = { text: d.text, underlines: doc.underlines };
         if (doc.preverbBases) {
+          S.atlPauLexical = true;
           S.prev = doc.preverbBases.map((txt, index) => ({ txt, n: index === 0 ? 3 : 2, rows: [], lplain: '' }));
           S.evol = doc.lexical.phonetics.map(w => ({ w, g: '' }));
           S.pref = [...doc.lexical.prefix];
           S.latin = [...doc.lexical.latinism];
         } else {
+          delete S.atlPauLexical;
           S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
           P.evol(S); P.pref(S); P.latin(S);
         }
@@ -291,6 +313,11 @@ export function lexicalValuesForDocument(option) {
     } else {
       delete S.atlPauMorph;
       delete S.atlBankSource;
+      if (S.atlPauLexical) {
+        delete S.atlPauLexical;
+        S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+        P.evol(S); P.pref(S); P.latin(S);
+      }
     }
 ` + copy)
       .replace('  async function onClick(e) {', `  M.refreshFromBank = function (d) {
@@ -312,18 +339,18 @@ export function lexicalValuesForDocument(option) {
         const imported = S.atlPauMorph;
         delete S.atlPauMorph;
         if (imported.text === text) {
-          const tokens = imported.underlines.map(mark => toks.find(token => token.s === mark.startUtf16 &&
-            token.w === mark.exact));
-          if (tokens.length === 4 && tokens.every(Boolean)) {
-            S.subr = [];
-            for (const token of tokens) morphology.setMark(S, token, -1);
-          } else {
-            M.toast('Revisa los subrayados originales: no se han podido trasladar todos al análisis de Collatinus.', 6500);
+          const result = morphology.importPauMarks(S, imported.underlines);
+          if (result.marks.length) S.subr = result.marks;
+          if (result.marks.length !== 4 || result.missing.length) {
+            M.toast('Revisa los subrayados originales; se han conservado ' + result.marks.length +
+              ' de 4.' + (result.missing.length ? ' No trasladados: ' + result.missing.join(', ') : ''), 6500);
           }
         }
       }`)
       .replace(/^      \$\{\(v\.manual \|\| v\.glosasSeparadas\) .*\n/m, '')
       .replace(/      if \(e\.target\.classList\.contains\('vsplit'\)\) \{[\s\S]*?(?=      if \(!e\.target\.classList\.contains\('von'\))/, '')
+      .replace("P.prevDisplay(S, S.prev[k] || {})", "(S.atlPauLexical ? (S.prev[k]?.txt || '') : P.prevDisplay(S, S.prev[k] || {}))")
+      .replace("P.evolDisplay((S.evol[k] || {}).w || '')", "(S.atlPauLexical ? (S.evol[k]?.w || '') : P.evolDisplay((S.evol[k] || {}).w || ''))")
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
         "const S = M.S, box = $('#editor .q4'); if (!box) return;\n    const editor = $('#editor'), scrollTop = editor.scrollTop;")
       .replace("    $$('select[data-q=prevn]', box).forEach", match => "    editor.scrollTop = scrollTop;\n" + match);

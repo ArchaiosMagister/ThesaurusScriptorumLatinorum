@@ -46,6 +46,16 @@ test('importar PDF PAU CV crea las dos fichas con metadatos y evita repetir la m
   await expect(bank.locator('.atl-bank-card').first()).toContainText('Selectividad');
   await upload();
   await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
+  // Editing the wording drops the original morphology anchors but retains the
+  // exam reference in the notes. A second PDF import must not recreate it.
+  await bank.locator('.atl-bank-card').filter({hasText:'TÍTULO DE PRUEBA A'}).click();
+  const edit=frame.locator('.modal').last();
+  await edit.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Caesar legiones in hiberna ducit et exercitum in castra mittit.');
+  page.once('dialog',d=>d.accept());
+  await edit.getByRole('button',{name:'Guardar cambios',exact:true}).click();
+  await expect(edit).toBeHidden();
+  await upload();
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
   await page.reload();
   await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
 });

@@ -4,15 +4,22 @@ export const seedTimestamp = '2026-11-24T00:00:00.000Z';
 export const seedCount = 88;
 export const seedId = doc => 'pau.cv.' + doc.pauCv.toLowerCase().replace(/[^a-z0-9]+/g,'.').replace(/\.$/,'');
 const identity = value => String(value ?? '').normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-const comparable = value => identity(value).replace(/\bordinaria\b/g,'junio').replace(/\bextraordinaria\b/g,'julio');
+const comparable = value => identity(value).replace(/\bextraordinaria\b/g,'julio').replace(/\bordinaria\b/g,'junio');
+export function pauCvIdentity(text) {
+  const raw = text.pauCv ?? text.teacherDocx?.pauCv;
+  if (typeof raw === 'string' && /^\d{4}\s+.+\s*\/\s*[AB]$/iu.test(raw)) return comparable(raw);
+  if (!text.selectividad) return '';
+  const note = /^PAU CV\s*·\s*(.+?)\s+(\d{4})\s*·\s*Opción\s+([AB])\b/iu.exec(text.notes ?? '');
+  return note ? comparable(note[2]+' '+note[1]+' / '+note[3]) : '';
+}
 export function prepareSeed(corpus, existingTexts, records, validate) {
   if (corpus.pauCvSeedVersion >= seedVersion || !records.length) return corpus;
   if (records.length !== seedCount) throw new Error('El banco PAU CV está incompleto.');
-  const identities = new Set(existingTexts.filter(t=>t.teacherDocx?.pauCv).map(t=>comparable(t.teacherDocx.pauCv)));
+  const identities = new Set(existingTexts.map(pauCvIdentity).filter(Boolean));
   const ids = new Set(existingTexts.map(t=>t.id));
   const entries=[];
   for(const {doc,year,notes} of records){
-    const id=seedId(doc),key=comparable(doc.pauCv);
+    const id=seedId(doc),key=pauCvIdentity({teacherDocx:doc});
     // Exact exam identity is enough: never overwrite a manually edited import.
     if(ids.has(id)||identities.has(key))continue;
     entries.push({id,title:doc.title,latin:doc.latin,

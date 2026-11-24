@@ -71,9 +71,10 @@ export function setupBackup(prepare, status) {
         return;
       }
       const order = plan.comparison === 'unknown' ? ' La relación con la versión local no se ha podido verificar.' : '';
-      summary(rows || preferences ? 'Vista previa · ' + rows + ' registros y ' + preferences + ' preferencias por recuperar.' + order
+      const replacement = plan.pristineReplacement ? ' Se sustituirá únicamente el banco PAU de fábrica, que no tiene cambios docentes.' : '';
+      summary(rows || preferences || replacement ? 'Vista previa · ' + rows + ' registros y ' + preferences + ' preferencias por recuperar.' + replacement + order
         : 'Los datos de esta copia ya están presentes.' + order);
-      apply.disabled = !rows && !preferences;
+      apply.disabled = !rows && !preferences && !replacement;
     } catch (error) {
       summary(error.message);
     } finally {

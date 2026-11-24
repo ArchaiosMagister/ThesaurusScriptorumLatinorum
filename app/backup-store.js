@@ -1,3 +1,4 @@
+import { applyBankReviewDecision } from './dropbox-plan.js';
 import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { validateWorkspaceSnapshot } from './modulos/cuaderno-integrado/storage/workspace-repository.js';
@@ -236,8 +237,16 @@ export async function planRestore(payload) {
   const databases = {};
   const preferences = {};
   const conflicts = [];
+  let pristineReplacement;
   for (const [name, stores] of Object.entries(payload.databases)) {
     const existing = await readDatabase(name);
+    // On a fresh installation only, the bundled corpus is a default, not
+    // teacher data. A verified backup may replace it, with a guarded rollback.
+    if (name === corpusName && stores.corpus?.length === 1 && existing.corpus.length === 1 &&
+        isPristineSeed(existing.corpus[0][1].corpus) && !equal(existing.corpus, stores.corpus)) {
+      pristineReplacement = { before: existing, after: { corpus: stores.corpus } };
+      continue;
+    }
     const additions = {};
     for (const [store, rows] of Object.entries(stores)) {
       const byKey = new Map(existing[store].map(([key, row]) => [JSON.stringify(key), row]));
@@ -258,7 +267,7 @@ export async function planRestore(payload) {
     if (existing === null) preferences[key] = value;
     else if (existing !== value) conflicts.push(key);
   }
-  return { comparison, baseline, databases, preferences, conflicts };
+  return { comparison, baseline, databases, preferences, conflicts, ...(pristineReplacement && { pristineReplacement }) };
 }
 
 async function applyRows(name, stores, undo = false) {
@@ -319,10 +328,6 @@ async function installNewer(payload, baseline) {
       throw new Error('La verificación posterior detectó diferencias.');
     remember([...version.ancestors, version.contentHash]);
   } catch (error) {
-    for (const [key, original] of savedReviews) {
-      if (original === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, original);
-    }
     const reverted = await Promise.allSettled(committed.reverse().map(name =>
       replaceDatabase(name, payload.databases[name], local.databases[name])));
     for (const [key, before, after] of changed) if (localStorage.getItem(key) === after) {
@@ -341,7 +346,12 @@ export async function restoreBackup(payload, preview) {
   if (plan.comparison === 'newer') return installNewer(payload, plan.baseline);
   const committed = [];
   const preferences = [];
+  let replaced = false;
   try {
+    if (plan.pristineReplacement) {
+      await replaceDatabase(corpusName, plan.pristineReplacement.before, plan.pristineReplacement.after);
+      replaced = true;
+    }
     for (const [name, stores] of Object.entries(plan.databases)) {
       await applyRows(name, stores);
       committed.push([name, stores]);
@@ -352,13 +362,16 @@ export async function restoreBackup(payload, preview) {
       preferences.push([key, value]);
     }
     const verified = await planRestore(payload);
-    if (verified.conflicts.length || Object.keys(verified.databases).length || Object.keys(verified.preferences).length) {
+    if (verified.conflicts.length || verified.pristineReplacement || Object.keys(verified.databases).length || Object.keys(verified.preferences).length) {
       throw new Error('La verificación posterior detectó diferencias.');
     }
     const version = metadata.get(payload);
     if (version && verified.comparison === 'same') remember([...version.ancestors, version.contentHash]);
   } catch (error) {
-    const reverted = await Promise.allSettled(committed.map(([name, stores]) => applyRows(name, stores, true)));
+    const reverted = await Promise.allSettled([
+      ...committed.map(([name, stores]) => applyRows(name, stores, true)),
+      ...(replaced ? [replaceDatabase(corpusName, plan.pristineReplacement.after, plan.pristineReplacement.before)] : [])
+    ]);
     for (const [key, value] of preferences) if (localStorage.getItem(key) === value) localStorage.removeItem(key);
     if (reverted.some(result => result.status === 'rejected')) throw new Error('La reversión no se pudo verificar. Conserva la copia de seguridad.');
     throw error;
@@ -496,18 +509,11 @@ export async function applySyncData(data, before) {
     for (const key of new Set([...previous.keys(), ...next.keys()])) {
       if (equal(previous.get(key), next.get(key))) continue;
       const original = localStorage.getItem(key);
-      const cached = JSON.parse(original ?? '{}') ?? {};
-      const decision = next.get(key) ?? { rejected: [], corrected: [], pending: [] };
-      const existing = new Map((cached.pending ?? []).map(row => [decisionKey(row), row]));
-      const pending = decision.version
-        ? decision.pending.map(row => {
-            const old = cached.version === decision.version ? existing.get(decisionKey(row)) : null;
-            return old && old.state === row.state
-              ? { ...row, evidence: old.evidence ?? [], alternatives: old.alternatives ?? [] }
-              : row;
-          })
-        : [...(cached.pending ?? []), ...decision.pending.filter(row => !existing.has(decisionKey(row)))];
-      localStorage.setItem(key, JSON.stringify({ ...cached, ...decision, pending }));
+      let cached = {};
+      try { cached = JSON.parse(original ?? '{}') ?? {}; } catch { /* Replace a damaged cache with the verified remote decision. */ }
+      const decision = applyBankReviewDecision(cached, next.get(key));
+      if (decision === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify(decision));
       savedReviews.push([key, original]);
     }
   } catch (error) {

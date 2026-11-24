@@ -45,7 +45,7 @@ export function matchesInfinitive(ids, tense, voice) {
 /** Keep the exact session wording in the import identity; never infer it from the year. */
 export function selectividadSession(text) {
   if (!text.selectividad) return null;
-  const key = String(text.teacherDocx?.pauCv ?? '');
+  const key = String(text.pauCv ?? text.teacherDocx?.pauCv ?? '');
   const notes = String(text.notes ?? '');
   const match = /^(\d{4})\s+(.+?)\s*\/\s*([AB])$/iu.exec(key);
   const fallback = /^PAU CV\s*·\s*(.+?)\s+(\d{4})\s*·\s*Opción\s+([AB])\b/iu.exec(notes);

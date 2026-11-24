@@ -5,10 +5,10 @@ export function importPauCv({modal,save,toast}) {
     const files=[...input.files];if(!files.length)return;
     const root=document.createElement('div');root.className='atl-pau-import';
     const status=document.createElement('p');status.setAttribute('role','status');root.append(status);
-    let records=[],busy=true;
+    let records=[],busy=true,saving=false;
     const errors=[];
     const submit=document.createElement('button');submit.type='button';submit.className='hbtn primary';submit.textContent='Importar fichas al banco';submit.disabled=true;
-    const popup=modal('Importar PDF · PAU CV',root,[{label:'Cancelar'}],{width:'min(1000px,96vw)',noFocus:true});
+    const popup=modal('Importar PDF · PAU CV',root,[{label:'Cancelar'}],{width:'min(1000px,96vw)',noFocus:true,beforeClose:()=>!saving});
     const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
     const field=(parent,label,value,multiline=false)=>{
       const wrap=el('label',label);wrap.className='field';const control=el(multiline?'textarea':'input');
@@ -16,6 +16,7 @@ export function importPauCv({modal,save,toast}) {
       wrap.append(control);parent.append(wrap);return control;
     };
     for(const file of files){
+      if(!root.isConnected)return;
       status.textContent='Leyendo '+file.name+'…';
       try {
         const pair=await readPauCvPdf(file);
@@ -38,7 +39,7 @@ export function importPauCv({modal,save,toast}) {
           records.push({item,read:()=>{
             const text=latin.value.trim(),words=forms.value.split(',').map(s=>s.trim()).filter(Boolean);
             if(!title.value.trim()||!author.value.trim()||!work.value.trim()||!reference.value.trim()||!text||words.length!==4)throw Error('Completa la ficha '+item.option+' y sus cuatro formas morfológicas.');
-            return {...item,notes:notes.value.trim(),doc:{...item.doc,title:title.value.trim(),author:author.value.trim(),work:work.value.trim(),reference:reference.value.trim(),latin:text,underlines:morphologyMarks(text,words),warnings:[]}};
+            return {...item,notes:notes.value.trim(),doc:{...structuredClone(item.doc),title:title.value.trim(),author:author.value.trim(),work:work.value.trim(),reference:reference.value.trim(),latin:text,underlines:morphologyMarks(text,words),warnings:[]}};
           }});
         }
         if(pair[0].model==='actual'){
@@ -67,10 +68,10 @@ export function importPauCv({modal,save,toast}) {
     }
     busy=false;status.textContent=records.length+' fichas detectadas. Revisa antes de guardar.'+(errors.length?' '+errors.join(' · '):'');submit.disabled=!records.length;root.append(submit);
     submit.addEventListener('click',async()=>{
-      if(busy)return;busy=true;submit.disabled=true;
-      try{const result=await save(records.map(r=>r.read()));popup.close();toast(result+' fichas nuevas importadas.');}
+      if(busy)return;busy=true;saving=true;submit.disabled=true;root.inert=true;
+      try{const result=await save(records.map(r=>r.read()));saving=false;popup.close();toast(result+' fichas nuevas importadas.');}
       catch(error){status.textContent=error.message;status.scrollIntoView({block:'nearest'});}
-      finally{busy=false;submit.disabled=false;}
+      finally{busy=false;saving=false;root.inert=false;submit.disabled=false;}
     });
   });
   input.click();
