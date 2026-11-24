@@ -2090,6 +2090,8 @@ test('etiquetas por curso: filtrar el Banco y excluir un curso en un cuaderno pe
   await page.reload();
   const row = frame.locator('.cuaderno-home-card').filter({ hasText: 'Cuaderno de segundo' });
   await row.getByRole('button', { name: 'Abrir' }).click();
+  await expect.poll(async () => (await notebookSnapshot(frame, 'Cuaderno de segundo')).edition.excludedCourse).toBe('1bach');
+  await frame.locator('.edition-menu-nav').getByRole('button', { name: 'Organizar cuaderno', exact: true }).click();
   await expect(frame.getByRole('combobox', { name: 'Curso excluido del cuaderno' })).toHaveValue('1bach');
 });
 
