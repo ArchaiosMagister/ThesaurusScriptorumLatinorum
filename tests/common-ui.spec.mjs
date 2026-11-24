@@ -1,4 +1,4 @@
-import { expect,test } from '@playwright/test';
+import { expect,test } from './isolated-bank.mjs';
 test('copias y formularios comparten controles legibles en los tres temas',async({page})=>{
  await page.goto('/ThesaurusScriptorumLatinorum/');
  const frame=page.frameLocator('#panel-cuaderno iframe');

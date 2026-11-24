@@ -1096,3 +1096,47 @@
   .atl-bank-editor-modal .atl-bank-edit-actions { padding: .5rem; gap: .35rem; }
   .atl-bank-editor-modal .atl-edit-dirty { flex-basis: 100%; }
 }
+
+/* Manual tagging workspace: shared visual language with the bank text editor. */
+@media screen {
+  .modal.atl-bank-tag-modal { max-width:none; height:min(940px, calc(100dvh - 24px)); max-height:calc(100dvh - 24px); }
+  .modal-bg:has(> .atl-bank-tag-modal) { padding:8px; }
+  .atl-bank-tag-modal .mh h2 { font-size:1.05rem; }
+  .atl-bank-tag-modal .mb { padding:0!important; flex:1; min-height:0; overflow:auto; background:var(--paper); }
+  .atl-bank-tag-modal .cuaderno-bank-tag-editor {
+    display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:0; min-height:100%; align-items:start;
+  }
+  .atl-tag-passage-column,.atl-tag-catalog-column { display:grid; align-content:start; gap:.85rem; min-width:0; padding:clamp(.8rem,1.8vw,1.35rem); }
+  .atl-tag-catalog-column { background:var(--panel); border-inline-start:1px solid var(--rule); min-height:100%; }
+  .atl-tag-heading h3 { font:700 clamp(1.25rem,2.3vw,1.7rem)/1.25 var(--text-font,Georgia,serif); margin:0; color:var(--accent); }
+  .atl-tag-heading p { margin:.35rem 0 0; font-size:.86rem; }
+  .atl-tag-summary,.atl-bank-tag-modal .cuaderno-bank-collatinus,.atl-bank-tag-modal .cuaderno-bank-manual,.atl-bank-tag-modal .atl-create-tag {
+    padding:.8rem; border:1px solid var(--rule); border-radius:10px; background:var(--paper); min-width:0;
+  }
+  .atl-tag-summary h3,.atl-tag-catalog-column>h3 { margin:0 0 .4rem; font-size:1rem; color:var(--accent); }
+  .atl-bank-tag-modal .cuaderno-review-passage { margin:0; padding:.85rem; border:1px solid var(--rule); border-radius:10px; background:var(--panel); }
+  .atl-bank-tag-modal .cuaderno-review-passage p { font:italic 1.18rem/1.7 var(--text-font,Georgia,serif); margin:.5rem 0 0; max-height:none; overflow:visible; white-space:pre-wrap; }
+  .atl-bank-tag-modal .cuaderno-bank-tag-options { grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr)); gap:.4rem; max-height:none; overflow:visible; }
+  .atl-bank-tag-modal .cuaderno-bank-tag-option { display:flex; align-items:center; min-height:40px; gap:.4rem; margin:0; padding:.45rem .55rem; background:var(--panel); border:1px solid var(--rule); border-radius:7px; font-size:.88rem; cursor:pointer; }
+  .atl-bank-tag-modal .cuaderno-bank-tag-option:has(input:checked) { border-color:var(--accent); background:var(--paper); font-weight:650; }
+  .atl-bank-tag-modal .cuaderno-bank-tag-option[hidden] { display:none!important; }
+  .atl-bank-tag-modal .cuaderno-bank-manual>input { width:100%; min-height:42px; margin:.55rem 0; }
+  .atl-bank-tag-modal .atl-create-tag { display:grid; gap:.5rem; margin:0; }
+  .atl-bank-tag-modal .atl-create-tag input { width:100%; }
+  .atl-bank-tag-modal .atl-create-tag p:empty { display:none; }
+  .atl-bank-tag-modal .cuaderno-bank-current { display:flex; flex-wrap:wrap; gap:.35rem; }
+  .atl-bank-tag-modal .cuaderno-bank-current button { cursor:pointer; min-height:30px; }
+  .atl-bank-tag-modal .cuaderno-bank-collatinus-results { display:grid; gap:.45rem; }
+  .atl-bank-tag-modal .grammar-proposal-card { border-radius:8px; padding:.45rem .6rem; }
+  .atl-bank-tag-modal .cuaderno-bank-proposal-actions { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; }
+  .atl-bank-tag-modal .cuaderno-bank-proposal-actions select { flex:1 1 12rem; min-width:0; }
+  .atl-bank-tag-modal .atl-tag-intro { font-size:.8rem; line-height:1.5; margin:0; }
+  .atl-bank-tag-modal .mf { position:relative; flex:none; }
+}
+@media screen and (max-width:740px) {
+  .modal.atl-bank-tag-modal { height:calc(100dvh - 12px); max-height:calc(100dvh - 12px); }
+  .atl-bank-tag-modal .cuaderno-bank-tag-editor { grid-template-columns:minmax(0,1fr); }
+  .atl-tag-catalog-column { border-inline-start:0; border-top:1px solid var(--rule); }
+  .atl-tag-passage-column,.atl-tag-catalog-column { padding:.75rem; }
+  .atl-bank-tag-modal .cuaderno-review-passage p { font-size:1.05rem; }
+}

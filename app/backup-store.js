@@ -1,3 +1,4 @@
+import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { validateWorkspaceSnapshot } from './modulos/cuaderno-integrado/storage/workspace-repository.js';
 import { readBackup } from './modulos/cuaderno-integrado/core/backup.js';
@@ -452,7 +453,7 @@ export function isEmptySyncEditor(editor) {
   return syncNames.slice(0, 2).every(name => {
     const stores = editor[name];
     return !stores.editions?.length && !stores.history?.length && stores.corpus.every(([, { corpus }]) =>
-      !corpus.texts.length && !corpus.tags.length && !corpus.notebooks.length);
+      (isPristineSeed(corpus) || (!corpus.pauCvSeedVersion && !corpus.texts.length && !corpus.tags.length && !corpus.notebooks.length)));
   });
 }
 

@@ -80,7 +80,16 @@ export function integrateNotebook(source) {
 }
 function renderHome() {`);
 
+  source = "import { installPauCvSeed } from './atl-pau-cv-seed.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
+  replace('        await composer.open();\n        wireButtons();', `        await composer.open();
+    try {
+        if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus })) await reload();
+    } catch (error) {
+        console.warn('Banco inicial PAU CV:', error);
+        M.toast('No se ha podido incorporar el banco inicial PAU CV. Tus datos no se han modificado.', 7000);
+    }
+    wireButtons();`);
   source += `\nfunction openPauCvImport() {
     importPauCv({ modal: (...args) => M.modal(...args), toast: message => M.toast(message), save: records => writeSource(async () => {
         const current = await repo.load();

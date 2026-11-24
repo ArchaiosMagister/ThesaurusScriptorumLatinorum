@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, isolateBank } from './isolated-bank.mjs';
 
 const path = '/ThesaurusScriptorumLatinorum/';
 
@@ -321,13 +321,13 @@ test('agrupa los infinitivos y aplica tiempo y voz sobre la misma forma', async 
     await modal.getByRole('button', { name: 'Añadir infinitivo' }).click();
   }
   await edit('Uno');
-  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await expect(modal.locator('.cuaderno-bank-manual')).toHaveAttribute('open', '');
   await assign('presente', 'activo');
   await assign('perfecto', 'pasivo');
   await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
   await expect(modal).toBeHidden();
   await edit('Dos');
-  await modal.getByText('Añadir o quitar etiquetas manualmente', { exact: true }).click();
+  await expect(modal.locator('.cuaderno-bank-manual')).toHaveAttribute('open', '');
   await assign('presente', 'pasivo');
   await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
   await bank.getByRole('button', { name: 'Más filtros' }).click();
@@ -476,6 +476,9 @@ test('el control de actualización de la cabecera comprueba la PWA unificada', a
   await expect(update).toBeVisible();
   await update.click();
   await expect(page.locator('#app-status')).toContainText(/actualizada|actualización|versión/i);
+  if (await page.locator('#app-status').textContent() === 'La aplicación está actualizada.') {
+    await expect(page.locator('#app-status')).toBeHidden({ timeout: 10000 });
+  }
 });
 
 async function notebookSnapshot(frame, title) {
@@ -987,6 +990,8 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
   expect(buffer.toString()).not.toContain('configuración privada de prueba');
 
   const fresh = await browser.newContext();
+
+  await isolateBank(fresh);
   try {
     const restored = await fresh.newPage();
     await restored.goto(new URL(path, page.url()).href);
@@ -1036,6 +1041,7 @@ test('el panel de copias migra los formatos anteriores v1 y v2 de Cuaderno', asy
   });
   for (const [index, backup] of backups.entries()) {
     const fresh = await browser.newContext();
+    await isolateBank(fresh);
     try {
       const copy = await fresh.newPage();
       await copy.goto(new URL(path, page.url()).href);
@@ -1735,6 +1741,7 @@ test('las copias manuales distinguen una versión idéntica, nueva, antigua y di
   await page.evaluate(() => localStorage.setItem('atl-v1:examinator.asig', 'Versión inicial'));
   const initial = await capture(page);
   const context = await browser.newContext();
+  await isolateBank(context);
   try {
     const other = await context.newPage();
     await other.goto(page.url());
@@ -1881,6 +1888,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
   let uploads = 0;
   let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
+  await isolateBank(destination);
   try {
     for (const context of [page.context(), destination]) {
       await context.route('https://www.dropbox.com/oauth2/authorize?*', async route => {

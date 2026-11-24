@@ -154,6 +154,10 @@ export function lexicalValuesForDocument(option) {
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
     await cp(new URL('./pau-cv-parser.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-parser.js'));
     await cp(new URL('./pau-cv-import.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-import.js'));
+    const pauSeedData = await readFile(new URL('./pau-cv-seed-data.json', import.meta.url), 'utf8');
+    const pauSeedScript = await readFile(new URL('./pau-cv-seed.js', import.meta.url), 'utf8');
+    await writeFile(join(directory, 'ui', 'atl-pau-cv-seed.json'), pauSeedData);
+    await writeFile(join(directory, 'ui', 'atl-pau-cv-seed.js'), pauSeedScript);
     const applyFile = join(directory, 'core', 'docx-import-apply.js');
     let apply = await readFile(applyFile, 'utf8');
     const anchor = 'questions, vocabulary: vocab';
@@ -232,7 +236,7 @@ export function lexicalValuesForDocument(option) {
     notebookRevision = createHash('sha256').update(integrated).update(notebookStyles)
       .update(library).update(utilities).update(pwa).update(catalogue).update(bankReview).update(bankVocabulary).update(edition)
       .update(academicRevision).update(usage).update(personalAcademic).update(academicControls).update(teacherSource)
-       .update(readingCard).update(editionWithCards)
+       .update(readingCard).update(editionWithCards).update(pauSeedData).update(pauSeedScript)
       .digest('hex').slice(0, 12);
   } else {
     // Conservar el generador PDF en caché, pero no ejecutarlo hasta su uso en iOS.
@@ -501,7 +505,7 @@ export function lexicalValuesForDocument(option) {
     if (page === notebookPage) {
       additions.push('./atl-index.html', './atl-cuadernos.html', './atl-repertorios.html', '../ui/atl-repertorios.js', '../ui/atl-edition.js',
         '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js', '../ui/atl-bank-curriculum.js', '../ui/atl-bank-planner.js',
-        '../ui/atl-bank-vocabulary.js', '../../shared/text-usage.js');
+        '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../../shared/text-usage.js');
     }
     await writeFile(workerPath, worker.replace(marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ','));
   }

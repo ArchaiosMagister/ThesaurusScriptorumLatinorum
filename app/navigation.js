@@ -50,9 +50,16 @@ function activePanel() {
   return panels[tabs.findIndex(tab => tab.getAttribute('aria-selected') === 'true')];
 }
 
+let statusTimer;
 function setStatus(message) {
+  clearTimeout(statusTimer);
   status.textContent = message;
   status.hidden = !message;
+  if (message === 'La aplicación está actualizada.') {
+    statusTimer = setTimeout(() => {
+      if (status.textContent === message) setStatus('');
+    }, 5000);
+  }
 }
 
 function openSection(section) {

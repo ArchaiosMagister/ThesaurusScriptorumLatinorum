@@ -198,5 +198,35 @@ export function modernizeBank(source) {
             filterChips.append(chip);
         }
         const isFiltered = Boolean(search.value.trim()`);
+  // Work on the generated tag editor alone; keep its persistence and Collatinus handlers.
+  const tagStart = source.indexOf('function tagBankText(');
+  const tagEnd = source.indexOf('function pasteText(', tagStart);
+  if (tagStart < 0 || tagEnd < 0) throw Error('Revisar espacio de etiquetado.');
+  let editor = source.slice(tagStart, tagEnd);
+  const modalAnchor = "    M.modal('Etiquetas de «' + text.title + '»', panel,";
+  if (!editor.includes(modalAnchor)) throw Error('Revisar ventana de etiquetas.');
+  editor = editor.replace(modalAnchor, 
+    "    const heading = el('div', 'atl-tag-heading');\n" +
+    "    heading.append(el('h3', '', text.title), el('p', 'muted', [text.source.author, text.source.work, text.source.reference].filter(Boolean).join(' · ')));\n" +
+    "    const summary = el('section', 'atl-tag-summary');\n" +
+    "    summary.append(el('h3', '', 'Etiquetas confirmadas'), current);\n" +
+    "    const left = el('div', 'atl-tag-passage-column');\n" +
+    "    left.append(heading, passage, summary, review);\n" +
+    "    const right = el('aside', 'atl-tag-catalog-column');\n" +
+    "    manual.open = true;\n" +
+    "    right.append(el('h3', '', 'Catálogo gramatical'), manual, custom);\n" +
+    "    const intro = panel.querySelector(':scope > p');\n" +
+    "    if (intro) { intro.classList.add('atl-tag-intro'); right.append(intro); }\n" +
+    "    panel.replaceChildren(left, right);\n" +
+    "    const dialog = M.modal('Etiquetas de «' + text.title + '»', panel,");
+  // Insert width option at the end of the existing modal invocation.
+  const close = editor.lastIndexOf(']);');
+  if (close < 0) throw Error('Revisar cierre de etiquetado.');
+  editor = editor.slice(0, close) + "], { width: 'min(1440px, 98vw)', noFocus: true });\n    dialog.el.classList.add('atl-bank-tag-modal');" + editor.slice(close + 3);
+  editor = editor.replace("const chip = isInfinitiveTag(id)\n                ? button(nameOf(id) + ' ×', () => setTag(id, false), 'grammar-chip')\n                : el('span', 'grammar-chip', nameOf(id));\n            if (isInfinitiveTag(id)) chip.setAttribute('aria-label', 'Quitar «' + nameOf(id) + '»');",
+    "const chip = button(nameOf(id) + ' ×', () => setTag(id, false), 'grammar-chip');\n            chip.setAttribute('aria-label', 'Quitar «' + nameOf(id) + '»');");
+  editor = editor.replace("        label.append(check, el('span', '', ('· '.repeat(catalogDepth(tag, all))) + tag.label));",
+    "        label.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(tag.id, group, all)) ?? 'custom';\n        label.append(check, el('span', '', ('· '.repeat(catalogDepth(tag, all))) + tag.label));");
+  source = source.slice(0, tagStart) + editor + source.slice(tagEnd);
   return source;
 }
