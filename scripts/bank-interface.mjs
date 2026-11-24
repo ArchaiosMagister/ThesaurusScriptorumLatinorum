@@ -11,7 +11,7 @@ export function modernizeBank(source) {
                 : el('span', 'grammar-chip', nameOf(id));
             if (isInfinitiveTag(id)) chip.setAttribute('aria-label', 'Quitar «' + nameOf(id) + '»');`);
   replace("                for (const tag of all) {",
-    "                for (const tag of all.filter(item => bankTagAssignable(item.id) || item.id === acceptedTag)) {");
+    "                for (const tag of all.filter(item => bankTagAssignable(item.id) || (item.id === acceptedTag && !isGrammarGrouping(item.id) && !isRetiredTag(item.id)))) {");
   replace("    const manual = el('details', 'cuaderno-bank-manual');",
     `    const custom = el('form', 'atl-create-tag');
     const name = el('input');
@@ -27,7 +27,7 @@ export function modernizeBank(source) {
             return;
         }
         let tag = findTagByLabel(label, all);
-        if (tag && !bankTagVisible(tag.id)) {
+        if (tag && !bankTagAssignable(tag.id)) {
             feedback.textContent = 'Ese nombre se reserva para una categoría gramatical.';
             return;
         }
@@ -58,7 +58,7 @@ export function modernizeBank(source) {
                             const staged = all.find(tag => tag.id === id);
                             return latest.some(tag => tag.id === id) ? id : findTagByLabel(staged.label, latest)?.id ?? id;
                         });
-                        const next = attachGrammarTags(saved.corpus, text.id, ids, [...latest, ...all]);`);
+                        const next = attachGrammarTags(saved.corpus, text.id, compactGrammarTags(ids), [...latest, ...all]);`);
   replace("el('span', 'cuaderno-bank-eyebrow', 'ARCHIVO DE TEXTOS'), el('h4', '', 'Banco de textos propios'), el('p', 'small muted', 'Consulta, ordena y edita tus pasajes sin abrir un cuaderno.')",
     "el('h4', '', 'Banco de textos propios')");
   replace("    bankActions.append(button('Pegar en el banco', () => pasteText('bank'), 'hbtn primary'), button('Biblioteca latina', openLibrary, 'hbtn'), button('Importar Word al banco', () => importWord('bank'), 'hbtn'), button('Auditar textos repetidos', openDuplicateAudit, 'hbtn'));",
