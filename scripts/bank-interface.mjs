@@ -127,7 +127,13 @@ export function modernizeBank(source) {
     filterCount.hidden = true;
     filterCount.setAttribute('aria-hidden', 'true');
     const filterTools = el('div', 'atl-filter-tools');
-    filterTools.append(filterToggle, filterCount, resetBankFilters);
+    const examShortcut = button('Solo Selectividad', () => {
+        const check = filters.examLabel.querySelector('input');
+        check.checked = !check.checked;
+        populate();
+    }, 'hbtn atl-exam-shortcut');
+    examShortcut.setAttribute('aria-pressed', String(filters.read().exam));
+    filterTools.append(examShortcut, filterToggle, filterCount, resetBankFilters);
     resultsHeader.append(bankResultCount, filterTools);
     searchPanel.append(resultsHeader, moreFilters);`);
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
@@ -160,6 +166,7 @@ export function modernizeBank(source) {
                 }`);
   replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
   replace('        const isFiltered = Boolean(search.value.trim()', `        filterChips.replaceChildren();
+        examShortcut.setAttribute('aria-pressed', String(criteria.exam));
         searchClear.hidden = !search.value;
         const clearFacet = (label, control, value) => {
             const chip = button(label + ' ×', () => {

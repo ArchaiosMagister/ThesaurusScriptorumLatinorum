@@ -49,3 +49,32 @@ test('una ficha PAU guardada con el nombre anterior se normaliza sin perder dato
  });
  expect(result).toEqual({author:'Julio César',doc:'Julio César',same:true,personal:'César'});
 });
+
+test('acceso rápido Solo Selectividad se combina con autor y se sincroniza con los demás filtros',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await expect(bank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+ const modal=frame.locator('.modal').last();
+ await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+ await modal.getByRole('textbox',{name:'Título',exact:true}).fill('Texto ajeno a PAU');
+ await modal.getByRole('textbox',{name:'Autor',exact:true}).fill('Julio César');
+ await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Gallia est omnis divisa in partes tres.');
+ await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+ await expect(bank.getByText('Mostrando 89 de 89 textos',{exact:true})).toBeVisible();
+ const shortcut=bank.getByRole('button',{name:'Solo Selectividad',exact:true});
+ await expect(shortcut).toHaveAttribute('aria-pressed','false');
+ await shortcut.click();
+ await expect(shortcut).toHaveAttribute('aria-pressed','true');
+ await expect(bank.getByText('Mostrando 88 de 89 textos',{exact:true})).toBeVisible();
+ await bank.getByRole('combobox',{name:'Filtrar textos por autor'}).selectOption({label:'Julio César'});
+ await expect(bank.getByText('Mostrando 43 de 89 textos',{exact:true})).toBeVisible();
+ await shortcut.click();
+ await expect(bank.getByText('Mostrando 44 de 89 textos',{exact:true})).toBeVisible();
+ await bank.getByRole('button',{name:'Más filtros',exact:true}).click();
+ await bank.getByRole('checkbox',{name:'Solo Selectividad',exact:true}).check();
+ await expect(shortcut).toHaveAttribute('aria-pressed','true');
+ await expect(bank.getByText('Mostrando 43 de 89 textos',{exact:true})).toBeVisible();
+ await shortcut.click();
+ await expect(bank.getByRole('checkbox',{name:'Solo Selectividad',exact:true})).not.toBeChecked();
+});

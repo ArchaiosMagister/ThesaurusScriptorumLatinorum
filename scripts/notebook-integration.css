@@ -1149,3 +1149,16 @@
 @media screen and (max-width:740px) {
  .atl-bank-tag-modal .atl-tag-nav { order:3; width:100%; justify-content:space-between; }
 }
+
+@media screen {
+  #editor .atl-bank .atl-exam-shortcut {
+    font-weight: 700; border: 1px solid #45604e; color: var(--ink);
+    background: var(--paper); padding-inline: .8rem;
+  }
+  #editor .atl-bank .atl-exam-shortcut[aria-pressed="true"] {
+    color: #fff; background: #45604e; border-color: #45604e;
+  }
+  #editor .atl-bank .atl-exam-shortcut:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+}
