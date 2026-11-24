@@ -895,3 +895,88 @@
   .atl-infinitive-filters[hidden] { display: none; }
   .atl-infinitive-filters select { min-height: 36px; }
 }
+
+/* Cuadernos: catálogo personal, separado del banco y de la hoja impresa. */
+@media screen {
+  #editor .atl-notebook-catalog {
+    background: transparent; border: 0; box-shadow: none; padding: clamp(.4rem, 2vw, 1.25rem); gap: 1rem;
+  }
+  #editor .atl-notebook-catalog .cuaderno-home-heading {
+    padding: .9rem 1rem; border: 1px solid var(--rule); border-radius: 12px;
+    background: var(--panel, var(--paper-2)); gap: .8rem;
+  }
+  #editor .atl-notebook-heading-copy { display: grid; gap: .2rem; }
+  #editor .atl-notebook-heading-copy h4 { font: 700 1.65rem/1.2 var(--text-font); color: var(--accent); }
+  #editor .atl-notebook-eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: .12em; color: var(--ink-2); }
+  #editor .atl-notebook-catalog .cuaderno-home-grid {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: .8rem;
+  }
+  #editor .atl-notebook-catalog .cuaderno-home-card {
+    min-width: 0; gap: .8rem; padding: 1rem; background: var(--panel, var(--paper-2));
+    border: 1px solid var(--rule); border-top: 3px solid #557963; border-radius: 12px;
+  }
+  #editor .atl-notebook-card-main { display: flex; align-items: flex-start; justify-content: space-between; gap: .65rem; }
+  #editor .atl-notebook-card-main h5 { min-width: 0; flex: 1; }
+  #editor .atl-notebook-title {
+    display: block; width: 100%; padding: .2rem 0; border: 0; border-radius: 4px; background: transparent;
+    color: var(--accent); text-align: start; cursor: pointer; white-space: normal; overflow-wrap: anywhere;
+    font: 700 1.25rem/1.25 var(--text-font);
+  }
+  #editor .atl-notebook-title:hover { text-decoration: underline; }
+  #editor .atl-notebook-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  #editor .atl-notebook-count {
+    flex: none; font-size: .8rem; font-weight: 700; padding: .3rem .5rem;
+    border: 1px solid var(--rule); border-radius: .4rem; background: var(--paper); color: var(--ink);
+  }
+  #editor .atl-notebook-meta {
+    display: grid; grid-template-columns: minmax(0, 1fr); gap: .2rem; margin: 0;
+    padding: .65rem 0; border-block: 1px solid var(--rule);
+  }
+  #editor .atl-notebook-meta dt { font-size: .74rem; color: var(--ink-2); font-weight: 650; }
+  #editor .atl-notebook-meta dd { margin: 0 0 .3rem; color: var(--ink); font-size: .91rem; overflow-wrap: anywhere; }
+  #editor .atl-notebook-meta dd:last-child { margin-bottom: 0; }
+  #editor .atl-notebook-catalog .cuaderno-home-card-actions { gap: .4rem; padding-top: 0; }
+  #editor .atl-notebook-catalog .cuaderno-home-card-actions button { min-height: 40px; }
+  #editor .atl-notebook-empty { grid-column: 1 / -1; padding: 1.6rem 1rem; border: 1px dashed var(--rule); border-radius: 12px; text-align: center; }
+  .atl-notebook-metadata-form { display: grid; gap: .8rem; }
+  .atl-notebook-metadata-form label { display: grid; gap: .35rem; }
+  .atl-notebook-metadata-form input { width: 100%; min-width: 0; min-height: 42px; padding: .5rem; font: inherit; }
+}
+
+/* Edición directa del banco: dos áreas de trabajo, sin cambiar sus operaciones. */
+@media screen {
+  .atl-bank-edit-form { display: grid; gap: .85rem; }
+  .atl-bank-edit-columns {
+    display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: .8rem; align-items: start;
+  }
+  .atl-bank-edit-main, .atl-bank-edit-meta {
+    display: grid; gap: .65rem; min-width: 0; padding: .8rem;
+    border: 1px solid var(--rule); border-radius: 10px; background: var(--paper-2);
+  }
+  .atl-bank-edit-form h3 { margin: 0; font: 700 1.2rem/1.2 var(--text-font); color: var(--accent); }
+  .atl-bank-edit-form .field { display: grid; gap: .3rem; min-width: 0; margin: 0; }
+  .atl-bank-edit-form .field > span:first-child { font-size: .83rem; font-weight: 650; }
+  .atl-bank-edit-form :is(input:not([type="checkbox"]), textarea, select) {
+    width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--rule); border-radius: 7px;
+    padding: .5rem .6rem; background: var(--paper); color: var(--ink); font-size: 16px;
+  }
+  .atl-bank-edit-form textarea[aria-label="Texto latino"] {
+    min-height: 16rem; height: clamp(16rem, 43vh, 32rem); resize: vertical; font: 1.18rem/1.6 var(--text-font);
+  }
+  .atl-bank-edit-form :is(input, textarea, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .atl-bank-edit-form :is(.atl-bank-courses, .atl-selectividad, .atl-source-vocabulary) {
+    margin: 0; min-width: 0; padding: .65rem; border: 1px solid var(--rule); border-radius: 8px;
+  }
+  .atl-bank-edit-form fieldset legend { font-size: .82rem; font-weight: 650; }
+  .atl-bank-edit-form .atl-bank-edit-actions {
+    position: sticky; bottom: 0; z-index: 1; justify-content: space-between; padding: .65rem;
+    border: 1px solid var(--rule); border-radius: 8px; background: var(--panel, var(--paper-2));
+  }
+  .atl-bank-edit-form .atl-bank-edit-actions button { min-height: 44px; }
+  #editor .atl-bank .atl-bank-card-footer { flex-wrap: wrap; }
+  #editor .atl-bank .atl-bank-card-actions { margin-inline-start: auto; }
+}
+@media screen and (max-width: 680px) {
+  .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
+  .atl-bank-edit-form textarea[aria-label="Texto latino"] { min-height: 13rem; height: 34vh; }
+}

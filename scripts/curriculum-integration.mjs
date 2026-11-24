@@ -4,7 +4,7 @@ function required(source, old, next) {
 }
 
 export function integratePeriodValidation(source) {
-  source = required(source, "['cover']);", "['cover', 'excludedCourse']);");
+  source = required(source, "['cover']);", "['cover', 'excludedCourse', 'notebookCourse', 'academicYear']);");
   const editionDateCheck = /if\s*\(\s*e\.updatedAt\s*<\s*e\.createdAt\s*\)/u;
   if (!editionDateCheck.test(source))
     throw Error('Revisar la validación de curso excluido del cuaderno.');
@@ -12,6 +12,8 @@ export function integratePeriodValidation(source) {
     "if(d.excludedCourse!==undefined)e.excludedCourse=choice(d.excludedCourse,'edition.excludedCourse',['1bach','2bach']);\n  " + match);
   source = required(source, "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode']);",
     "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode', 'period']);");
+  source = source.replace(editionDateCheck, match =>
+    "if(d.notebookCourse!==undefined)e.notebookCourse=str(d.notebookCourse,'edition.notebookCourse',100,true);\n  if(d.academicYear!==undefined)e.academicYear=str(d.academicYear,'edition.academicYear',20,true);\n  " + match);
   return required(source, "text: sourceText,\n        questions: array(d.questions", `text: sourceText,
         ...(d.period === undefined ? {} : { period: choice(d.period, path + '.period', ['trimestre-1', 'trimestre-2', 'trimestre-3', 'repaso']) }),
         questions: array(d.questions`);
