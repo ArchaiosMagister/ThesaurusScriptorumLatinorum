@@ -265,7 +265,12 @@ export function lexicalValuesForDocument(option) {
         "        const previous = toks.find(token => token.e === pos);\n" +
         "        const together = previous && /^\\s+$/u.test(gap) && (S.subr || []).some(mark => mark.toks.includes(previous.i) && mark.toks.includes(t.i));\n" +
         "        runs.push({ t: gap, u: Boolean(together) });\n" +
-        "      }"));
+        "      }")
+      // Imported PAU strings are already the authoritative exercise wording.
+      .replace("M.Propose.prevDisplay(S, x).trim().toLowerCase()", "(S.atlPauLexical ? String(x.txt).trim() : M.Propose.prevDisplay(S, x).trim().toLowerCase())")
+      .replace("x && M.Propose.evolDisplay(x.w)", "x && (S.atlPauLexical ? x.w : M.Propose.evolDisplay(x.w))")
+      .replace("w && M.Propose.prefDisplay(String(w).trim())", "w && (S.atlPauLexical ? String(w).trim() : M.Propose.prefDisplay(String(w).trim()))")
+      .replace("w && M.Propose.latDisplay(String(w).trim())", "w && (S.atlPauLexical ? String(w).trim() : M.Propose.latDisplay(String(w).trim()))"));
     await writeFile(join(directory, 'js', 'atl-word-loader.js'),
       await readFile(new URL('./lazy-word-loader.js', import.meta.url), 'utf8'));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
@@ -344,6 +349,8 @@ export function lexicalValuesForDocument(option) {
       }`)
       .replace(/^      \$\{\(v\.manual \|\| v\.glosasSeparadas\) .*\n/m, '')
       .replace(/      if \(e\.target\.classList\.contains\('vsplit'\)\) \{[\s\S]*?(?=      if \(!e\.target\.classList\.contains\('von'\))/, '')
+      .replace("P.prevDisplay(S, S.prev[k] || {})", "(S.atlPauLexical ? (S.prev[k]?.txt || '') : P.prevDisplay(S, S.prev[k] || {}))")
+      .replace("P.evolDisplay((S.evol[k] || {}).w || '')", "(S.atlPauLexical ? (S.evol[k]?.w || '') : P.evolDisplay((S.evol[k] || {}).w || ''))")
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
         "const S = M.S, box = $('#editor .q4'); if (!box) return;\n    const editor = $('#editor'), scrollTop = editor.scrollTop;")
       .replace("    $$('select[data-q=prevn]', box).forEach", match => "    editor.scrollTop = scrollTop;\n" + match);
