@@ -1018,7 +1018,7 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
   const buffer = await readFile(await file.path());
   expect(buffer.toString()).not.toContain('configuración privada de prueba');
 
-  const fresh = await browser.newContext();
+  const fresh = await browser.newContext({ serviceWorkers: 'block' });
 
   await isolateBank(fresh);
   try {
