@@ -742,7 +742,13 @@ window.addEventListener('atl-view', () => {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip', item.label));
             }
-            for (const id of pendingFor(text.id).filter(bankTagAssignable).slice(0, 1)) {
+            const pendingPriority = id => bankState.tags.includes(id) ? 2 :
+                bankState.tags.some(filter => filter === infinitiveId
+                    ? matchesInfinitive([id], bankState.infTime, bankState.infVoice)
+                    : matchesGrammarTag(id, filter, catalogue)) ? 1 : 0;
+            const pendingChips = pendingFor(text.id).filter(bankTagAssignable)
+                .sort((a, b) => pendingPriority(b) - pendingPriority(a));
+            for (const id of pendingChips.filter((id, index) => index === 0 || pendingPriority(id) > 0)) {
                 const item = catalogue.find(tag => tag.id === id);
                 if (item) chips.append(el('span', 'grammar-chip atl-pending-tag', 'Pendiente: ' + item.label));
             }
