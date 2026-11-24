@@ -40,7 +40,8 @@ test('concordancia posesiva y exclusión del subjuntivo homógrafo', async () =>
 test('cum conserva el análisis verbal pertinente, quod y venit mantienen sus ambigüedades', async () => {
   const rows = await analyze('Cum militibus. Cum venisset. Quod dixit. Venit.');
   assert.ok(!rows.some(row => row.tagId.startsWith('gram.cum.')));
-  assert.equal(find(rows, 'venisset', 'subjuntivo')?.state, 'automatic');
+  assert.equal(find(rows, 'venisset', 'verbo.pluscuamperfecto.subjuntivo.activo')?.state, 'automatic');
+  assert.ok(!rows.some(row => row.tagId === 'gram.subjuntivo'));
   assert.equal(find(rows, 'Quod', 'pron.relativo')?.state, 'pending');
   assert.ok(!rows.some(row => ['gram.relativo', 'gram.cum.historico'].includes(row.tagId)));
   assert.equal(find(rows, 'Venit', 'verbo.presente.indicativo.activo')?.state, 'pending');
@@ -164,12 +165,12 @@ test('etiquetado filológico PAU: catálogo real, evidencias literales y corpus 
  const {prepareSeed,isPristineSeed,isVerifiedPauTag}=await import('../dist/modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js');
  const {validateCorpus}=await import('../dist/modulos/cuaderno-integrado/core/validation.js');
  const {allGrammarTags}=await import('../dist/modulos/cuaderno-integrado/core/grammar-tags.js');
- const {bankTagAssignable}=await import('../dist/modulos/cuaderno-integrado/ui/atl-bank-curriculum.js');
+ const {bankTagAssignable,isGrammarGrouping,isRetiredTag}=await import('../dist/modulos/cuaderno-integrado/ui/atl-bank-curriculum.js');
  const data=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',import.meta.url),'utf8'));
  const empty=validateCorpus({schemaVersion:1,texts:[],tags:[],notebooks:[]});
  const catalogue=allGrammarTags(empty);
  for(const row of data)for(const [id,span] of Object.entries(row.verifiedGrammar)){
-   assert.ok(catalogue.some(tag=>tag.id===id)&&bankTagAssignable(id),id);
+   assert.ok(catalogue.some(tag=>tag.id===id)&&(bankTagAssignable(id)||isGrammarGrouping(id)||(id==='gram.concordancia.nominal'&&isRetiredTag(id))),id);
    assert.ok(row.doc.latin.includes(span));
  }
  const result=prepareSeed(empty,[],data,validateCorpus,catalogue);
