@@ -145,8 +145,12 @@ export function lexicalValuesForDocument(option) {
     const grammarSource = await readFile(grammarTags, 'utf8');
     const catalogueStart = 'export const GRAMMAR_CATALOGUE = [';
     if (!grammarSource.includes(catalogueStart)) throw new Error('Revisar el catálogo gramatical integrado.');
+    const groupingAnchor = 'function matchesGrammarTag(tagId, filterId, tags) {';
+    if (!grammarSource.includes(groupingAnchor)) throw Error('Revisar el buscador gramatical integrado.');
     await writeFile(grammarTags, "import { contextualTags } from '../ui/atl-bank-context.js';\n" +
+      "import { matchesGrammarGrouping } from '../ui/atl-bank-curriculum.js';\n" +
       grammarSource.replace(catalogueStart, catalogueStart + '\n    ...contextualTags,')
+      .replace(groupingAnchor, groupingAnchor + '\n    if (matchesGrammarGrouping(tagId, filterId)) return true;')
       .replace('Cercanía (hic)', 'Demostrativo hic')
       .replace('Media distancia (iste)', 'Demostrativo iste')
       .replace('Lejanía (ille)', 'Demostrativo ille'));
