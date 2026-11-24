@@ -242,7 +242,8 @@ export function modernizeBank(source) {
   tagReplace('        if (pending.length) renderProposals();', '        initialDecisions = decisionFingerprint();\n        if (pending.length) renderProposals();');
   const modalStart = editor.indexOf("    const dialog = M.modal('Etiquetas de «'");
   const saveStart = editor.indexOf("{ label: 'Guardar etiquetas', primary: true, onclick: async () => {", modalStart);
-  const saveEnd = editor.lastIndexOf("}}], { width: 'min(1440px, 98vw)'");
+  const endMatch = /\}\s*\}\s*\], \{ width: 'min\(1440px, 98vw\)'/u.exec(editor.slice(saveStart));
+  const saveEnd = endMatch ? saveStart + endMatch.index : -1;
   if (modalStart < 0 || saveStart < 0 || saveEnd < saveStart) throw Error('Revisar guardado y navegación de etiquetas.');
   const saveBody = editor.slice(saveStart + "{ label: 'Guardar etiquetas', primary: true, onclick: async () => {".length, saveEnd);
   const afterModal = editor.indexOf("dialog.el.classList.add('atl-bank-tag-modal');", saveEnd);
