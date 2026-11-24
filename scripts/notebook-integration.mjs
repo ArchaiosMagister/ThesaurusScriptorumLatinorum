@@ -353,7 +353,7 @@ window.addEventListener('atl-view', () => {
     "            M.toast((saveCopy ? 'Versión nueva guardada; el original está protegido.' :\n                'Ficha del banco actualizada.') + reviewNotice);");
   replace("                'Ficha del banco actualizada.') + reviewNotice);\n        }",
     "                'Ficha del banco actualizada.') + reviewNotice);\n            });\n        }");
-  replace('function openBankTextEditor(source) {', 'function openBankTextEditor(source, onClose) {');
+  replace('function openBankTextEditor(source) {', 'function openBankTextEditor(source, onClose, navigation) {');
   replace("    form.append(save);\n    form.addEventListener('submit', event => { event.preventDefault(); save.click(); });\n    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], { width: 'min(760px, 96vw)', noFocus: true });",
     `    const remove = button('Eliminar del banco', async () => {
         if (save.disabled) return;
@@ -372,17 +372,102 @@ window.addEventListener('atl-view', () => {
     if (remove.disabled) actions.append(el('span', 'small muted', 'Ficha protegida por un cuaderno histórico.'));
     form.classList.add('atl-bank-edit-form');
     const main = el('div', 'atl-bank-edit-main');
-    const metadata = el('div', 'atl-bank-edit-meta');
-    main.append(el('h3', '', 'Texto'), inputs.get('title').closest('label'), inputs.get('latin').closest('label'));
-    metadata.append(el('h3', '', 'Ficha académica'), inputs.get('author').closest('label'),
-        inputs.get('work').closest('label'), inputs.get('reference').closest('label'),
-        courseField, difficultyField, exam.container, inputs.get('notes').closest('label'));
+    const metadata = el('aside', 'atl-bank-edit-meta');
+    const wordCount = el('span', 'atl-edit-word-count');
+    const latinHeading = el('div', 'atl-edit-section-heading');
+    latinHeading.append(el('h3', '', 'Texto latino'), wordCount);
+    const latin = inputs.get('latin');
+    latin.lang = 'la';
+    const updateCount = () => {
+        const count = latin.value.trim().split(/\\s+/u).filter(Boolean).length;
+        wordCount.textContent = count + (count === 1 ? ' palabra' : ' palabras');
+    };
+    latin.addEventListener('input', updateCount);
+    updateCount();
+    const titleField = inputs.get('title').closest('label');
+    titleField.classList.add('atl-edit-title-field');
+    const latinField = latin.closest('label');
+    latinField.classList.add('atl-edit-latin-field');
+    const notes = inputs.get('notes').closest('label');
+    const notesPanel = el('details', 'atl-edit-notes');
+    notesPanel.append(el('summary', '', 'Notas y contexto'), notes);
+    notesPanel.open = Boolean(source.notes);
+    main.append(titleField, latinHeading, latinField, notesPanel, glossary.section);
+    const bibliographic = el('div', 'atl-edit-bibliography');
+    bibliographic.append(el('h3', '', 'Referencia bibliográfica'),
+        inputs.get('author').closest('label'), inputs.get('work').closest('label'),
+        inputs.get('reference').closest('label'));
+    const teaching = el('div', 'atl-edit-teaching');
+    teaching.append(el('h3', '', 'Clasificación docente'), courseField, difficultyField, exam.container);
+    metadata.append(bibliographic, teaching);
     const columns = el('div', 'atl-bank-edit-columns');
     columns.append(main, metadata);
     form.prepend(columns);
-    form.append(glossary.section, actions);
+    // The save operation keeps its existing validation and concurrency checks.
+    const status = el('span', 'atl-edit-dirty', 'Sin cambios');
+    status.setAttribute('role', 'status');
+    const snapshot = () => JSON.stringify([...form.querySelectorAll('input, textarea, select')].map(field =>
+        [field.type, field.type === 'checkbox' || field.type === 'radio' ? field.checked : field.value]));
+    const initial = snapshot();
+    const dirty = () => snapshot() !== initial;
+    const updateDirty = () => { status.textContent = dirty() ? 'Cambios sin guardar' : 'Sin cambios'; status.dataset.dirty = String(dirty()); };
+    form.addEventListener('input', updateDirty);
+    form.addEventListener('change', updateDirty);
+    form.addEventListener('click', () => queueMicrotask(updateDirty));
+    const nav = el('nav', 'atl-edit-nav');
+    nav.setAttribute('aria-label', 'Navegar por las fichas filtradas');
+    const position = el('span', 'atl-edit-position');
+    const ordered = navigation?.results() ?? [source];
+    const index = ordered.findIndex(item => item.id === source.id);
+    let destination = null, bypassClose = false;
+    const move = offset => {
+        if (save.disabled || index < 0) return;
+        const target = ordered[index + offset];
+        if (!target) return;
+        if (dirty()) {
+            if (!window.confirm('Hay cambios sin guardar. ¿Guardarlos y abrir la otra ficha?')) return;
+            destination = target.id;
+            save.click();
+        } else {
+            destination = target.id;
+            close();
+        }
+    };
+    const previous = button('Anterior', () => move(-1), 'hbtn atl-edit-nav-button');
+    const next = button('Siguiente', () => move(1), 'hbtn atl-edit-nav-button');
+    previous.disabled = index <= 0;
+    next.disabled = index < 0 || index >= ordered.length - 1;
+    position.textContent = index < 0 ? 'Fuera del filtro' : (index + 1) + ' de ' + ordered.length;
+    nav.append(previous, position, next);
+    const guard = () => bypassClose || (!save.disabled && (!dirty() || window.confirm('¿Cerrar la ficha sin guardar los cambios?')));
+    const afterClose = () => {
+        const id = destination;
+        destination = null;
+        if (!id) { onClose?.(); return; }
+        queueMicrotask(() => {
+            const eligible = navigation?.results() ?? [];
+            const target = eligible.find(item => item.id === id);
+            if (target) openBankTextEditor(target, onClose, navigation);
+            else { onClose?.(); M.toast('El texto ya no coincide con los filtros activos.'); }
+        });
+    };
+    form.append(actions);
+    actions.prepend(status);
     form.addEventListener('submit', event => { event.preventDefault(); save.click(); });
-    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], { width: 'min(1100px, 96vw)', noFocus: true, onClose });`);
+    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], {
+        width: 'min(1440px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
+    });
+    modal.el.classList.add('atl-bank-editor-modal');
+    modal.el.querySelector('.mh').insertBefore(nav, modal.el.querySelector('.xbtn'));
+    const cancel = modal.el.querySelector('.mf button');
+    cancel.classList.add('atl-edit-cancel');
+    actions.insertBefore(cancel, save);
+    modal.el.querySelector('.mf').remove();
+    const rawClose = modal.close;
+    const finish = () => { bypassClose = true; try { rawClose(); } finally { bypassClose = false; } };
+    // Existing callers assign close = modal.close after this block.
+    modal.close = finish;`); 
+  replace('        finally {\n            save.disabled = false;\n        }\n    }, \'hbtn primary\');', '        finally {\n            save.disabled = false;\n            destination = null;\n        }\n    }, \'hbtn primary\');');
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");
@@ -561,10 +646,11 @@ window.addEventListener('atl-view', () => {
                 const current = [...document.querySelectorAll('.atl-bank-card')].find(item => item.dataset.sourceId === text.id);
                 current?.focus({ preventScroll: true });
             };
-            read.addEventListener('click', () => openBankTextEditor(text, restoreFocus));
+            const navigation = { results: () => currentResults().map(item => corpus.texts.find(t => t.id === item.id)).filter(Boolean) };
+            read.addEventListener('click', () => openBankTextEditor(text, restoreFocus, navigation));
             const openReader = () => openBankReader({
                 texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),
-                edit: openBankTextEditor, tag: tagBankText, remove: removeBankText, usage: showTextUses,
+                edit: item => openBankTextEditor(item, restoreFocus, navigation), tag: tagBankText, remove: removeBankText, usage: showTextUses,
                 pendingTags: bankState.includePending ? pendingIndex : undefined, automaticFor, difficultyFor,
                 isProtected: item => protectedIds.has(item.id),
                 onClose: restoreFocus,

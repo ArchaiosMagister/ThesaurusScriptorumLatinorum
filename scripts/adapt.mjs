@@ -215,7 +215,8 @@ export function lexicalValuesForDocument(option) {
     const utilities = (await readFile(utilitiesFile, 'utf8'))
       .replace("  const m = M.el('div', { class: 'modal' });",
         "  bg.dataset.atlBankOverlay = document.body.dataset.atlBank || 'false';\n  const m = M.el('div', { class: 'modal' });")
-      .replace("if (e.key === 'Escape') close();", "if (e.key === 'Escape' && bg.getClientRects().length) close();");
+      .replace("if (e.key === 'Escape') close();", "if (e.key === 'Escape' && bg.getClientRects().length) close();")
+      .replace('const close = () => { bg.remove();', 'const close = () => { if (opts.beforeClose && !opts.beforeClose()) return; bg.remove();');
     await writeFile(utilitiesFile, utilities);
     const pwaFile = join(directory, 'ui', 'pwa-controls.js');
     const pwa = (await readFile(pwaFile, 'utf8'))
