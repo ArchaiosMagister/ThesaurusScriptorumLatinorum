@@ -1,4 +1,4 @@
-export function setupBackup(prepare, status) {
+export function setupBackup(prepare, status, pauseAutosave) {
   const dialog = document.getElementById('backup-dialog');
   const select = document.getElementById('backup-file');
   const preview = document.getElementById('backup-preview');
@@ -6,6 +6,13 @@ export function setupBackup(prepare, status) {
   const download = document.getElementById('backup-export');
   let payload;
   let plan;
+  let exactBaseline, dropboxData, dropboxPreview;
+  let regularPreview;
+  let regularDisabled;
+  const exact = document.getElementById('backup-exact');
+  const exactLabel = document.getElementById('backup-exact-label');
+  const history = document.getElementById('backup-history');
+  const historyList = document.getElementById('backup-history-list');
 
   function summary(message) {
     preview.textContent = message;
@@ -183,9 +190,59 @@ export function setupBackup(prepare, status) {
     importItems.append(rows);
   }
 
-  select.addEventListener('change', async () => {
+  function downloadHistory(copy) {
+    const url = URL.createObjectURL(new Blob([JSON.stringify(copy)], { type: 'application/json' }));
+    const link = element('a');
+    link.download = 'Thesaurus-recuperacion-' + copy.exportedAt.slice(0, 10) + '.json';
+    link.href = url;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
+  }
+
+  history.addEventListener('toggle', async () => {
+    if (!history.open) return;
+    try {
+      const { listRecoveryCopies, readRecoveryCopy } = await import('./recovery-history.js');
+      const entries = await listRecoveryCopies();
+      historyList.replaceChildren(...entries.map(({ id, date, reason }) => {
+        const row = element('li', new Date(date).toLocaleString() + ' · ' + reason + ' ');
+        for (const label of ['Revisar copia', 'Descargar JSON']) {
+          const button = element('button', label);
+          button.type = 'button';
+          button.addEventListener('click', async () => {
+            if (select.disabled) return;
+            try {
+              const { copy } = await readRecoveryCopy(id);
+              if (label === 'Revisar copia') await inspectFile(new Blob([JSON.stringify(copy)]));
+              else downloadHistory(copy);
+            } catch (error) { summary(error.message); }
+          });
+          row.append(button);
+        }
+        return row;
+      }));
+      if (!entries.length) historyList.append(element('li', 'Todavía no hay copias de recuperación.'));
+    } catch (error) { historyList.replaceChildren(element('li', error.message)); }
+  });
+
+  exact.addEventListener('change', () => {
+    apply.disabled = exact.checked ? false : regularDisabled;
+    apply.textContent = exact.checked ? 'Sustituir espacio local' : 'Recuperar copia';
+    summary(exact.checked
+      ? 'Se guardará una copia de recuperación y después se sustituirán el banco, los cuadernos, los exámenes y las preferencias incluidos en la copia integral.'
+      : regularPreview);
+  });
+
+  select.addEventListener('change', () => {
     const file = select.files[0];
     select.value = '';
+    void inspectFile(file);
+  });
+
+  async function inspectFile(file) {
+    exact.checked = false;
+    exactLabel.hidden = true;
+    exactBaseline = dropboxData = dropboxPreview = undefined;
     apply.disabled = true;
     payload = plan = partial = partialPlan = null;
     importRevision++;
@@ -195,7 +252,7 @@ export function setupBackup(prepare, status) {
     select.disabled = true;
     summary('Verificando la copia…');
     try {
-      const { readBackupFile, readPartial, planRestore, maxBackupSize } = await import('./backup-store.js');
+      const { readBackupFile, readPartial, planRestore, previewExactRestore, readDropboxBackup, previewDropboxRestore, maxBackupSize } = await import('./backup-store.js');
       if (file.size > maxBackupSize) throw new Error('La copia supera el tamaño máximo de 128 MiB.');
       const content = await file.text();
       partial = await readPartial(content);
@@ -204,9 +261,21 @@ export function setupBackup(prepare, status) {
         await comparePartial();
         return;
       }
+      dropboxData = await readDropboxBackup(content);
+      if (dropboxData) {
+        await prepare();
+        dropboxPreview = await previewDropboxRestore(dropboxData);
+        summary(dropboxPreview.same ? 'La copia de Dropbox coincide con los datos locales.'
+          : 'Copia de Dropbox verificada. Se sustituirán los datos sincronizados de este dispositivo y se guardará una copia de recuperación.');
+        apply.textContent = 'Recuperar copia de Dropbox';
+        apply.disabled = dropboxPreview.same;
+        return;
+      }
       payload = await readBackupFile(content);
       await prepare();
       plan = await planRestore(payload);
+      if (!['same', 'legacy'].includes(plan.comparison))
+        exactBaseline = await previewExactRestore(payload).catch(() => undefined);
       if (plan.comparison === 'same') {
         summary('Versión idéntica a la de este dispositivo. Ya está sincronizado.');
         return;
@@ -233,29 +302,53 @@ export function setupBackup(prepare, status) {
         : 'Los datos de esta copia ya están presentes.' + order);
       apply.disabled = !rows && !preferences && !replacement;
     } catch (error) {
-      summary(error.message);
+      summary(error instanceof SyntaxError ? 'El archivo contiene JSON inválido o incompleto.' : error.message);
     } finally {
+      regularPreview = preview.textContent;
+      regularDisabled = apply.disabled;
+      exactLabel.hidden = !exactBaseline;
       select.disabled = false;
     }
-  });
+  }
 
   apply.addEventListener('click', async () => {
-    if (partial && partialPlan) {
-      if (apply.disabled || !window.confirm('¿' + labels[partial.type] + '?')) return;
+    if (dropboxData && dropboxPreview) {
+      if (apply.disabled || !window.confirm('¿Recuperar en este dispositivo los datos de la copia de Dropbox?')) return;
       apply.disabled = select.disabled = download.disabled = true;
       try {
         await prepare();
-        const { restorePartial } = await import('./backup-store.js');
-        await restorePartial(partial, partialPlan, partialOptions);
-        sessionStorage.setItem('atl-v1:restore-result', 'Importación parcial aplicada y verificada.');
+        pauseAutosave(true);
+        const { restoreDropboxBackup } = await import('./backup-store.js');
+        await restoreDropboxBackup(dropboxData, dropboxPreview.baseline);
+        sessionStorage.setItem('atl-v1:restore-result', 'Copia de Dropbox recuperada en este dispositivo.');
         location.reload();
       } catch (error) {
+        pauseAutosave(false);
         summary(error.message);
         select.disabled = download.disabled = false;
       }
       return;
     }
-    if (!plan || !payload || !window.confirm(plan.comparison === 'newer'
+    if (partial && partialPlan) {
+      if (apply.disabled || !window.confirm('¿' + labels[partial.type] + '?')) return;
+      apply.disabled = select.disabled = download.disabled = true;
+      try {
+        await prepare();
+        pauseAutosave(true);
+        const { restorePartial } = await import('./backup-store.js');
+        await restorePartial(partial, partialPlan, partialOptions);
+        sessionStorage.setItem('atl-v1:restore-result', 'Importación parcial aplicada y verificada.');
+        location.reload();
+      } catch (error) {
+        pauseAutosave(false);
+        summary(error.message);
+        select.disabled = download.disabled = false;
+      }
+      return;
+    }
+    if (apply.disabled || !plan || !payload || !window.confirm(exact.checked
+      ? '¿Sustituir el espacio local por esta copia integral? Se guardará primero una copia de recuperación.'
+      : plan.comparison === 'newer'
       ? '¿Actualizar este dispositivo con la copia más nueva? También se aplicarán las eliminaciones.'
       : '¿Recuperar los datos de la copia? La aplicación se recargará después de verificarlos.')) return;
     apply.disabled = true;
@@ -263,11 +356,14 @@ export function setupBackup(prepare, status) {
     download.disabled = true;
     try {
       await prepare();
-      const { restoreBackup } = await import('./backup-store.js');
-      await restoreBackup(payload, plan);
+      pauseAutosave(true);
+      const { restoreBackup, restoreExact } = await import('./backup-store.js');
+      if (exact.checked) await restoreExact(payload, exactBaseline);
+      else await restoreBackup(payload, plan);
       sessionStorage.setItem('atl-v1:restore-result', 'Copia recuperada y verificada.');
       location.reload();
     } catch (error) {
+      pauseAutosave(false);
       summary(error.message);
       select.disabled = false;
       download.disabled = false;

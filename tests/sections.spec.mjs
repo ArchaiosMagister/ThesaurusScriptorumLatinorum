@@ -1026,6 +1026,9 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
     await restored.goto(new URL(path, page.url()).href);
     await restored.getByRole('button', { name: 'Copias de seguridad' }).click();
     const input = restored.locator('#backup-file');
+    await input.setInputFiles({ name: 'incompleta.json', mimeType: 'application/json', buffer: Buffer.from('{') });
+    await expect(restored.locator('#backup-preview')).toContainText('JSON inválido');
+    await expect(restored.getByRole('button', { name: 'Recuperar copia' })).toBeDisabled();
     const changed = JSON.parse(buffer);
     changed.exportedAt = '2000-01-01T00:00:00.000Z';
     await input.setInputFiles({ name: 'alterada.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(changed)) });
@@ -1046,6 +1049,16 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
     await input.setInputFiles({ name: 'integral.json', mimeType: 'application/json', buffer });
     await expect(restored.locator('#backup-preview')).toContainText('más antigua');
     await expect(restored.getByRole('button', { name: 'Recuperar copia' })).toBeDisabled();
+    await restored.getByLabel('Sustituir el espacio local por esta copia integral').check();
+    restored.once('dialog', prompt => prompt.accept());
+    const exactReload = restored.waitForEvent('load');
+    await restored.getByRole('button', { name: 'Sustituir espacio local' }).click();
+    await exactReload;
+    await expect(restored.locator('#app-status')).toHaveText('Copia recuperada y verificada.');
+    await expect(recoveredExam.locator('[data-k="titulo"]')).toHaveValue('Examen de la copia');
+    await restored.getByRole('button', { name: 'Copias de seguridad' }).click();
+    await restored.getByText('Historial de recuperación de este dispositivo').click();
+    await expect(restored.locator('#backup-history-list')).toContainText('Antes de sustituir el espacio local');
   } finally {
     await fresh.close();
   }
@@ -1914,6 +1927,8 @@ test('la ficha Collatinus subraya la aparición elegida, ofrece sustitución y a
 
 test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compartir el examen completo', async ({ page, browser }) => {
   let remote;
+  const recovery = new Map();
+  let loseUploadResponse = false;
   let uploads = 0;
   let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
@@ -1947,15 +1962,24 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
             json: { access_token: 'prueba', refresh_token: 'renovacion-prueba', account_id: 'cuenta-prueba', expires_in: 3600 }
           };
         }
+        const args = JSON.parse(headers['dropbox-api-arg']);
+        if (args.path.startsWith('/thesaurus-recovery-')) {
+          if (url.endsWith('/upload')) recovery.set(args.path, JSON.parse(body));
+          return { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'recovery' }) },
+            json: recovery.get(args.path) };
+        }
         if (url.endsWith('/download')) {
           return remote
             ? { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'rev-' + uploads }) }, json: remote }
             : { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
         }
-        const args = JSON.parse(headers['dropbox-api-arg']);
         expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
         uploads++;
         remote = JSON.parse(body);
+        if (loseUploadResponse) {
+          loseUploadResponse = false;
+          return { disconnected: true };
+        }
         return { status: 200, json: { rev: 'rev-' + uploads } };
       });
       await context.addInitScript(() => {
@@ -1967,6 +1991,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
             url, headers: Object.fromEntries(new Headers(options.headers)),
             body: options.body instanceof Blob ? await options.body.text() : options.body?.toString()
           });
+          if (result.disconnected) throw new TypeError('Conexión interrumpida');
           return new Response(JSON.stringify(result.json), { status: result.status, headers: result.headers });
         };
       });
@@ -2122,6 +2147,17 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       .toEqual(['0:4:gram.infinitivo']);
     expect(uploads).toBe(uploadsBeforeConflict + 2);
 
+    const previousRemote = remote;
+    const beforeInterruptedUpload = uploads;
+    await changeReview(page, 'gram.participio');
+    loseUploadResponse = true;
+    await sourceSync.click();
+    await expect(page.locator('#app-status')).toContainText('No se pudo conectar con Dropbox');
+    expect(uploads).toBe(beforeInterruptedUpload + 1);
+    expect([...recovery.values()]).toContainEqual(previousRemote);
+    await sourceSync.click();
+    await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(uploads).toBe(beforeInterruptedUpload + 1);
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Vinculado');
@@ -2130,6 +2166,18 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Sin vincular');
+    await reopened.locator('#dropbox-back').click();
+    await reopened.locator('#backup-file').setInputFiles({
+      name: 'thesaurus-recovery.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(remote))
+    });
+    await expect(reopened.locator('#backup-preview')).toContainText('Copia de Dropbox verificada');
+    reopened.once('dialog', prompt => prompt.accept());
+    const imported = reopened.waitForEvent('load');
+    await reopened.getByRole('button', { name: 'Recuperar copia de Dropbox' }).click();
+    await imported;
+    await expect(reopened.locator('#app-status')).toHaveText('Copia de Dropbox recuperada en este dispositivo.');
+    expect(await reopened.evaluate(key => JSON.parse(localStorage.getItem(key)).rejected, conflictKey))
+      .toEqual(['0:4:gram.participio']);
   } finally {
     await destination.close();
   }

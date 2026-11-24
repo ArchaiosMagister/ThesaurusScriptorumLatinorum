@@ -70,10 +70,17 @@
     </div>
     <div class="backup-group">
       <h3>Recuperar</h3>
+      <details id="backup-history">
+        <summary>Historial de recuperación de este dispositivo</summary>
+        <ul id="backup-history-list"></ul>
+      </details>
       <label for="backup-file">Elegir copia para recuperar</label>
       <input id="backup-file" type="file" accept=".json,application/json">
       <p id="backup-preview" role="status" aria-live="polite"></p>
       <div id="backup-import-items"></div>
+      <label id="backup-exact-label" hidden>
+        <input type="checkbox" id="backup-exact"> Sustituir el espacio local por esta copia integral
+      </label>
       <button type="button" id="backup-restore" class="backup-primary" disabled>Recuperar copia</button>
     </div>
     <form method="dialog" class="backup-footer"><button class="backup-secondary">Cerrar</button></form>

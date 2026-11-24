@@ -197,6 +197,9 @@ try {
   workerWarning = 'No se pudo preparar el modo sin conexión: ' + error.message;
 }
 if (workerWarning) setStatus(workerWarning);
-setupBackup(prepareReload, setStatus);
+setupBackup(prepareReload, setStatus, paused => {
+  const exam = document.querySelector('#panel-examinator iframe')?.contentWindow.M;
+  if (exam) exam.atlPauseAutosave = paused;
+});
 
 void setupDropbox(prepareReload, setStatus).catch(error => setStatus(error.message));
