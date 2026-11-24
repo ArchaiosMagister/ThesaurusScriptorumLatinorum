@@ -24,7 +24,12 @@ const hiddenTags = new Set([
   'gram.cum.conjuncion', 'gram.ut'
 ]);
 
-export const bankTagVisible = id => !isRetiredTag(id) && !hiddenTags.has(id) && !id.startsWith('gram.verbo.');
+export const compoundPassiveTags = new Set([
+  'gram.verbo.perfecto.indicativo.pasivo', 'gram.verbo.pluscuamperfecto.indicativo.pasivo',
+  'gram.verbo.perfecto.subjuntivo.pasivo', 'gram.verbo.pluscuamperfecto.subjuntivo.pasivo'
+]);
+export const bankTagVisible = id => !isRetiredTag(id) && !hiddenTags.has(id) &&
+  (!id.startsWith('gram.verbo.') || compoundPassiveTags.has(id));
 export const infinitiveId = 'gram.inf.forma';
 export const infinitiveTenses = ['presente', 'perfecto', 'futuro'];
 export const infinitiveVoices = ['activo', 'pasivo', 'deponente'];

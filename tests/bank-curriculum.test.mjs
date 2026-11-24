@@ -111,3 +111,10 @@ test('advierte si la cobertura necesita una etiqueta programada más adelante', 
   assert.deepEqual(plan.coverage(plan.groups[0]).later, ['b']);
   assert.deepEqual(plan.coverage(plan.groups[1]).uncovered, ['b']);
 });
+
+test('expone los cuatro tiempos pasivos de perfecto sin exponer todos los tiempos personales',()=>{
+ for(const id of ['perfecto.indicativo','pluscuamperfecto.indicativo','perfecto.subjuntivo','pluscuamperfecto.subjuntivo'])assert.ok(bankTagVisible('gram.verbo.'+id+'.pasivo'));
+ assert.ok(bankTagVisible('gram.part.perfecto.pasivo'));
+ assert.ok(!bankTagVisible('gram.verbo.perfecto.indicativo.activo'));
+ assert.ok(!bankTagVisible('gram.verbo.perfecto.indicativo.deponente'));
+});

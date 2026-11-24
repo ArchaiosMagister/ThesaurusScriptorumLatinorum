@@ -1,4 +1,4 @@
-export const rulesVersion = 2;
+export const rulesVersion = 3;
 
 const lemmaOf = candidate => candidate.lemma.split(',')[0].normalize('NFD')
   .replace(/\p{M}/gu, '').toLowerCase();
@@ -38,6 +38,7 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     candidate.lid === token.sel?.lid && morph === token.sel.morpho));
   const contextual = [];
   const auxiliaries = new Set();
+  const compoundParticiples = new Set();
   for (let index = 0; index + 1 < tokens.length; index++) {
     const first = tokens[index], second = tokens[index + 1];
     if (first.sent !== second.sent || second.pb || !/^\s+$/u.test(latin.slice(first.e, second.s))
@@ -46,7 +47,8 @@ export function contextualBankAnalysis(latin, tokens, propose) {
     const determinant = pair.find(row => row && (possessive(row.candidate) ||
       row.candidate.pos === 'a' || row.morph.startsWith('participio de ')));
     const noun = pair.find(row => row && row.candidate.pos === 'n');
-    const [participle, auxiliary] = pair;
+    const participleIndex = pair.findIndex(row => row && perfectParticiple.test(row.morph));
+    const participle = pair[participleIndex], auxiliary = pair[1 - participleIndex];
     const participleMatch = participle && perfectParticiple.exec(participle.morph);
     const auxiliaryMatch = auxiliary && personal.exec(auxiliary.morph);
     const tense = auxiliaryMatch && compoundTense[auxiliaryMatch[1]];
@@ -54,14 +56,17 @@ export function contextualBankAnalysis(latin, tokens, propose) {
       auxiliaryMatch[3] === 'activo' && auxiliary.morph.endsWith(participleMatch[2])) {
       const voice = deponent(participle.candidate) ? 'deponente' : participleMatch[1] === 'pasivo' ? 'pasivo' : null;
       if (voice) {
-        auxiliaries.add(index + 1);
-        const unique = readings[index].every(row => row.candidate.lid === participle.candidate.lid);
-        const compatibleAuxiliary = readings[index + 1].every(row => row.candidate.lid === auxiliary.candidate.lid &&
+        auxiliaries.add(index + 1 - participleIndex);
+        if (voice === 'pasivo') compoundParticiples.add(tokens[index + participleIndex].s);
+        const unique = readings[index + participleIndex].every(row => row.candidate.lid === participle.candidate.lid);
+        const compatibleAuxiliary = readings[index + 1 - participleIndex].every(row => row.candidate.lid === auxiliary.candidate.lid &&
           row.morph === auxiliary.morph);
-        contextual.push({ start: first.s, end: second.e, tagId: finiteId([null, tense, auxiliaryMatch[2], voice]),
+        const compound = { start: first.s, end: second.e, tagId: finiteId([null, tense, auxiliaryMatch[2], voice]),
           state: unique && compatibleAuxiliary ? 'automatic' : 'pending',
           evidence: [describe(participle), describe(auxiliary), 'Participio nominativo y auxiliar sum adyacente, en el mismo número'],
-          alternatives: [...readings[index], ...readings[index + 1]].filter(row => !pair.includes(row)).map(describe) });
+          alternatives: [...readings[index], ...readings[index + 1]].filter(row => !pair.includes(row)).map(describe) };
+        contextual.push(compound);
+        if (voice === 'pasivo') contextual.push({ ...compound, tagId: 'gram.voz.pasiva' });
       }
     }
     const agreement = determinant && features(determinant);
@@ -90,7 +95,9 @@ export function contextualBankAnalysis(latin, tokens, propose) {
   const positions = new Map(tokens.map((token, index) => [token.s, index]));
   const securePassiveEnds = new Set(contextual.filter(row => row.state === 'automatic' &&
     row.tagId.endsWith('.pasivo')).map(row => row.end));
-  const proposals = propose(latin, narrowed).map(proposal => {
+  const proposals = propose(latin, narrowed).filter(proposal =>
+    !contextual.some(row => row.tagId === proposal.tagId && row.start === proposal.start && row.end === proposal.end) &&
+    !(proposal.tagId === 'gram.part.perfecto.pasivo' && compoundParticiples.has(proposal.start))).map(proposal => {
     const first = positions.get(proposal.start);
     const local = [];
     for (let index = first; index < tokens.length && tokens[index].e <= proposal.end; index++) local.push(index);

@@ -174,10 +174,21 @@ test('etiquetado filológico PAU: catálogo real, evidencias literales y corpus 
  }
  const result=prepareSeed(empty,[],data,validateCorpus,catalogue);
  assert.equal(result.texts.length,88);
- assert.equal(result.texts.reduce((n,t)=>n+t.tagIds.length,0),571);
+ assert.equal(result.texts.reduce((n,t)=>n+t.tagIds.length,0),590);
  assert.ok(result.texts.every(t=>t.tagIds.length));
  assert.ok(isPristineSeed(result));
  assert.ok(result.texts.every(t=>t.tagIds.every(id=>isVerifiedPauTag(t,id))));
  const changed={...result,texts:result.texts.map((t,i)=>i?t:{...t,tagIds:[]})};
  assert.ok(!isPristineSeed(changed));
+});
+
+test('pasiva compuesta y participio independiente no se confunden',async()=>{
+ const rows=await analyze('Urbe capta, milites discesserunt. Missi erant. Est dictus.');
+ assert.ok(find(rows,'capta','part.perfecto.pasivo'));
+ assert.ok(find(rows,'Missi erant','verbo.pluscuamperfecto.indicativo.pasivo'));
+ assert.ok(find(rows,'Est dictus','verbo.perfecto.indicativo.pasivo'));
+ assert.ok(!find(rows,'Missi','part.perfecto.pasivo'));
+ assert.ok(!find(rows,'dictus','part.perfecto.pasivo'));
+ const deponent=await analyze('Profectus est.');
+ assert.ok(!deponent.some(row=>row.tagId==='gram.verbo.perfecto.indicativo.pasivo'));
 });

@@ -403,7 +403,32 @@ window.addEventListener('atl-view', () => {
     const notesPanel = el('details', 'atl-edit-notes');
     notesPanel.append(el('summary', '', 'Notas y contexto'), notes);
     notesPanel.open = Boolean(source.notes);
-    main.append(titleField, latinHeading, latinField, notesPanel, glossary.section);
+    const grammarSection = el('section', 'atl-text-grammar');
+    grammarSection.setAttribute('aria-label', 'Etiquetas gramaticales confirmadas');
+    const confirmed = el('div', 'grammar-chips atl-reader-tags');
+    const grammar = allGrammarTags(corpus);
+    const visible = source.tagIds.filter(bankTagAssignable);
+    for (const id of visible) {
+        const item = grammar.find(tag => tag.id === id);
+        if (!item) continue;
+        const chip = el('span', 'grammar-chip', item.label);
+        chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, grammar)) ?? 'custom';
+        confirmed.append(chip);
+    }
+    if (!confirmed.childElementCount) confirmed.append(el('span', 'small muted', 'Sin etiquetas confirmadas'));
+    grammarSection.append(el('h3', '', 'Etiquetas gramaticales'), confirmed);
+    const automatic = el('div', 'grammar-chips atl-reader-tags atl-reader-automatic');
+    for (const id of new Set(bankAutomaticTags(source.id))) {
+        const item = grammar.find(tag => tag.id === id);
+        if (item && !source.tagIds.includes(id) && bankTagAssignable(id))
+            automatic.append(el('span', 'grammar-chip', item.label + ' · Automática'));
+    }
+    if (automatic.childElementCount) grammarSection.append(el('h4', '', 'Etiquetas automáticas'), automatic);
+    const staleTags = el('p', 'small muted', 'El texto latino ha cambiado; las etiquetas corresponden a la versión guardada.');
+    staleTags.hidden = true;
+    latin.addEventListener('input', () => { staleTags.hidden = latin.value === source.latin; });
+    grammarSection.append(staleTags);
+    main.append(titleField, latinHeading, latinField, grammarSection, notesPanel, glossary.section);
     const bibliographic = el('div', 'atl-edit-bibliography');
     bibliographic.append(el('h3', '', 'Referencia bibliográfica'),
         inputs.get('author').closest('label'), inputs.get('work').closest('label'),
