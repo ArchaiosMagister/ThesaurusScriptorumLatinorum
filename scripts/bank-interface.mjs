@@ -68,8 +68,16 @@ export function modernizeBank(source) {
   const from = source.indexOf("    bankToolbar.append(bankField('Buscar'");
   const to = source.indexOf('    const resetBankFilters', from);
   if (from < 0 || to < 0) throw Error('Revisar los filtros del banco.');
-  source = source.slice(0, from) + `    bankToolbar.append(bankField('Buscar', search, 'cuaderno-bank-search'),
-        bankField('Dificultad', difficultySelect, ''), bankField('Ordenar por', sortSelect, ''));
+  source = source.slice(0, from) + `    bankToolbar.classList.add('atl-search-toolbar');
+    const searchField = bankField('Buscar en el banco', search, 'cuaderno-bank-search');
+    search.placeholder = 'Título, texto latino, autor, obra o referencia…';
+    const searchClear = button('×', () => { search.value = ''; populate(); search.focus(); }, 'atl-search-clear');
+    searchClear.setAttribute('aria-label', 'Borrar búsqueda');
+    searchClear.hidden = !search.value;
+    searchField.append(searchClear);
+    bankToolbar.append(searchField, bankField('Curso', filters.course, 'atl-primary-course'),
+        bankField('Autor', authorSelect, ''), bankField('Dificultad', difficultySelect, ''),
+        bankField('Ordenar por', sortSelect, ''));
     const moreFilters = el('div', 'atl-bank-more');
     moreFilters.id = 'atl-bank-more-filters';
     moreFilters.hidden = !bankState.moreFilters;
@@ -81,13 +89,13 @@ export function modernizeBank(source) {
     filterToggle.setAttribute('aria-controls', moreFilters.id);
     filterToggle.setAttribute('aria-expanded', String(!moreFilters.hidden));
     const filterFields = el('div', 'atl-bank-more-fields');
-    filterFields.append(bankField('Autor', authorSelect, ''), bankField('Obra', filters.work, ''),
-        bankField('Referencia', filters.reference, ''), bankField('Curso', filters.course, ''),
+    filterFields.append(bankField('Obra', filters.work, ''), bankField('Referencia', filters.reference, ''),
         bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
+    moreFilters.append(el('h5', 'atl-facet-heading', 'Procedencia y uso'));
     const examFields = el('div', 'atl-bank-more-fields');
     examFields.append(filters.examLabel, bankField('Año de Selectividad', filters.examYear, ''),
         bankField('Comunidad autónoma', filters.examCommunity, ''));
-    moreFilters.append(filterFields, examFields);
+    moreFilters.append(filterFields, el('h5', 'atl-facet-heading', 'Selectividad'), examFields);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
     filterChips.setAttribute('aria-label', 'Etiquetas de filtro activas');
 ` + source.slice(to);
@@ -106,11 +114,21 @@ export function modernizeBank(source) {
         quickTags.set(item.id, chip);
         shortcuts.append(chip);
     }
-    moreFilters.append(shortcuts, filters.panel);
-    bank.append(bankToolbar);`);
+    const quick = el('div', 'atl-bank-quick-tags');
+    quick.hidden = !frequent.length;
+    quick.append(el('span', 'atl-quick-label', 'Etiquetas frecuentes'), shortcuts);
+    moreFilters.append(el('h5', 'atl-facet-heading', 'Gramática'), filters.panel);
+    const searchPanel = el('div', 'atl-bank-search-panel');
+    searchPanel.append(bankToolbar, quick, filterChips);
+    bank.append(searchPanel);`);
   replace('    bank.append(bankResultCount);', `    const resultsHeader = el('div', 'atl-bank-results-header');
-    resultsHeader.append(filterToggle, bankResultCount);
-    bank.append(resultsHeader, moreFilters, filterChips);`);
+    const filterCount = el('span', 'atl-filter-count');
+    filterCount.hidden = true;
+    filterCount.setAttribute('aria-hidden', 'true');
+    const filterTools = el('div', 'atl-filter-tools');
+    filterTools.append(filterToggle, filterCount, resetBankFilters);
+    resultsHeader.append(bankResultCount, filterTools);
+    searchPanel.append(resultsHeader, moreFilters);`);
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
   replace(`    bulk.append(el('p', 'small muted', 'Selecciona los resultados de la búsqueda o marca textos individuales. ' +
         'Los cuadernos editoriales no se borrarán. Los textos de cuadernos históricos están protegidos.'));`, '');
@@ -141,6 +159,33 @@ export function modernizeBank(source) {
                 }`);
   replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
   replace('        const isFiltered = Boolean(search.value.trim()', `        filterChips.replaceChildren();
+        searchClear.hidden = !search.value;
+        const clearFacet = (label, control, value) => {
+            const chip = button(label + ' ×', () => {
+                if (control.type === 'checkbox') control.checked = false;
+                else control.value = value;
+                populate();
+            }, 'grammar-chip atl-bank-tag-chip atl-facet-chip');
+            chip.setAttribute('aria-label', 'Quitar filtro «' + label + '»');
+            filterChips.append(chip);
+        };
+        const activeSelect = (control, prefix, empty = '') => {
+            if (control.value !== empty) clearFacet(prefix + ': ' + control.selectedOptions[0]?.textContent, control, empty);
+        };
+        activeSelect(filters.course, 'Curso');
+        activeSelect(authorSelect, 'Autor', 'all');
+        activeSelect(difficultySelect, 'Dificultad');
+        activeSelect(filters.work, 'Obra');
+        activeSelect(filters.origin, 'Procedencia');
+        activeSelect(filters.usage, 'Uso');
+        activeSelect(filters.examYear, 'Selectividad');
+        activeSelect(filters.examCommunity, 'Comunidad');
+        if (criteria.reference.trim()) clearFacet('Referencia: ' + criteria.reference.trim(), filters.reference, '');
+        if (criteria.exam) clearFacet('Solo Selectividad', filters.examLabel.querySelector('input'), '');
+        const advancedCount = [criteria.work, criteria.reference.trim(), criteria.origin, criteria.usage,
+            criteria.exam, criteria.examYear, criteria.examCommunity, criteria.includePending, ...criteria.tags].filter(Boolean).length;
+        filterCount.hidden = !advancedCount;
+        filterCount.textContent = String(advancedCount);
         for (const [id, chip] of quickTags) chip.setAttribute('aria-pressed', String(criteria.tags.includes(id)));
         for (const id of criteria.tags) {
             const item = catalogue.find(tag => tag.id === id);

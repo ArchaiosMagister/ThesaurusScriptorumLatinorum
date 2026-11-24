@@ -2063,8 +2063,13 @@ test('etiquetas por curso: filtrar el Banco y excluir un curso en un cuaderno pe
   }
   await tagCourse('Uno', '1bach');
   await tagCourse('Dos', '2bach');
-  await bank.getByRole('button', { name: 'Más filtros' }).click();
   const filter = bank.getByRole('combobox', { name: 'Filtrar textos por curso' });
+  await expect(filter).toBeVisible();
+  await expect(bank.getByRole('button', { name: 'Más filtros' })).toHaveAttribute('aria-expanded', 'false');
+  await filter.selectOption('unassigned');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
+  await bank.getByRole('button', { name: 'Quitar filtro «Curso: Sin curso asignado»' }).click();
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(4);
   await filter.selectOption('1bach');
   await expect(bank.locator('.atl-bank-card')).toHaveCount(1);
   await expect(bank.locator('.atl-bank-card').first()).toContainText('Uno');
@@ -2134,4 +2139,27 @@ test('el mensaje de Dropbox completado se oculta sin borrar otras notificaciones
   await page.reload();
   await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
   await expect(page.locator('#app-status')).toBeHidden({ timeout: 10000 });
+});
+
+test('el buscador deja a mano curso, autor y etiquetas y permite limpiar la búsqueda en móvil', async ({ page }) => {
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  for (const width of [390, 820, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(bank.getByRole('combobox', { name: 'Filtrar textos por curso' })).toBeVisible();
+    await expect(bank.getByRole('combobox', { name: 'Filtrar textos por autor' })).toBeVisible();
+    await expect(bank.getByRole('combobox', { name: 'Filtrar textos por obra' })).toBeHidden();
+    expect(await bank.evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+  }
+  const search = bank.getByRole('searchbox', { name: 'Buscar en banco de textos propios' });
+  await search.fill('Secunda');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(1);
+  await bank.getByRole('button', { name: 'Borrar búsqueda' }).click();
+  await expect(search).toHaveValue('');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(4);
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  await expect(bank.getByRole('combobox', { name: 'Filtrar textos por obra' })).toBeVisible();
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  await expect(bank.getByRole('combobox', { name: 'Filtrar textos por obra' })).toBeHidden();
 });

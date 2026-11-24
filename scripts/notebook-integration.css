@@ -980,3 +980,59 @@
   .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
   .atl-bank-edit-form textarea[aria-label="Texto latino"] { min-height: 13rem; height: 34vh; }
 }
+
+/* Buscador del banco: filtros cotidianos visibles, facetas avanzadas plegables. */
+@media screen {
+  #editor .atl-bank .atl-bank-search-panel {
+    display: grid; gap: .65rem; min-width: 0; padding: .8rem;
+    border: 1px solid var(--rule); border-radius: 12px; background: var(--panel, var(--paper-2));
+  }
+  #editor .atl-bank .cuaderno-bank-toolbar.atl-search-toolbar {
+    grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55rem; align-items: end;
+  }
+  #editor .atl-bank .atl-search-toolbar .cuaderno-bank-search { grid-column: 1 / -1; position: relative; }
+  #editor .atl-bank .atl-search-toolbar .cuaderno-bank-control {
+    min-width: 0; display: grid; gap: .25rem; color: var(--ink-2); font-size: .8rem; font-weight: 650;
+  }
+  #editor .atl-bank .atl-search-toolbar :is(input,select),
+  #editor .atl-bank .atl-bank-more-fields :is(input:not([type="checkbox"]),select) {
+    width: 100%; min-width: 0; min-height: 40px; padding: .45rem .55rem;
+    border: 1px solid var(--rule); border-radius: 7px; background: var(--paper); color: var(--ink);
+    font-size: 16px; font-weight: 400;
+  }
+  #editor .atl-bank .atl-search-toolbar .cuaderno-bank-search input {
+    min-height: 48px; padding-inline-end: 2.8rem; font-size: 16px;
+  }
+  #editor .atl-bank .atl-search-toolbar .cuaderno-bank-search input::-webkit-search-cancel-button { display: none; }
+  #editor .atl-bank .atl-search-clear {
+    position: absolute; inset-inline-end: .3rem; bottom: .25rem; min-width: 40px; min-height: 40px;
+    border: 0; border-radius: 6px; background: transparent; color: var(--ink-2); font-size: 1.3rem;
+  }
+  #editor .atl-bank .atl-search-clear[hidden], #editor .atl-bank .atl-bank-quick-tags[hidden],
+  #editor .atl-bank .atl-filter-count[hidden] { display: none; }
+  #editor .atl-bank .atl-primary-course select { border-color: var(--accent); }
+  #editor .atl-bank .atl-bank-search-panel :is(button,input,select):focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  #editor .atl-bank .atl-bank-quick-tags { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .65rem; }
+  #editor .atl-bank .atl-quick-label { font-size: .77rem; font-weight: 650; color: var(--ink-2); }
+  #editor .atl-bank .atl-bank-tag-shortcuts { display: flex; flex-wrap: wrap; gap: .3rem; margin: 0; }
+  #editor .atl-bank .atl-bank-active-tags { margin: 0; flex-wrap: wrap; gap: .3rem; }
+  #editor .atl-bank .atl-bank-active-tags:empty { display: none; }
+  #editor .atl-bank .atl-facet-chip { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  #editor .atl-bank .atl-bank-search-panel .atl-bank-results-header { padding-top: .45rem; border-top: 1px solid var(--rule); gap: .5rem; }
+  #editor .atl-bank .atl-filter-tools { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; margin-inline-start: auto; }
+  #editor .atl-bank .atl-filter-tools button { min-height: 38px; }
+  #editor .atl-bank .atl-filter-tools .cuaderno-bank-reset:disabled { display: inline-flex; opacity: .5; }
+  #editor .atl-bank .atl-filter-tools button[aria-expanded="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft, var(--paper)); }
+  #editor .atl-bank .atl-filter-count { min-width: 1.4rem; text-align: center; border-radius: 1rem; padding: .1rem .35rem; background: var(--accent); color: white; font-size: .75rem; }
+  #editor .atl-bank .atl-bank-more { background: var(--paper); padding: .75rem; }
+  #editor .atl-bank .atl-facet-heading { color: var(--accent); margin: .5rem 0 .25rem; font-size: .85rem; }
+  #editor .atl-bank .atl-facet-heading:first-child { margin-top: 0; }
+  #editor .atl-bank .atl-bank-more-fields { margin-top: 0; }
+}
+@media screen and (max-width: 760px) {
+  #editor .atl-bank .cuaderno-bank-toolbar.atl-search-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #editor .atl-bank .atl-bank-search-panel { padding: .6rem; }
+  #editor .atl-bank .atl-filter-tools { margin-inline-start: 0; }
+}
