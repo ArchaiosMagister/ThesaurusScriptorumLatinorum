@@ -4,6 +4,8 @@ import {readFile} from 'node:fs/promises';
 import {prepareSeed,seedId,isPristineSeed,pauCvIdentity} from '../scripts/pau-cv-seed.js';
 const rows=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',import.meta.url),'utf8'));
 const empty=()=>({schemaVersion:1,texts:[],tags:[],notebooks:[]});
+const catalogue=[...new Set(rows.flatMap(row=>Object.keys(row.verifiedGrammar)))].map(id=>({id,label:id,kind:'catalogue',parentId:null}));
+const prepare=(corpus,existing,records,validate,reviewed)=>prepareSeed(corpus,existing,records,validate,catalogue,reviewed);
 test('44 exámenes, 88 fichas, 12 con léxico; marcas exactas, reservas y convocatorias independientes',()=>{
  assert.equal(rows.length,88);
  assert.equal(rows.filter(x=>x.doc.author==='Julio César').length,43);
@@ -19,12 +21,12 @@ test('44 exámenes, 88 fichas, 12 con léxico; marcas exactas, reservas y convoc
  }
 });
 test('instalación aditiva, no restaura bajas, no sobrescribe una ficha existente',()=>{
- const corpus=empty(), first=prepareSeed(corpus,[],rows,x=>x);
- assert.equal(first.texts.length,88);assert.equal(first.pauCvSeedVersion,1);assert.ok(isPristineSeed(first));
+ const corpus=empty(), first=prepare(corpus,[],rows,x=>x);
+ assert.equal(first.texts.length,88);assert.equal(first.pauCvSeedVersion,2);assert.ok(isPristineSeed(first));
  const deleted={...first,texts:first.texts.slice(1)};
- assert.equal(prepareSeed(deleted,deleted.texts,rows,x=>x),deleted);assert.ok(!isPristineSeed(deleted));
+ assert.equal(prepare(deleted,deleted.texts,rows,x=>x),deleted);assert.ok(!isPristineSeed(deleted));
  const personal={...first.texts[0],id:'doc.personal',title:'Mi título'};
- const next=prepareSeed({...corpus,texts:[personal]},[personal],rows,x=>x);
+ const next=prepare({...corpus,texts:[personal]},[personal],rows,x=>x);
  assert.equal(next.texts.length,88);assert.equal(next.texts[0],personal);
  assert.ok(!isPristineSeed(next));
 });
@@ -40,4 +42,17 @@ test('la identidad PAU conserva convocatoria, reserva y opción aunque se edite 
 
 test('la identidad independiente de PAU sobrevive a la retirada de las marcas y a la edición de notas',()=>{
  assert.equal(pauCvIdentity({pauCv:'2025 JUNIO / A',notes:'Notas docentes',selectividad:{year:2025}}),pauCvIdentity({teacherDocx:{pauCv:'2025 ORDINARIA / A'}}));
+});
+
+test('migración v1: no restaura bajas ni toca etiquetas o revisiones docentes',()=>{
+ const installed=prepare(empty(),[],rows,x=>x);
+ const old={...installed,pauCvSeedVersion:1,tags:[],texts:installed.texts.map(t=>({...t,tagIds:[]})).slice(1)};
+ old.texts[0]={...old.texts[0],tagIds:['gram.personal']};
+ old.tags=[{id:'gram.personal',kind:'custom',parentId:null}];
+ old.texts[1]={...old.texts[1],latin:old.texts[1].latin+' añadido'};
+ const migrated=prepare(old,old.texts,rows,x=>x,t=>t.id===old.texts[2].id);
+ assert.equal(migrated.texts.length,87);
+ assert.equal(migrated.texts[0],old.texts[0]);assert.equal(migrated.texts[1],old.texts[1]);assert.equal(migrated.texts[2],old.texts[2]);
+ assert.ok(migrated.texts[3].tagIds.length);
+ assert.equal(prepare(migrated,migrated.texts,rows,x=>x),migrated);
 });
