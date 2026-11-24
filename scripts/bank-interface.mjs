@@ -89,7 +89,8 @@ export function modernizeBank(source) {
         moreFilters.hidden = !moreFilters.hidden;
         bankState.moreFilters = !moreFilters.hidden;
         filterToggle.setAttribute('aria-expanded', String(bankState.moreFilters));
-    }, 'tbtn');
+    }, 'hbtn atl-filter-toggle');
+    filterToggle.setAttribute('aria-label', 'Más filtros');
     filterToggle.setAttribute('aria-controls', moreFilters.id);
     filterToggle.setAttribute('aria-expanded', String(!moreFilters.hidden));
     const filterFields = el('div', 'atl-bank-more-fields');
@@ -123,12 +124,13 @@ export function modernizeBank(source) {
     quick.append(el('span', 'atl-quick-label', 'Etiquetas frecuentes'), shortcuts);
     moreFilters.append(el('h5', 'atl-facet-heading', 'Gramática'), filters.panel);
     const searchPanel = el('div', 'atl-bank-search-panel');
-    searchPanel.append(bankToolbar, quick, filterChips);
+    searchPanel.append(bankToolbar);
     bank.append(searchPanel);`);
   replace('    bank.append(bankResultCount);', `    const resultsHeader = el('div', 'atl-bank-results-header');
     const filterCount = el('span', 'atl-filter-count');
-    filterCount.hidden = true;
+    filterCount.textContent = '0';
     filterCount.setAttribute('aria-hidden', 'true');
+    filterToggle.append(filterCount);
     const filterTools = el('div', 'atl-filter-tools');
     const examShortcut = button('Solo Selectividad', () => {
         const check = filters.examLabel.querySelector('input');
@@ -136,9 +138,12 @@ export function modernizeBank(source) {
         populate();
     }, 'hbtn atl-exam-shortcut');
     examShortcut.setAttribute('aria-pressed', String(filters.read().exam));
-    filterTools.append(examShortcut, filterToggle, filterCount, resetBankFilters);
-    resultsHeader.append(bankResultCount, filterTools);
-    searchPanel.append(resultsHeader, moreFilters);`);
+    filterTools.setAttribute('aria-label', 'Controles de filtrado');
+    examShortcut.classList.add('atl-filter-switch');
+    resetBankFilters.classList.add('atl-filter-reset');
+    filterTools.append(examShortcut, filterToggle, resetBankFilters);
+    resultsHeader.append(bankResultCount);
+    searchPanel.append(filterTools, quick, filterChips, moreFilters, resultsHeader);`);
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
   replace(`    bulk.append(el('p', 'small muted', 'Selecciona los resultados de la búsqueda o marca textos individuales. ' +
         'Los cuadernos editoriales no se borrarán. Los textos de cuadernos históricos están protegidos.'));`, '');
@@ -193,16 +198,27 @@ export function modernizeBank(source) {
         activeSelect(filters.examCommunity, 'Comunidad');
         if (criteria.reference.trim()) clearFacet('Referencia: ' + criteria.reference.trim(), filters.reference, '');
         if (criteria.exam) clearFacet('Solo Selectividad', filters.examLabel.querySelector('input'), '');
+        if (criteria.includePending) {
+            const chip = button('Propuestas pendientes ×', () => {
+                filters.panel.querySelector('.atl-bank-tag-controls input[type="checkbox"]').checked = false;
+                populate();
+            }, 'grammar-chip atl-bank-tag-chip atl-facet-chip');
+            chip.setAttribute('aria-label', 'Quitar filtro «Propuestas pendientes»');
+            filterChips.append(chip);
+        }
+        if (criteria.mode !== 'all') clearFacet('Coincidencia: alguna etiqueta', filters.panel.querySelector('#atl-grammar-match'), 'all');
         const advancedCount = [criteria.work, criteria.reference.trim(), criteria.origin, criteria.usage,
-            criteria.exam, criteria.examYear, criteria.examCommunity, criteria.includePending, ...criteria.tags].filter(Boolean).length;
-        filterCount.hidden = !advancedCount;
+            criteria.examYear, criteria.examCommunity, criteria.includePending, criteria.mode !== 'all', ...criteria.tags].filter(Boolean).length;
         filterCount.textContent = String(advancedCount);
+        filterCount.dataset.empty = String(!advancedCount);
+        filterToggle.dataset.hasFilters = String(advancedCount > 0);
+        filterToggle.title = advancedCount ? advancedCount + ' filtros avanzados activos' : 'Sin filtros avanzados activos';
         for (const [id, chip] of quickTags) chip.setAttribute('aria-pressed', String(criteria.tags.includes(id)));
         for (const id of criteria.tags) {
             const item = catalogue.find(tag => tag.id === id);
             if (!item) continue;
             const label = id === infinitiveId ? ['Infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
-            const chip = button(label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');
+            const chip = button(label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip atl-facet-chip');
             chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
             chip.setAttribute('aria-label', 'Quitar filtro «' + label + '»');
             filterChips.append(chip);

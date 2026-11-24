@@ -130,3 +130,39 @@ test('una copia integral con bajas PAU sustituye el banco de fábrica sin resuci
   await expect(targetBank.getByText('Mostrando 87 de 87 textos',{exact:true})).toBeVisible();
  } finally {await context.close();}
 });
+
+test('los filtros mantienen posición y estado inequívoco al activarlos y restablecerlos',async({page})=>{
+ await isolateAnalysis(page.context());
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await expect(bank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+ const tools=bank.locator('.atl-filter-tools');
+ const pau=tools.getByRole('button',{name:'Solo Selectividad',exact:true});
+ const more=tools.getByRole('button',{name:'Más filtros',exact:true});
+ const reset=tools.getByRole('button',{name:'Restablecer vista',exact:true});
+ const positions=async()=>tools.locator('button').evaluateAll(items=>items.map(el=>{const r=el.getBoundingClientRect();return [r.x,r.y,r.width,r.height]}));
+ const original=await positions();
+ const color=await pau.evaluate(el=>getComputedStyle(el).backgroundColor);
+ await expect(reset).toBeDisabled();
+ await pau.click();
+ await expect(pau).toHaveAttribute('aria-pressed','true');
+ expect(await positions()).toEqual(original);
+ expect(await pau.evaluate(el=>getComputedStyle(el).backgroundColor)).not.toBe(color);
+ await more.click();
+ await expect(more).toHaveAttribute('aria-expanded','true');
+ expect(await positions()).toEqual(original);
+ await bank.getByRole('combobox',{name:'Filtrar por año de Selectividad'}).selectOption('2026');
+ await expect(more).toHaveAttribute('data-has-filters','true');
+ await expect(more.locator('.atl-filter-count')).toHaveText('1');
+ await more.click();
+ await expect(more).toHaveAttribute('aria-expanded','false');
+ await expect(more).toHaveAttribute('data-has-filters','true');
+ expect(await positions()).toEqual(original);
+ await reset.click();
+ await expect(pau).toHaveAttribute('aria-pressed','false');
+ await expect(more).toHaveAttribute('data-has-filters','false');
+ await expect(reset).toBeDisabled();
+ expect(await positions()).toEqual(original);
+ expect(await pau.evaluate(el=>getComputedStyle(el).backgroundColor)).toBe(color);
+});
