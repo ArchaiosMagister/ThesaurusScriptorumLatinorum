@@ -2267,7 +2267,7 @@ test('la copia de Dropbox incluye las etiquetas automáticas además de las conf
   expect(result.retainedManual).toBe(true);
   expect(result.courseFieldStable).toBe(true);
   expect(result.automatic).toContain('gram.pron.posesivo');
-  expect(result.versions).toContain(2);
+  expect(result.versions).toContain(3);
   expect(result.compact).toBe(true);
 });
 
