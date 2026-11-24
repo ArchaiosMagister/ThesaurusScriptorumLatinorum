@@ -41,6 +41,40 @@ export function matchesInfinitive(ids, tense, voice) {
   });
 }
 
+
+/** Keep the exact session wording in the import identity; never infer it from the year. */
+export function selectividadSession(text) {
+  if (!text.selectividad) return null;
+  const key = String(text.teacherDocx?.pauCv ?? '');
+  const notes = String(text.notes ?? '');
+  const match = /^(\d{4})\s+(.+?)\s*\/\s*([AB])$/iu.exec(key);
+  const fallback = /^PAU CV\s*·\s*(.+?)\s+(\d{4})\s*·\s*Opción\s+([AB])\b/iu.exec(notes);
+  const raw = match?.[2] ?? fallback?.[1];
+  const option = (match?.[3] ?? fallback?.[3])?.toUpperCase();
+  if (!raw) return null;
+  const source = raw.trim().toLocaleLowerCase('es');
+  const reserve = /\breserva\b/u.test(source);
+  const name = source.replace(/\s*\(reserva\)\s*/gu,'').trim();
+  const kind = /^(junio|ordinaria)$/u.test(name) ? 'Ordinaria'
+    : /^(julio|septiembre|extraordinaria)$/u.test(name) ? 'Extraordinaria' : '';
+  const month = /^(junio|julio|septiembre)$/u.test(name) ? name : '';
+  const label = [kind || raw.trim(), month ? '(' + month + ')' : '', reserve ? '· Reserva' : '', option ? '· Opción ' + option : ''].filter(Boolean).join(' ');
+  return {kind, reserve, option, label};
+}
+export function selectividadLabel(text) {
+  if (!text.selectividad) return '';
+  return ['Selectividad', text.selectividad.year, selectividadSession(text)?.label, text.selectividad.community].filter(Boolean).join(' · ');
+}
+/** Undated records always trail dated exams. Same-year calls keep chronological order. */
+export function compareSelectividadYear(a,b,descending=false) {
+  const left=a.selectividad?.year, right=b.selectividad?.year;
+  if (!Number.isInteger(left) || !Number.isInteger(right)) return Number(Number.isInteger(right))-Number(Number.isInteger(left));
+  if (left!==right) return descending ? right-left : left-right;
+  const rank = s => s?.kind==='Ordinaria' ? (s.reserve?1:0) : s?.kind==='Extraordinaria' ? (s.reserve?3:2) : 4;
+  const x=selectividadSession(a),y=selectividadSession(b);
+  return rank(x)-rank(y) || (x?.option==='B'?1:x?.option==='A'?0:2)-(y?.option==='B'?1:y?.option==='A'?0:2);
+}
+
 export function matchesSelectividad(text, year, community, only) {
   if (!only && !year && !community) return true;
   return Boolean(text.selectividad &&

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bankTagVisible, buildCurriculum, matchesInfinitive, matchesSelectividad } from '../scripts/bank-curriculum.js';
+import { bankTagVisible, buildCurriculum, matchesInfinitive, matchesSelectividad, selectividadSession, selectividadLabel, compareSelectividadYear } from '../scripts/bank-curriculum.js';
 
 function row(index, level, ...tags) {
   return { text: { id: String(index), title: 'Pasaje ' + index }, level, tags };
@@ -44,4 +44,18 @@ test('retira las categorías pedidas y con tiempo y voz exige una sola forma com
   assert.equal(matchesInfinitive(['gram.inf.presente', 'gram.inf.pasivo'], 'presente', 'pasivo'), false);
   assert.equal(matchesInfinitive(['gram.inf.futuro.deponente'], '', 'deponente'), true);
   assert.equal(matchesInfinitive(['gram.infinitivo'], '', ''), false);
+});
+
+test('convocatoria original, reserva y orden cronológico de PAU',()=>{
+ const item=(year,session,option='A')=>({selectividad:{year,community:'Comunidad Valenciana'},teacherDocx:{pauCv:year+' '+session+' / '+option}});
+ const old=item(2006,'JUNIO'), september=item(2006,'SEPTIEMBRE'), recent=item(2026,'ORDINARIA'), reserve=item(2025,'JUNIO (reserva)'), ordinary=item(2025,'JUNIO','B'), undated={};
+ assert.equal(selectividadSession(old).label,'Ordinaria (junio) · Opción A');
+ assert.equal(selectividadSession(september).label,'Extraordinaria (septiembre) · Opción A');
+ assert.equal(selectividadSession(reserve).label,'Ordinaria (junio) · Reserva · Opción A');
+ assert.equal(selectividadSession({...reserve,teacherDocx:undefined,notes:'PAU CV · JUNIO (reserva) 2025 · Opción A · p. 48'}).label,selectividadSession(reserve).label);
+ assert.equal(selectividadSession({selectividad:{year:2026}}),null);
+ assert.match(selectividadLabel(recent),/2026 · Ordinaria · Opción A/);
+ const rows=[reserve,undated,recent,september,ordinary,old];
+ assert.deepEqual([...rows].sort((a,b)=>compareSelectividadYear(a,b)),[old,september,ordinary,reserve,recent,undated]);
+ assert.deepEqual([...rows].sort((a,b)=>compareSelectividadYear(a,b,true)),[recent,ordinary,reserve,old,september,undated]);
 });

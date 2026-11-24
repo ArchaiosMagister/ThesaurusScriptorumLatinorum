@@ -78,3 +78,19 @@ test('acceso rápido Solo Selectividad se combina con autor y se sincroniza con 
  await shortcut.click();
  await expect(bank.getByRole('checkbox',{name:'Solo Selectividad',exact:true})).not.toBeChecked();
 });
+
+test('orden por año PAU y convocatoria visible en las tarjetas y la ficha',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await expect(bank.getByText('Mostrando 88 de 88 textos',{exact:true})).toBeVisible({timeout:30000});
+ await bank.getByRole('button',{name:'Solo Selectividad',exact:true}).click();
+ const sort=bank.getByRole('combobox',{name:/Ordenar/});
+ await sort.selectOption('exam-year-asc');
+ const first=bank.locator('.atl-bank-card').first();
+ await expect(first).toContainText('Selectividad · 2006 · Ordinaria (junio) · Opción A');
+ await sort.selectOption('exam-year-desc');
+ await expect(first).toContainText('Selectividad · 2026 · Ordinaria · Opción A');
+ await first.click();
+ await expect(frame.locator('.modal').last().getByText('Convocatoria: Ordinaria · Opción A',{exact:true})).toBeVisible();
+});

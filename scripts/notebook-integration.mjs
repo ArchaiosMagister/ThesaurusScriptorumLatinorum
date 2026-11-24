@@ -111,7 +111,7 @@ function renderHome() {`);
     }) });
 }
 `;
-  source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
+  source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
   source = "import { appendDuplicateCards, createBankFilters, createInfinitiveAssignment, openBankReader } from './atl-bank-catalog.js';\n" + source;
@@ -315,6 +315,8 @@ window.addEventListener('atl-view', () => {
     inputs.get('latin').addEventListener('input', updateEstimate);
     updateEstimate();
     const exam = selectividadEditor(source.selectividad);
+    const sessionInfo = selectividadSession(source);
+    if (sessionInfo) exam.container.append(el('p', 'small muted', 'Convocatoria: ' + sessionInfo.label));
     form.append(courseField, difficultyField, exam.container);
     const glossary = vocabularyEditor(source);
     form.append(glossary.section);
@@ -533,7 +535,9 @@ window.addEventListener('atl-view', () => {
     difficultySelect.value = bankState.difficulty;
     difficultySelect.addEventListener('change', populate);
     sortSelect.append(new Option('Dificultad: menor primero', 'difficulty-asc'),
-        new Option('Dificultad: mayor primero', 'difficulty-desc'));
+        new Option('Dificultad: mayor primero', 'difficulty-desc'),
+        new Option('Selectividad: año ascendente', 'exam-year-asc'),
+        new Option('Selectividad: año descendente', 'exam-year-desc'));
     const pendingFor = id => bankState.includePending ? pendingIndex.get(id) ?? [] : [];
     const setAnalysis = (id, result) => {
         analysisIndex.set(id, result);
@@ -618,7 +622,11 @@ window.addEventListener('atl-view', () => {
             }`);
   replace("            if (sortSelect.value === 'work-asc')\n                return workOrder || authorOrder || titleOrder || compare(a.id, b.id);",
     "            if (sortSelect.value === 'work-asc')\n                return workOrder || authorOrder || compareFilled(a.source.reference ?? '', b.source.reference ?? '') || titleOrder || compare(a.id, b.id);");
-  replace('            return authorOrder || workOrder || titleOrder || compare(a.id, b.id);', `            if (sortSelect.value.startsWith('difficulty-')) {
+  replace('            return authorOrder || workOrder || titleOrder || compare(a.id, b.id);', `            if (sortSelect.value.startsWith('exam-year-')) {
+                const order = compareSelectividadYear(a, b, sortSelect.value === 'exam-year-desc');
+                if (order) return order;
+            }
+            if (sortSelect.value.startsWith('difficulty-')) {
                 const left = difficultyFor(a).level;
                 const right = difficultyFor(b).level;
                 if (left === null || right === null) return Number(right !== null) - Number(left !== null) || titleOrder || compare(a.id, b.id);
@@ -675,7 +683,7 @@ window.addEventListener('atl-view', () => {
                 onError: error => M.toast(String(error), 7000)
             });
             rowSummary.append(read);`);
-  replace("            const titleGroup = el('span', 'cuaderno-home-text-heading-info');", `            if (text.selectividad) sourceParts.push(['Selectividad', text.selectividad.year, text.selectividad.community].filter(Boolean).join(' · '));
+  replace("            const titleGroup = el('span', 'cuaderno-home-text-heading-info');", `            if (text.selectividad) sourceParts.push(selectividadLabel(text));
             const source = sourceParts.join(' · ');
             const titleGroup = el('span', 'cuaderno-home-text-heading-info');`);
   replace("            const source = [text.source.author, text.source.work, text.source.reference]\n                .filter(Boolean).join(' · ');",
