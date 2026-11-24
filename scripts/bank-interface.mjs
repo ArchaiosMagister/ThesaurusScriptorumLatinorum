@@ -161,8 +161,7 @@ export function modernizeBank(source) {
   replace("            selection.append(checkbox, el('span', '', 'Seleccionar'));", '            selection.append(checkbox);');
 
   replace("    const bulk = el('div', 'cuaderno-bank-bulk');", `    const bulk = el('details', 'cuaderno-bank-bulk');
-    const bulkHeading = el('summary', '', 'Gestionar selección');
-    bulk.addEventListener('toggle', () => bank.classList.toggle('atl-selecting', bulk.open));`);
+    const bulkHeading = el('summary', '', 'Gestionar selección');`);
   replace('    bulk.append(selectedButton, deselect, removeSelected, selectionCount);', `    const bulkActions = el('div', 'atl-bank-action-group');
     const exportSelected = button('Exportar textos seleccionados', () =>
         window.parent.atlExportSelectedTexts([...selectedForRemoval]), 'hbtn');

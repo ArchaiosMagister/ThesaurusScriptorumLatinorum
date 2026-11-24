@@ -826,7 +826,7 @@
   #editor .atl-bank .cuaderno-bank-row-tags .small { white-space: nowrap; }
   #editor .atl-bank .atl-bank-card-actions { flex: none; margin: 0; flex-wrap: nowrap; }
   #editor .atl-bank .atl-bank-card-actions .tbtn { min-height: 34px; }
-  #editor .atl-bank:not(.atl-selecting) .atl-bank-card-actions .cuaderno-home-select { display: none; }
+  #editor .atl-bank:not(:has(.cuaderno-bank-bulk[open])) .atl-bank-card-actions .cuaderno-home-select { display: none; }
   #editor .atl-bank .cuaderno-bank-show-more,
   #editor .atl-bank .cuaderno-bank-empty { grid-column: 1 / -1; }
 }
