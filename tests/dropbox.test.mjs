@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isRecoverableSync, mergeUsages, selectEditor } from '../app/dropbox-plan.js';
+import { isRecoverableSync, mergeUsages, selectEditor, applyBankReviewDecision } from '../app/dropbox-plan.js';
 
 test('Dropbox solo sustituye el espacio editorial si sigue la revisión conocida o está vacío', () => {
   assert.equal(selectEditor('a', 'a', null, false), 'same');
@@ -46,4 +46,15 @@ test('Una sincronización interrumpida solo se reanuda si cada almacén coincide
   assert.equal(isRecoverableSync({ corpus: 'A', editions: 'B', exams: 'C' }, before, after), true);
   assert.equal(isRecoverableSync({ corpus: 'A', editions: 'tercero', exams: 'c' }, before, after), false);
   assert.equal(isRecoverableSync({ corpus: 'A' }, before, after), false);
+});
+
+test('las bajas de revisiones no se recrean y no se heredan versiones obsoletas',()=>{
+ const row={start:0,end:4,tagId:'gram.x',state:'automatic',evidence:[],alternatives:[]};
+ const cached={version:2,rejected:[],corrected:[],pending:[{...row,evidence:['prueba']}]};
+ assert.equal(applyBankReviewDecision(cached,undefined),null);
+ const downgraded=applyBankReviewDecision(cached,{rejected:['0:4:gram.x'],corrected:[],pending:[]});
+ assert.equal(downgraded.version,undefined);
+ assert.deepEqual(downgraded.pending,[]);
+ const current=applyBankReviewDecision(cached,{version:2,rejected:[],corrected:[],pending:[row]});
+ assert.deepEqual(current.pending[0].evidence,['prueba']);
 });

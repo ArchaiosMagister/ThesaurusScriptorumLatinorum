@@ -38,3 +38,15 @@ export function isRecoverableSync(current, before, after) {
     Object.keys(before).every(name => typeof before[name] === 'string' &&
       typeof after[name] === 'string' && (current[name] === before[name] || current[name] === after[name]));
 }
+
+const reviewKey = row => [row.start, row.end, row.tagId].join(':');
+export function applyBankReviewDecision(cached, decision) {
+  if (!decision) return null;
+  const existing = new Map((Array.isArray(cached?.pending) ? cached.pending : []).map(row => [reviewKey(row), row]));
+  const pending = decision.pending.map(row => {
+    const old = cached?.version === decision.version ? existing.get(reviewKey(row)) : null;
+    return old && old.state === row.state ? { ...row, evidence: old.evidence ?? [], alternatives: old.alternatives ?? [] } : row;
+  });
+  // Do not inherit stale versions or old, deleted pending rows.
+  return { ...decision, pending };
+}

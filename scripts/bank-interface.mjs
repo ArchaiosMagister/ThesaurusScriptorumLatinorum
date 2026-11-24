@@ -50,7 +50,10 @@ export function modernizeBank(source) {
   replace("        list.append(label);\n    }\n    search.addEventListener('input', () => {",
     "        target.append(label);\n    }\n    for (const tag of all.filter(item => bankTagAssignable(item.id) && !isInfinitiveTag(item.id))) appendTagOption(tag, list);\n    search.addEventListener('input', () => {");
   replace("                        const next = attachGrammarTags(saved.corpus, text.id, [...selected], allGrammarTags(corpus));",
-    `                        const latest = allGrammarTags(saved.corpus, allGrammarTags(corpus));
+    `                        const live = saved.corpus.texts.find(item => item.id === text.id);
+                        if (live.latin !== text.latin || JSON.stringify([...live.tagIds].sort()) !== JSON.stringify([...text.tagIds].sort()))
+                            throw Error('El texto o sus etiquetas cambiaron en otra pestaña. Cierra esta ventana y vuelve a abrir la ficha.');
+                        const latest = allGrammarTags(saved.corpus, allGrammarTags(corpus));
                         const ids = [...selected].map(id => {
                             const staged = all.find(tag => tag.id === id);
                             return latest.some(tag => tag.id === id) ? id : findTagByLabel(staged.label, latest)?.id ?? id;
@@ -268,6 +271,12 @@ export function modernizeBank(source) {
         saving = true;
         panel.inert = true;
         try {
+            await reviewReady;
+            if (reviewKey) {
+                const latest = readBankReview(reviewKey, text.latin);
+                const latestFingerprint = JSON.stringify([[...latest.rejected].sort(), [...latest.corrected].sort(([a], [b]) => a.localeCompare(b))]);
+                if (latestFingerprint !== initialDecisions) throw Error('Las decisiones de Collatinus cambiaron en otra pestaña. Vuelve a abrir la ficha.');
+            }
             await persist();
             allowClose = true;
             return true;

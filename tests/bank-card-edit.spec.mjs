@@ -68,3 +68,50 @@ test('el editor navega solo por resultados filtrados y protege los cambios', asy
   await modal.getByRole('button',{name:'Cancelar',exact:true}).click();
   await expect(bank.locator('.atl-bank-card').filter({hasText:'C corregido'})).toBeVisible();
 });
+
+test('fallo de validación al navegar no deja un destino pendiente',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ const modal=frame.locator('.modal').last();
+ for(const [title,latin] of [['A uno','Roma magna est.'],['B dos','Gallia clara est.']]){
+  await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+  await modal.getByRole('textbox',{name:'Título',exact:true}).fill(title);
+  await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill(latin);
+  await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+ }
+ await bank.locator('.atl-bank-card').filter({hasText:'A uno'}).click();
+ await modal.getByRole('textbox',{name:'Título didáctico'}).fill('');
+ page.once('dialog',d=>d.accept());
+ await modal.getByRole('button',{name:'Siguiente',exact:true}).click();
+ await expect(frame.locator('.toast').last()).toContainText('obligatorios');
+ page.once('dialog',d=>d.accept());
+ await modal.getByRole('button',{name:'Cancelar',exact:true}).click();
+ await expect(modal).toBeHidden();
+ await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
+});
+
+test('la ficha puede retirar dificultad y procedencia PAU sin restaurarlas al guardar',async({page})=>{
+ await page.goto('/ThesaurusScriptorumLatinorum/');
+ const frame=page.frameLocator('#panel-cuaderno iframe');
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+ const modal=frame.locator('.modal').last();
+ await modal.getByRole('textbox',{name:'Título',exact:true}).fill('Clasificación reversible');
+ await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Roma magna est.');
+ await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+ await bank.locator('.atl-bank-card').click();
+ await modal.getByRole('combobox',{name:'Dificultad docente'}).selectOption('5');
+ await modal.getByRole('checkbox',{name:'Selectividad',exact:true}).check();
+ await modal.getByRole('spinbutton',{name:'Año de Selectividad'}).fill('2026');
+ await modal.getByRole('button',{name:'Guardar cambios'}).click();
+ await bank.locator('.atl-bank-card').click();
+ await expect(modal.getByRole('combobox',{name:'Dificultad docente'})).toHaveValue('5');
+ await expect(modal.getByRole('checkbox',{name:'Selectividad',exact:true})).toBeChecked();
+ await modal.getByRole('combobox',{name:'Dificultad docente'}).selectOption('');
+ await modal.getByRole('checkbox',{name:'Selectividad',exact:true}).uncheck();
+ await modal.getByRole('button',{name:'Guardar cambios'}).click();
+ await bank.locator('.atl-bank-card').click();
+ await expect(modal.getByRole('combobox',{name:'Dificultad docente'})).toHaveValue('');
+ await expect(modal.getByRole('checkbox',{name:'Selectividad',exact:true})).not.toBeChecked();
+});

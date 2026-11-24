@@ -80,7 +80,7 @@ export function integrateNotebook(source) {
 }
 function renderHome() {`);
 
-  source = "import { installPauCvSeed } from './atl-pau-cv-seed.js';\n" + source;
+  source = "import { installPauCvSeed, pauCvIdentity } from './atl-pau-cv-seed.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
   replace('        await composer.open();\n        wireButtons();', `        await composer.open();
     try {
@@ -95,16 +95,16 @@ function renderHome() {`);
         const current = await repo.load();
         const existing = await loadCombinedCorpus();
         let next = current.corpus, count = 0;
-        const identities = new Set(existing.texts.filter(t => t.teacherDocx?.pauCv).map(t => t.teacherDocx.pauCv + '\\0' + t.latin));
+        const identities = new Set(existing.texts.map(pauCvIdentity).filter(Boolean));
         for (const { doc, year, session, option, notes } of records) {
-            const key = doc.pauCv + '\\0' + doc.latin;
-            if (identities.has(key)) continue;
+            const key = pauCvIdentity({teacherDocx:doc});
+            if (key && identities.has(key)) continue;
             const id = 'doc.' + crypto.randomUUID();
             next = upsertText(next, { title: doc.title, latin: doc.latin, author: doc.author,
                 work: doc.work, reference: doc.reference, notes: ['PAU CV · ' + session + ' ' + year + ' · Opción ' + option, notes].filter(Boolean).join('\\n'),
                 selectividad: {year, community: 'Comunidad Valenciana'}, courseIds: ['2bach'], origin: {kind:'own'} }, id, new Date().toISOString());
             next = validateCorpus({...next,texts:next.texts.map(t => t.id === id ? {...t,teacherDocx:doc} : t)});
-            identities.add(key);count++;
+            if (key) identities.add(key);count++;
         }
         if (count) { await repo.save(next,current.revision);await reload();render(); }
         return count;
@@ -483,11 +483,17 @@ window.addEventListener('atl-view', () => {
   const editorSaveStart = source.indexOf('function openBankTextEditor(');
   const editorSaveEnd = source.indexOf('    const remove = button(', editorSaveStart);
   if (editorSaveStart < 0 || editorSaveEnd < 0) throw Error('Revisar guardado de la ficha.');
-  const editorSave = source.slice(editorSaveStart, editorSaveEnd);
+  let editorSave = source.slice(editorSaveStart, editorSaveEnd);
+  const saveBegin = "const save = button('Guardar cambios', async () => {";
+  const existingTry = '        save.disabled = true;\n        try {';
+  if (editorSave.split(saveBegin).length !== 2 || editorSave.split(existingTry).length !== 2)
+    throw Error('Revisar inicio del guardado del editor.');
+  editorSave = editorSave.replace(existingTry, '').replace(saveBegin,
+    saveBegin + '\n        if (save.disabled) return;\n        save.disabled = true;\n        form.inert = true;\n        try {');
   const saveFinally = /finally\s*\{\s*save\.disabled = false;\s*\}/gu;
   if ([...editorSave.matchAll(saveFinally)].length !== 1) throw Error('Revisar fin de guardado de ficha.');
   source = source.slice(0, editorSaveStart) + editorSave.replace(saveFinally,
-    'finally { save.disabled = false; destination = null; }') + source.slice(editorSaveEnd);
+    'finally { save.disabled = false; form.inert = false; destination = null; }') + source.slice(editorSaveEnd);
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");
@@ -672,7 +678,7 @@ window.addEventListener('atl-view', () => {
                 const current = [...document.querySelectorAll('.atl-bank-card')].find(item => item.dataset.sourceId === text.id);
                 current?.focus({ preventScroll: true });
             };
-            const navigation = { results: () => currentResults().map(item => corpus.texts.find(t => t.id === item.id)).filter(Boolean) };
+            const navigation = { results: () => currentResults() };
             read.addEventListener('click', () => openBankTextEditor(text, restoreFocus, navigation));
             const openReader = () => openBankReader({
                 texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),

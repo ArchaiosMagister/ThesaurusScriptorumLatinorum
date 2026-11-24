@@ -68,9 +68,9 @@ export function integrateOriginWrites(source) {
          ...(draft.courseIds === undefined && previous?.courseIds === undefined
              ? {} : { courseIds: draft.courseIds ?? previous?.courseIds ?? [] }),
         ...((draft.difficulty === undefined ? previous?.difficulty : draft.difficulty) == null ? {}
-            : { difficulty: draft.difficulty ?? previous?.difficulty }),
+            : { difficulty: draft.difficulty === undefined ? previous?.difficulty : draft.difficulty }),
         ...((draft.selectividad === undefined ? previous?.selectividad : draft.selectividad) == null ? {}
-            : { selectividad: draft.selectividad ?? previous?.selectividad }),
+            : { selectividad: draft.selectividad === undefined ? previous?.selectividad : draft.selectividad }),
         ...(previous?.origin || draft.origin || (!previous && !Object.hasOwn(draft, 'origin'))
             ? { origin: previous?.origin ?? draft.origin ?? { kind: 'own' } }
             : {}),`);

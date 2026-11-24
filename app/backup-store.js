@@ -1,3 +1,4 @@
+import { applyBankReviewDecision } from './dropbox-plan.js';
 import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { validateWorkspaceSnapshot } from './modulos/cuaderno-integrado/storage/workspace-repository.js';
@@ -496,18 +497,11 @@ export async function applySyncData(data, before) {
     for (const key of new Set([...previous.keys(), ...next.keys()])) {
       if (equal(previous.get(key), next.get(key))) continue;
       const original = localStorage.getItem(key);
-      const cached = JSON.parse(original ?? '{}') ?? {};
-      const decision = next.get(key) ?? { rejected: [], corrected: [], pending: [] };
-      const existing = new Map((cached.pending ?? []).map(row => [decisionKey(row), row]));
-      const pending = decision.version
-        ? decision.pending.map(row => {
-            const old = cached.version === decision.version ? existing.get(decisionKey(row)) : null;
-            return old && old.state === row.state
-              ? { ...row, evidence: old.evidence ?? [], alternatives: old.alternatives ?? [] }
-              : row;
-          })
-        : [...(cached.pending ?? []), ...decision.pending.filter(row => !existing.has(decisionKey(row)))];
-      localStorage.setItem(key, JSON.stringify({ ...cached, ...decision, pending }));
+      let cached = {};
+      try { cached = JSON.parse(original ?? '{}') ?? {}; } catch { /* Replace a damaged cache with the verified remote decision. */ }
+      const decision = applyBankReviewDecision(cached, next.get(key));
+      if (decision === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, JSON.stringify(decision));
       savedReviews.push([key, original]);
     }
   } catch (error) {
