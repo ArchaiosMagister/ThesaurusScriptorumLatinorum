@@ -78,6 +78,23 @@ function move(items, from, to) {
   [items[from], items[to]] = [items[to], items[from]];
 }
 
+// Presentation-only groups: stored templates retain the original ordered tag IDs.
+export function plannerTagGroup(tag, catalogue) {
+  const finite = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(tag.id);
+  if (finite) {
+    const [, tense, , voice] = finite;
+    const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
+      /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
+    if (theme && voice !== 'deponente') return theme + ' · ' + (voice === 'activo' ? 'activa' : 'pasiva');
+    if (voice === 'deponente') return 'Verbos deponentes';
+  }
+  if (tag.id.startsWith('gram.pron.')) return 'Pronombres';
+  if (tag.id.startsWith('gram.part.')) return 'Participios';
+  if (isInfinitiveTag(tag.id)) return 'Infinitivos';
+  return tag.kind === 'custom' ? 'Etiquetas propias' :
+    catalogue.find(parent => parent.id === tag.parentId)?.label ?? tag.category ?? 'Otras etiquetas';
+}
+
 export function showBankPlanner({ read, match, create, modal }) {
   const panel = node('div');
   panel.className = 'atl-bank-planner';
@@ -208,6 +225,83 @@ export function showBankPlanner({ read, match, create, modal }) {
     const list = node('ol');
     const select = node('select');
     select.setAttribute('aria-label', 'Etiqueta para ' + label.toLowerCase());
+    const picker = node('div');
+    picker.className = 'atl-planner-picker';
+    picker.setAttribute('role', 'group');
+    picker.setAttribute('aria-label', 'Selección de etiquetas para ' + label.toLowerCase());
+    const search = node('input');
+    search.type = 'search';
+    search.placeholder = 'Buscar etiqueta o familia…';
+    search.setAttribute('aria-label', 'Buscar etiquetas para ' + label.toLowerCase());
+    const groups = node('div');
+    groups.className = 'atl-planner-tag-groups';
+    const selectedDetails = node('details');
+    selectedDetails.className = 'atl-planner-selected';
+    const selectedSummary = node('summary', 'Orden de las etiquetas seleccionadas');
+    selectedDetails.append(selectedSummary, list);
+    // Keep the individual quick-add control and the ordered selection for existing workflows.
+    selectedDetails.open = true;
+    picker.append(node('p', 'Marca una familia completa o despliega sus etiquetas para seleccionar solo algunas.'), search, groups);
+    const setTags = (ids, checked) => {
+      if (checked) for (const id of ids) { if (!tags.includes(id)) tags.push(id); }
+      else for (let i = tags.length - 1; i >= 0; i--) { if (ids.includes(tags[i])) tags.splice(i, 1); }
+      render();
+      void generate();
+    };
+    const normalize = value => value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es');
+    function renderGroups() {
+      const expanded = new Set([...groups.querySelectorAll('details[open]')].map(row => row.dataset.family));
+      const focused = document.activeElement?.dataset?.pickerKey;
+      const families = new Map();
+      for (const tag of catalogue) {
+        const family = plannerTagGroup(tag, catalogue);
+        if (!families.has(family)) families.set(family, []);
+        families.get(family).push(tag);
+      }
+      const preferred = ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva', 'Pronombres', 'Participios', 'Infinitivos', 'Verbos deponentes'];
+      const rank = name => preferred.includes(name) ? preferred.indexOf(name) : preferred.length;
+      groups.replaceChildren();
+      const query = normalize(search.value.trim());
+      for (const [family, members] of [...families].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b, 'es'))) {
+        const visible = members.filter(tag => !query || normalize(family + ' ' + tag.label).includes(query));
+        if (!visible.length) continue;
+        const ids = members.map(tag => tag.id);
+        const total = ids.filter(id => tags.includes(id)).length;
+        const row = node('div');
+        row.className = 'atl-planner-family';
+        const head = node('div');
+        head.className = 'atl-planner-family-head';
+        const groupCheck = node('input');
+        groupCheck.type = 'checkbox';
+        groupCheck.checked = total === ids.length;
+        groupCheck.indeterminate = total > 0 && total < ids.length;
+        groupCheck.dataset.pickerKey = 'group:' + family;
+        groupCheck.setAttribute('aria-label', 'Seleccionar familia ' + family + ' para ' + label.toLowerCase());
+        groupCheck.addEventListener('change', () => setTags(ids, groupCheck.checked));
+        head.append(field(family + ' (' + total + '/' + ids.length + ')', groupCheck));
+        const detail = node('details');
+        detail.dataset.family = family;
+        detail.open = expanded.has(family) || Boolean(query);
+        detail.append(node('summary', 'Ver etiquetas'));
+        const choices = node('div');
+        choices.className = 'atl-planner-family-choices';
+        for (const tag of visible) {
+          const check = node('input');
+          check.type = 'checkbox';
+          check.checked = tags.includes(tag.id);
+          check.dataset.pickerKey = 'tag:' + tag.id;
+          check.setAttribute('aria-label', tag.label + ' para ' + label.toLowerCase());
+          check.addEventListener('change', () => setTags([tag.id], check.checked));
+          choices.append(field(tag.label, check));
+        }
+        detail.append(choices);
+        row.append(head, detail);
+        groups.append(row);
+      }
+      if (!groups.childElementCount) groups.append(node('p', query ? 'No hay etiquetas que coincidan.' : 'Cargando etiquetas…'));
+      if (focused) [...groups.querySelectorAll('input')].find(input => input.dataset.pickerKey === focused)?.focus();
+    }
+    search.addEventListener('input', renderGroups);
     const counts = node('div');
     counts.className = 'atl-planner-counts';
     counts.append(field('Textos ordinarios', count), field('Textos de refuerzo', review));
@@ -255,6 +349,8 @@ export function showBankPlanner({ read, match, create, modal }) {
         row.append(controls);
         list.append(row);
       });
+      selectedSummary.textContent = 'Orden de las etiquetas seleccionadas (' + tags.length + ')';
+      renderGroups();
       summary.textContent = label + (tags.length ? ' · ' + tags.length + (tags.length === 1 ? ' etiqueta' : ' etiquetas') : '');
     };
     select.addEventListener('change', () => {
@@ -266,7 +362,7 @@ export function showBankPlanner({ read, match, create, modal }) {
     count.addEventListener('change', generate);
     review.addEventListener('change', generate);
     termControls.push({ count, review, tags, render });
-    section.append(summary, counts, select, list);
+    section.append(summary, counts, picker, field('Añadir una etiqueta', select), selectedDetails);
     panel.append(section);
   });
   panel.append(status, preview, partialField, actions);

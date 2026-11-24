@@ -405,6 +405,25 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const panel = frame.locator('.atl-bank-planner');
   const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
   await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
+  const firstPicker = panel.getByRole('group', { name: 'Selección de etiquetas para primer trimestre' });
+  for (const family of ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva', 'Pronombres']) {
+    await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia ' + family + ' para primer trimestre' })).toBeVisible();
+  }
+  const pronouns = firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Pronombres para primer trimestre' });
+  await pronouns.check();
+  await expect(pronouns).toBeChecked();
+  const pronounGroup = firstPicker.locator('.atl-planner-family').filter({hasText: /^Pronombres \(/u});
+  await pronounGroup.getByText('Ver etiquetas', { exact: true }).click();
+  const onePronoun = pronounGroup.locator('.atl-planner-family-choices input').first();
+  await onePronoun.uncheck();
+  await expect.poll(() => pronouns.evaluate(input => input.indeterminate)).toBe(true);
+  await pronouns.check();
+  await pronouns.uncheck();
+  await expect(pronouns).not.toBeChecked();
+  await firstPicker.getByRole('searchbox').fill('perfectum');
+  await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Perfectum · pasiva para primer trimestre' })).toBeVisible();
+  await expect(pronouns).toHaveCount(0);
+  await firstPicker.getByRole('searchbox').fill('');
   const first = panel.getByRole('combobox', { name: 'Etiqueta para primer trimestre' });
   await first.selectOption('gram.ablativo.absoluto');
   await first.selectOption('gram.subjuntivo');
