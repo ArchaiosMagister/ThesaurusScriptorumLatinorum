@@ -4,7 +4,11 @@ import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { validateWorkspaceSnapshot } from './modulos/cuaderno-integrado/storage/workspace-repository.js';
 import { readBackup } from './modulos/cuaderno-integrado/core/backup.js';
-import { readWorkspaceBackup } from './modulos/cuaderno-integrado/storage/workspace-backup.js';
+import { allGrammarTags, attachGrammarTags } from './modulos/cuaderno-integrado/core/grammar-tags.js';
+import { emptyCorpus } from './modulos/cuaderno-integrado/core/model.js';
+import { bankReviewKey } from './modulos/cuaderno-integrado/ui/atl-bank-review.js';
+import { partialFormat, partialTypes, subsetCorpus, mergeBank, parseProposals, tagChanges, validateTemplateRows } from './partial-backup.js';
+import { combineNotebookCorpora, createNotebookBackup, readWorkspaceBackup } from './modulos/cuaderno-integrado/storage/workspace-backup.js';
 
 const format = 'administrator-textorum-latinorum';
 export const maxBackupSize = 128 * 1024 * 1024;
@@ -544,6 +548,265 @@ export async function applySyncData(data, before) {
     const reverted = await Promise.allSettled(committed.reverse().map(name => replaceDatabase(name, after[name], before[name])));
     if (reverted.some(result => result.status === 'rejected'))
       throw new Error('Otra pestaña modificó los datos durante la sincronización. Revisa el estado local antes de repetirla.');
+    throw error;
+  }
+}
+
+function corpora(data) {
+  const historical = data.databases[corpusName].corpus[0]?.[1]?.corpus ?? emptyCorpus();
+  const editorial = data.databases[workspaceName].corpus[0]?.[1]?.corpus ?? emptyCorpus();
+  return { historical, editorial, combined: combineNotebookCorpora(editorial, historical) };
+}
+
+export async function describeBackup() {
+  const data = await readLocal();
+  return {
+    texts: corpora(data).combined.texts.length,
+    editions: data.databases[workspaceName].editions.map(([id, row]) => [id, row.edition.title]),
+    templates: Object.entries(data.preferences).filter(([key]) => isTemplateKey(key))
+      .map(([key, value]) => [key, validateTemplate(JSON.parse(value)).name]),
+    exams: data.databases[archiveName].exams.length,
+    preferences: Object.keys(data.preferences).length
+  };
+}
+
+export async function capturePartial(type, scope = 'all', ids = null) {
+  if (!partialTypes.includes(type) || !['all', 'selected', 'filtered'].includes(scope)) throw Error('Tipo o alcance no válido.');
+  const data = await readLocal();
+  const { combined } = corpora(data);
+  const selected = new Set(ids ?? []);
+  const take = id => scope === 'all' || selected.has(id);
+  let payload;
+  if (type === 'templates') {
+    payload = { templates: localTemplates().filter(([key]) => take(key)) };
+  } else if (type === 'bank' || type === 'tag-exchange') {
+    const texts = combined.texts.filter(text => take(text.id));
+    const keys = await Promise.all(texts.map(bankReviewKey));
+    const reviews = Object.fromEntries(keys.flatMap(key => Object.hasOwn(data.preferences, key) ? [[key, data.preferences[key]]] : []));
+    payload = { corpus: subsetCorpus(combined, texts, type === 'tag-exchange' ? allGrammarTags(combined).map(tag => tag.id) : []),
+      reviews, latinHashes: Object.fromEntries(texts.map((text, index) => [text.id, keys[index].split(':').at(-1)])) };
+  } else {
+    const source = data.databases[workspaceName];
+    const editions = source.editions.filter(([id]) => take(id));
+    const history = source.history.filter(([[id]]) => take(id));
+    const neededTexts = new Map();
+    const neededTags = new Set();
+    const versions = [...editions.map(([, row]) => row.edition),
+      ...history.flatMap(([, { event }]) => [event.before, event.after].filter(Boolean))];
+    for (const edition of versions) {
+      const { payload: { dependencies } } = JSON.parse(await createNotebookBackup(edition, combined));
+      for (const text of dependencies.texts) neededTexts.set(text.id, text);
+      for (const tag of dependencies.tags) neededTags.add(tag.id);
+    }
+    const meta = source.meta.map(([key, row]) => {
+      if (key !== 'migration-legacy-v1') return [key, row];
+      const notebookIdMap = Object.fromEntries(Object.entries(row.value.notebookIdMap).filter(([, id]) => take(id)));
+      return [key, { ...row, value: { ...row.value, notebookIdMap, notebookCount: Object.keys(notebookIdMap).length } }];
+    }).filter(([key, row]) => key !== 'migration-legacy-v1' || Object.keys(row.value.notebookIdMap).length);
+    const dependencies = subsetCorpus(combined, [...neededTexts.values()], [...neededTags]);
+    const corpus = dependencies.texts.length || dependencies.tags.length || meta.some(([key]) => key === 'migration-legacy-v1')
+      ? [['current', { key: 'current', revision: 1, corpus: dependencies }]] : [];
+    payload = { workspace: { editions, history, meta, corpus } };
+  }
+  const size = payload.corpus?.texts.length ?? payload.workspace?.editions.length ?? payload.templates?.length;
+  if (!size) throw Error('No hay elementos para exportar.');
+  if (scope !== 'all' && size !== selected.size) throw Error('La selección cambió. Vuelve a comprobar los elementos.');
+  const signed = { format: partialFormat, version: 1, type, scope, exportedAt: new Date().toISOString(), payload };
+  return { ...signed, sha256: await fingerprint(signed),
+    ...(type === 'tag-exchange' && { proposals: payload.corpus.texts.map(({ id, tagIds }) => ({ id, tagIds })) }) };
+}
+
+export async function readPartial(contents) {
+  const envelope = JSON.parse(contents);
+  if (envelope?.format !== partialFormat) return null;
+  const { format, version, type, scope, exportedAt, payload, sha256: hash } = envelope;
+  const signed = { format, version, type, scope, exportedAt, payload };
+  if (version !== 1 || !partialTypes.includes(type) || !['all', 'selected', 'filtered'].includes(scope) ||
+      typeof exportedAt !== 'string' || !Number.isFinite(Date.parse(exportedAt)) || hash !== await fingerprint(signed))
+    throw Error('La versión o la huella SHA-256 de la copia parcial es incorrecta.');
+  if (type === 'templates') validateTemplateRows(payload.templates);
+  if (type === 'notebooks') {
+    if (Object.keys(payload.workspace ?? {}).length !== 4 ||
+        Object.keys(schemas[workspaceName]).some(key => !Array.isArray(payload.workspace[key])))
+      throw Error('La copia de cuadernos está incompleta.');
+    validateData({ databases: { [workspaceName]: payload.workspace }, preferences: {} });
+  }
+  if (type === 'bank' || type === 'tag-exchange') {
+    const corpus = validateCorpus(payload.corpus);
+    if (corpus.notebooks.length || corpus.textRevisions?.length) throw Error('El archivo del banco contiene otros datos.');
+    const keys = await Promise.all(corpus.texts.map(bankReviewKey));
+    const keySet = new Set(keys);
+    if (!payload.latinHashes || Object.keys(payload.latinHashes).length !== corpus.texts.length ||
+        !corpus.texts.every((text, index) => payload.latinHashes[text.id] === keys[index].split(':').at(-1)) ||
+        !payload.reviews || Object.entries(payload.reviews).some(([key, value]) => !keySet.has(key) || typeof value !== 'string'))
+      throw Error('La huella del latín o las revisiones de la copia son incoherentes.');
+    if (type === 'tag-exchange') parseProposals(envelope.proposals, corpus.texts);
+  }
+  return envelope;
+}
+
+function withCorpus(stores, corpus, editorial = false) {
+  const actual = stores.corpus[0]?.[1]?.revision ?? 0;
+  const next = { ...stores, corpus: [['current', { key: 'current', revision: actual + 1, corpus }]] };
+  if (editorial) {
+    const meta = new Map(stores.meta);
+    const key = 'workspace-revision';
+    meta.set(key, { key, value: (meta.get(key)?.value ?? 0) + 1 });
+    next.meta = [...meta].sort(([a], [b]) => a.localeCompare(b, 'en'));
+  }
+  return next;
+}
+
+function notebookImport(stores, incoming, historical, editorial) {
+  const conflicts = [];
+  const localEditions = new Map(stores.editions);
+  const history = new Map(stores.history.map(([key, row]) => [JSON.stringify(key), row]));
+  let changed = 0;
+  for (const [id, row] of incoming.editions) {
+    const previous = localEditions.get(id);
+    if (previous && equal(previous, row)) continue;
+    const events = incoming.history.filter(([[edition]]) => edition === id);
+    const extension = events.find(([[, sequence]]) => sequence === (previous?.revision ?? 0) + 1)?.[1];
+    if (previous && (!extension || !equal(extension.event.before, previous.edition) ||
+        events.some(([key, item]) => history.has(JSON.stringify(key)) && !equal(history.get(JSON.stringify(key)), item)))) {
+      conflicts.push(row.edition.title + ' · historial distinto o más antiguo');
+      continue;
+    }
+    localEditions.set(id, row);
+    for (const [key, item] of events) history.set(JSON.stringify(key), item);
+    changed++;
+  }
+  const incomingCorpus = incoming.corpus[0]?.[1]?.corpus ?? emptyCorpus();
+  const deps = mergeBank(editorial, combineNotebookCorpora(editorial, historical).texts, incomingCorpus, equal);
+  conflicts.push(...deps.conflicts);
+  const tags = new Map(deps.corpus.tags.map(tag => [tag.id, tag]));
+  const all = new Map(allGrammarTags(combineNotebookCorpora(editorial, historical)).map(tag => [tag.id, tag]));
+  for (const tag of incomingCorpus.tags) {
+    if (all.has(tag.id) && !equal(all.get(tag.id), tag)) conflicts.push(tag.label + ' · definición incompatible');
+    else tags.set(tag.id, tag);
+  }
+  const meta = new Map(stores.meta);
+  const migrationKey = 'migration-legacy-v1';
+  const imported = incoming.meta.find(([key]) => key === migrationKey)?.[1]?.value;
+  const current = meta.get(migrationKey)?.value;
+  if (imported) {
+    const notebookIdMap = { ...current?.notebookIdMap };
+    for (const [old, id] of Object.entries(imported.notebookIdMap)) {
+      if (Object.hasOwn(notebookIdMap, old) && notebookIdMap[old] !== id) conflicts.push('Referencia histórica ocupada: ' + old);
+      else notebookIdMap[old] = id;
+    }
+    meta.set(migrationKey, { key: migrationKey, value: { ...(current ?? imported), notebookIdMap,
+      notebookCount: Object.keys(notebookIdMap).length } });
+  }
+  const next = withCorpus({ ...stores, meta: [...meta], editions: [...localEditions],
+    history: [...history.values()].map(row => [row.key, row]) }, { ...deps.corpus, tags: [...tags.values()] }, true);
+  const epoch = next.meta.find(([key]) => key === 'workspace-revision')[1];
+  epoch.value = Math.max(epoch.value, ...incoming.editions.map(([, row]) => row.revision));
+  return { conflicts, changed, next };
+}
+
+export async function planPartial(envelope, { removeCustom = false, selected = null } = {}) {
+  const { type, payload } = envelope;
+  const data = await readLocal();
+  const { combined, historical, editorial } = corpora(data);
+  const banks = {};
+  const preferences = {};
+  let changes = 0, conflicts = [], items = [];
+  const replace = (name, after, stores = Object.keys(after)) => {
+    const pick = database => Object.fromEntries(stores.map(store => [store, database[store]]));
+    banks[name] = { before: pick(data.databases[name]), after: pick(after) };
+  };
+  const preference = (key, value) => {
+    const current = data.preferences[key] ?? null;
+    if (current === value) return;
+    if (current !== null) conflicts.push('Datos locales distintos: ' + key);
+    else preferences[key] = { before: current, after: value };
+  };
+  if (type === 'templates') {
+    for (const [key, value] of validateTemplateRows(payload.templates)) {
+      const existing = data.preferences[key];
+      if (existing && equal(validateTemplate(JSON.parse(existing)), value)) continue;
+      preference(key, JSON.stringify(value));
+    }
+    changes = Object.keys(preferences).length;
+  } else if (type === 'bank') {
+    const result = mergeBank(historical, combined.texts, payload.corpus, equal);
+    conflicts = result.conflicts;
+    changes = result.added.length;
+    if (changes) replace(corpusName, withCorpus(data.databases[corpusName], result.corpus));
+    const addedKeys = new Set(await Promise.all(result.added.map(bankReviewKey)));
+    for (const [key, value] of Object.entries(payload.reviews)) if (addedKeys.has(key)) preference(key, value);
+  } else if (type === 'notebooks') {
+    const result = notebookImport(data.databases[workspaceName], payload.workspace, historical, editorial);
+    conflicts = result.conflicts;
+    changes = result.changed;
+    if (changes) replace(workspaceName, result.next);
+  } else if (type === 'tag-exchange') {
+    const proposals = parseProposals(envelope.proposals, payload.corpus.texts);
+    items = await tagChanges(payload.corpus, combined, proposals, localStorage, removeCustom);
+    const addressed = items.filter(row => !row.issue && (row.added.length || row.removed.length));
+    const currentById = new Map(combined.texts.map(text => [text.id, text]));
+    for (const row of addressed) {
+      const copies = [historical, editorial].flatMap(corpus => corpus.texts.filter(text => text.id === row.id));
+      const current = currentById.get(row.id);
+      if (copies.some(text => text.latin !== current.latin || !equal(text.tagIds, current.tagIds)))
+        row.issue = 'Hay dos versiones locales de la ficha';
+    }
+    const compatible = addressed.filter(row => !row.issue && (!selected || selected.includes(row.id)));
+    changes = compatible.length;
+    const catalogue = allGrammarTags(combined);
+    for (const [name, corpus] of [[corpusName, historical], [workspaceName, editorial]]) {
+      let next = corpus;
+      for (const row of compatible) {
+        if (next.texts.some(text => text.id === row.id)) next = attachGrammarTags(next, row.id, row.next, catalogue);
+      }
+      if (next !== corpus) {
+        const editorial = name === workspaceName;
+        replace(name, withCorpus(data.databases[name], next, editorial), editorial ? ['corpus', 'meta'] : ['corpus']);
+      }
+    }
+  }
+  if (!conflicts.length) {
+    const databases = { ...data.databases };
+    for (const [name, { after }] of Object.entries(banks)) databases[name] = { ...databases[name], ...after };
+    validateData({ databases, preferences: { ...data.preferences,
+      ...Object.fromEntries(Object.entries(preferences).map(([key, value]) => [key, value.after])) } });
+  }
+  return { type, changes, conflicts, items, banks, preferences };
+}
+
+export async function restorePartial(envelope, expected, options) {
+  const next = await planPartial(envelope, options);
+  const comparison = plan => ({ ...plan, banks: Object.fromEntries(
+    Object.entries(plan.banks).map(([name, { before }]) => [name, before])) });
+  if (!next.changes || next.conflicts.length || !equal(comparison(next), comparison(expected)))
+    throw Error('La copia no tiene cambios aplicables o los datos locales cambiaron. Repite la comparación.');
+  const committed = [], saved = [];
+  try {
+    for (const [name, { before, after }] of Object.entries(next.banks)) {
+      await replaceDatabase(name, before, after);
+      committed.push(name);
+    }
+    for (const row of next.items) {
+      if (row.reviewKey && localStorage.getItem(row.reviewKey) !== row.localReview)
+        throw Error('Cambió una decisión docente durante la importación.');
+    }
+    for (const [key, { before, after }] of Object.entries(next.preferences)) {
+      if (localStorage.getItem(key) !== before) throw Error('Los datos locales cambiaron durante la importación.');
+      localStorage.setItem(key, after);
+      saved.push(key);
+    }
+  } catch (error) {
+    for (const key of saved.reverse()) {
+      const { before, after } = next.preferences[key];
+      if (localStorage.getItem(key) !== after) continue;
+      if (before === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, before);
+    }
+    const reverted = await Promise.allSettled(committed.reverse().map(name =>
+      replaceDatabase(name, next.banks[name].after, next.banks[name].before)));
+    if (reverted.some(result => result.status === 'rejected'))
+      throw Error('Otra pestaña modificó los datos durante la importación. No se pudo verificar la reversión.');
     throw error;
   }
 }

@@ -409,7 +409,7 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   await first.selectOption('gram.ablativo.absoluto');
   await first.selectOption('gram.subjuntivo');
   await panel.getByRole('button', { name: /^Subir Subjuntivo/i }).click();
-  await expect(panel.locator('details').filter({ has: first }).locator('li').first()).toContainText(/subjuntivo/i);
+  await expect(panel.locator('details:has(select[aria-label="Etiqueta para primer trimestre"]) li').first()).toContainText(/subjuntivo/i);
   await panel.getByRole('button', { name: /^Quitar Subjuntivo/i }).click();
   const second = panel.getByRole('combobox', { name: 'Etiqueta para segundo trimestre' });
   await panel.getByText('Segundo trimestre', { exact: true }).click();
@@ -2228,4 +2228,93 @@ test('una restauración más nueva fallida revierte los almacenes ya escritos', 
     return {comparison:plan.comparison,failed,message,restored:(await captureBackup()).contentHash===initial.contentHash};
   });
   expect(result).toMatchObject({comparison:'newer',failed:true,message:'fallo de escritura simulado',restored:true});
+});
+
+test('exporta una selección y reimporta las etiquetas filológicas sin tocar el cuaderno', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises');
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  await frame.locator('html').evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('../storage/indexeddb-corpus-repository.js');
+    const { attachGrammarTags } = await import('../core/grammar-tags.js');
+    const repo = new IndexedDbCorpusRepository();
+    const state = await repo.load();
+    const custom = { id: 'custom.docente', label: 'Etiqueta docente de prueba', kind: 'custom', parentId: null };
+    const text = state.corpus.texts.find(text => text.id === 'doc.uno');
+    await repo.save(attachGrammarTags(state.corpus, text.id, [...text.tagIds, custom.id], [custom]), state.revision);
+  });
+  await page.reload();
+  await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
+  const planner = frame.locator('.atl-bank-planner');
+  await planner.getByRole('checkbox', { name: 'Aceptar advertencias y crear el cuaderno con esta selección' }).check();
+  await planner.getByRole('button', { name: 'Crear cuaderno', exact: true }).click();
+  await frame.locator('.atl-organize-main').waitFor();
+  const beforeNotebook = await notebookSnapshot(frame, 'Lecturas por trimestres');
+
+  await page.getByRole('tab', { name: 'Banco de textos' }).click();
+  const manage = bank.locator('.cuaderno-bank-bulk');
+  await manage.locator('summary').click();
+  const exportSelection = manage.getByRole('button', { name: /^Exportar textos seleccionados/ });
+  await expect(exportSelection).toBeDisabled();
+  await bank.getByRole('checkbox', { name: 'Seleccionar texto: Uno' }).check();
+  await bank.getByRole('checkbox', { name: 'Seleccionar texto: Dos' }).check();
+  await expect(exportSelection).toHaveText('Exportar textos seleccionados (2)');
+  await exportSelection.click();
+
+  const download = async () => {
+    const pending = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Descargar JSON' }).click();
+    return JSON.parse(await readFile(await (await pending).path(), 'utf8'));
+  };
+  const partial = await download();
+  expect(partial.type).toBe('bank');
+  expect(partial.scope).toBe('selected');
+  expect(partial.payload.corpus.texts.map(text => text.id).sort()).toEqual(['doc.dos', 'doc.uno']);
+  const backup = page.locator('#backup-dialog');
+  await backup.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(exportSelection).toHaveText('Exportar textos seleccionados (2)');
+  await bank.getByRole('searchbox', { name: 'Buscar en banco de textos propios' }).fill('Secunda');
+  await page.getByRole('button', { name: 'Copias de seguridad' }).click();
+  await backup.getByLabel('Contenido').selectOption('bank');
+  await backup.getByLabel('Alcance').selectOption('filtered');
+  expect((await download()).payload.corpus.texts.map(text => text.id)).toEqual(['doc.dos']);
+
+  await backup.getByLabel('Contenido').selectOption('tag-exchange');
+  await backup.getByLabel('Alcance').selectOption('selected');
+  const exchange = await download();
+  expect(exchange.sha256).toMatch(/^[a-f\d]{64}$/);
+  for (const row of exchange.proposals) row.tagIds = ['gram.cum.historico'];
+
+  const before = await page.evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+    const { upsertText } = await import('./modulos/cuaderno-integrado/core/editor-operations.js');
+    const repo = new IndexedDbCorpusRepository();
+    const state = await repo.load();
+    const original = state.corpus.texts.find(text => text.id === 'doc.dos');
+    const changed = upsertText(state.corpus, { id: original.id, title: original.title, ...original.source,
+      latin: 'Secunda lux iterum orta est.' }, original.id, new Date().toISOString());
+    await repo.save(changed, state.revision);
+    return changed.texts;
+  });
+  const input = backup.locator('#backup-file');
+  const damaged = structuredClone(exchange);
+  damaged.payload.corpus.texts[0].title = 'Alterado';
+  await input.setInputFiles({ name: 'alterado.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(damaged)) });
+  await expect(backup.locator('#backup-preview')).toContainText('huella SHA-256');
+  await input.setInputFiles({ name: 'revisado.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exchange)) });
+  await expect(backup.locator('#backup-preview')).toContainText('1 fichas seleccionadas');
+  await expect(backup.getByText(/El texto latino ha cambiado/)).toBeVisible();
+  await expect(backup.getByText(/Conservadas: custom.docente/)).toBeVisible();
+  page.once('dialog', prompt => prompt.accept());
+  await backup.getByRole('button', { name: 'Actualizar etiquetas de textos existentes', exact: true }).click();
+
+  await expect(page.locator('#app-status')).toHaveText('Importación parcial aplicada y verificada.');
+  const after = await page.evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+    return (await new IndexedDbCorpusRepository().load()).corpus.texts;
+  });
+  expect(after).toEqual(before.map(text => text.id === 'doc.uno'
+    ? { ...text, tagIds: ['gram.cum.historico', 'custom.docente'] } : text));
+  expect(await notebookSnapshot(frame, 'Lecturas por trimestres')).toEqual(beforeNotebook);
 });

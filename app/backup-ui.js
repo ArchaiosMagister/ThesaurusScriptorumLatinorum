@@ -11,43 +11,200 @@ export function setupBackup(prepare, status) {
     preview.textContent = message;
   }
 
-  document.getElementById('app-backup').addEventListener('click', () => dialog.showModal());
+  const kind = document.getElementById('backup-kind');
+  const scope = document.getElementById('backup-scope');
+  const scopeLabel = document.getElementById('backup-scope-label');
+  const exportItems = document.getElementById('backup-export-items');
+  const exportSummary = document.getElementById('backup-export-summary');
+  const importItems = document.getElementById('backup-import-items');
+  let partial, partialPlan, partialOptions, bankSelection, exportState, revision = 0, importRevision = 0;
+  const bankScope = () => document.querySelector('#panel-cuaderno iframe')?.contentWindow.atlBankExportScope?.();
+  const labels = { bank: 'Incorporar textos al banco', notebooks: 'Incorporar o actualizar cuadernos',
+    templates: 'Importar plantillas', 'tag-exchange': 'Actualizar etiquetas de textos existentes' };
+
+  function element(tag, value) {
+    const node = document.createElement(tag);
+    node.textContent = value ?? '';
+    return node;
+  }
+  function checkbox(title, value, checked = true) {
+    const label = element('label');
+    const input = element('input');
+    input.type = 'checkbox';
+    input.value = value;
+    input.checked = checked;
+    label.append(input, ' ' + title);
+    return { label, input };
+  }
+  function updateScopes(selected = 'all') {
+    const list = ['bank', 'tag-exchange'].includes(kind.value) ?
+      [['all', 'Todos los textos'], ['filtered', 'Resultados de los filtros activos'], ['selected', 'Textos seleccionados']] :
+      [['all', 'Todos'], ['selected', 'Elegir elementos']];
+    scope.replaceChildren(...list.map(([id, label]) => new Option(label, id)));
+    scope.value = selected;
+    scope.hidden = scopeLabel.hidden = kind.value === 'full';
+  }
+  async function describeExport(renderItems = false) {
+    const ticket = ++revision;
+    download.disabled = true;
+    exportState = null;
+    exportSummary.textContent = 'Comprobando el contenido…';
+    const type = kind.value;
+    const selection = scope.value;
+    try {
+      const { describeBackup } = await import('./backup-store.js');
+      const description = await describeBackup();
+      if (ticket !== revision) return;
+      const selector = selection === 'selected' && ['notebooks', 'templates'].includes(type);
+      exportItems.hidden = !selector;
+      if (renderItems) {
+        exportItems.replaceChildren(element('legend', 'Elementos de la copia'));
+        if (selector) {
+          const rows = type === 'notebooks' ? description.editions : description.templates;
+          for (const [id, title] of rows) {
+            const { label, input } = checkbox(title, id, false);
+            input.addEventListener('change', () => describeExport());
+            exportItems.append(label);
+          }
+        }
+      }
+      let ids = null;
+      let count;
+      let message;
+      if (type === 'full') {
+        count = 1;
+        message = description.texts + ' textos, ' + description.editions.length + ' cuadernos, ' +
+          description.templates.length + ' plantillas, ' + description.exams + ' exámenes archivados y ' +
+          description.preferences + ' configuraciones o decisiones de revisión, además de los otros datos locales incluidos.';
+      } else if (type === 'bank' || type === 'tag-exchange') {
+        if (selection !== 'all') {
+          ids = (selection === 'selected' ? bankSelection ?? bankScope()?.selected : bankScope()?.filtered) ?? [];
+          if (!bankSelection && !bankScope()) throw Error('Abre el Banco de textos para consultar los filtros y la selección.');
+        }
+        count = ids?.length ?? description.texts;
+        message = count + ' textos con procedencia, metadatos y etiquetas.' +
+          (type === 'tag-exchange' ? ' Edita solo la lista «proposals» para devolver las etiquetas revisadas.' : '');
+      } else {
+        const rows = type === 'notebooks' ? description.editions : description.templates;
+        if (selector) ids = [...exportItems.querySelectorAll('input:checked')].map(input => input.value);
+        count = ids?.length ?? rows.length;
+        message = count + (type === 'notebooks' ? ' cuadernos con su historial y dependencias.' : ' plantillas de programación.');
+      }
+      exportSummary.textContent = message;
+      exportState = { type, selection, ids };
+      download.textContent = type === 'full' ? 'Descargar copia integral' : 'Descargar JSON';
+      download.disabled = !count;
+    } catch (error) {
+      if (ticket === revision) exportSummary.textContent = error.message;
+    }
+  }
+
+  function openExport(ids = null) {
+    bankSelection = ids;
+    kind.value = ids ? 'bank' : 'full';
+    updateScopes(ids ? 'selected' : 'all');
+    if (!dialog.open) dialog.showModal();
+    void describeExport(true);
+  }
+  window.atlExportSelectedTexts = ids => openExport([...ids]);
+  document.getElementById('app-backup').addEventListener('click', () => openExport());
+  kind.addEventListener('change', () => { updateScopes(); void describeExport(true); });
+  scope.addEventListener('change', () => { bankSelection = null; void describeExport(true); });
   download.addEventListener('click', async () => {
+    if (!exportState) return;
+    const { type, selection, ids } = exportState;
+    const ticket = revision;
     download.disabled = true;
     try {
       await prepare();
-      const { captureBackup, maxBackupSize } = await import('./backup-store.js');
-      const data = await captureBackup();
-      const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+      const { captureBackup, capturePartial, maxBackupSize } = await import('./backup-store.js');
+      const data = type === 'full' ? await captureBackup() : await capturePartial(type, selection, ids);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json;charset=utf-8' });
       if (blob.size > maxBackupSize) throw new Error('La copia supera el tamaño máximo de 128 MiB.');
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = element('a');
       link.href = url;
-      link.download = 'AdministratorTextorumLatinorum-' + data.exportedAt.slice(0, 10) + '.json';
+      link.download = 'Thesaurus-' + type + '-' + data.exportedAt.slice(0, 10) + '.json';
       document.body.append(link);
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
-      summary('Copia integral preparada.');
+      summary(type === 'full' ? 'Copia integral preparada.' : 'Archivo preparado.');
     } catch (error) {
       summary(error.message);
     } finally {
-      download.disabled = false;
+      if (ticket === revision) download.disabled = false;
     }
   });
+
+  async function comparePartial({ selected, removeCustom } = {}, render = true) {
+    apply.disabled = true;
+    const ticket = ++importRevision;
+    const { planPartial } = await import('./backup-store.js');
+    const options = { selected: selected ?? null, removeCustom: Boolean(removeCustom) };
+    const result = await planPartial(partial, options);
+    if (ticket !== importRevision) return;
+    partialPlan = result;
+    partialOptions = options;
+    apply.textContent = labels[result.type];
+    apply.disabled = !result.changes || Boolean(result.conflicts.length);
+    if (result.type !== 'tag-exchange') {
+      summary(result.conflicts.length ? labels[result.type] + ' · Conflictos que requieren revisión.\n' + result.conflicts.join('\n')
+        : 'Vista previa · ' + result.changes + ' elementos por incorporar o actualizar.');
+      return;
+    }
+    summary('Vista previa · ' + result.changes + ' fichas seleccionadas para actualizar. ' +
+      result.items.filter(item => item.issue).length + ' con incidencias y ' +
+      result.items.filter(item => !item.issue && !item.added.length && !item.removed.length).length + ' sin cambios.');
+    if (!render) return;
+    importItems.replaceChildren();
+    const { label, input } = checkbox('Permitir quitar etiquetas propias', 'remove-custom', options.removeCustom);
+    input.addEventListener('change', () => comparePartial({ removeCustom: input.checked, selected: null }).catch(error => summary(error.message)));
+    importItems.append(label);
+    const rows = element('fieldset');
+    rows.append(element('legend', 'Diferencias de etiquetas'));
+    const choices = [];
+    for (const item of result.items) {
+      const canApply = !item.issue && Boolean(item.added.length || item.removed.length);
+      const { label: choice, input: check } = checkbox(item.title, item.id, canApply && (!options.selected || options.selected.includes(item.id)));
+      check.disabled = !canApply;
+      const detail = [item.issue || (!canApply ? 'Sin cambios' : ''), item.added.length ? 'Nuevas: ' + item.added.join(', ') : '',
+        item.removed.length ? 'Eliminadas: ' + item.removed.join(', ') : '',
+        item.kept.length ? 'Conservadas: ' + item.kept.join(', ') : ''].filter(Boolean).join(' · ');
+      const row = element('div');
+      row.append(choice, element('small', detail));
+      rows.append(row);
+      if (canApply) {
+        choices.push(check);
+        check.addEventListener('change', () => comparePartial({ removeCustom: input.checked,
+          selected: choices.filter(choice => choice.checked).map(choice => choice.value) }, false).catch(error => summary(error.message)));
+      }
+    }
+    importItems.append(rows);
+  }
 
   select.addEventListener('change', async () => {
     const file = select.files[0];
     select.value = '';
     apply.disabled = true;
-    payload = plan = null;
+    payload = plan = partial = partialPlan = null;
+    importRevision++;
+    importItems.replaceChildren();
+    apply.textContent = 'Recuperar copia';
     if (!file) return;
     select.disabled = true;
     summary('Verificando la copia…');
     try {
-      const { readBackupFile, planRestore, maxBackupSize } = await import('./backup-store.js');
+      const { readBackupFile, readPartial, planRestore, maxBackupSize } = await import('./backup-store.js');
       if (file.size > maxBackupSize) throw new Error('La copia supera el tamaño máximo de 128 MiB.');
-      payload = await readBackupFile(await file.text());
+      const content = await file.text();
+      partial = await readPartial(content);
+      if (partial) {
+        await prepare();
+        await comparePartial();
+        return;
+      }
+      payload = await readBackupFile(content);
       await prepare();
       plan = await planRestore(payload);
       if (plan.comparison === 'same') {
@@ -83,6 +240,21 @@ export function setupBackup(prepare, status) {
   });
 
   apply.addEventListener('click', async () => {
+    if (partial && partialPlan) {
+      if (apply.disabled || !window.confirm('¿' + labels[partial.type] + '?')) return;
+      apply.disabled = select.disabled = download.disabled = true;
+      try {
+        await prepare();
+        const { restorePartial } = await import('./backup-store.js');
+        await restorePartial(partial, partialPlan, partialOptions);
+        sessionStorage.setItem('atl-v1:restore-result', 'Importación parcial aplicada y verificada.');
+        location.reload();
+      } catch (error) {
+        summary(error.message);
+        select.disabled = download.disabled = false;
+      }
+      return;
+    }
     if (!plan || !payload || !window.confirm(plan.comparison === 'newer'
       ? '¿Actualizar este dispositivo con la copia más nueva? También se aplicarán las eliminaciones.'
       : '¿Recuperar los datos de la copia? La aplicación se recargará después de verificarlos.')) return;
