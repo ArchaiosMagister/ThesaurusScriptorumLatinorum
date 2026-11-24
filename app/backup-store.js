@@ -508,7 +508,7 @@ export function syncTargetRows(data, before) {
 export async function applySyncData(data, before) {
   const after = syncTargetRows(data, before);
   const committed = [];
-  const savedReviews = [];
+  const savedPreferences = [];
   try {
     for (const name of syncNames) {
       // Comprueba toda revisión local en la misma transacción que aplica el cambio.
@@ -524,9 +524,10 @@ export async function applySyncData(data, before) {
     for (const key of new Set([...beforeTemplates.keys(), ...afterTemplates.keys()])) {
       if (equal(beforeTemplates.get(key), afterTemplates.get(key))) continue;
       const original = localStorage.getItem(key);
-      if (afterTemplates.has(key)) localStorage.setItem(key, JSON.stringify(afterTemplates.get(key)));
-      else localStorage.removeItem(key);
-      savedReviews.push([key, original]);
+      const value = afterTemplates.has(key) ? JSON.stringify(afterTemplates.get(key)) : null;
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+      savedPreferences.push([key, original, value]);
     }
     const previous = new Map(before.bankReviews);
     const next = new Map(after.bankReviews);
@@ -536,16 +537,20 @@ export async function applySyncData(data, before) {
       let cached = {};
       try { cached = JSON.parse(original ?? '{}') ?? {}; } catch { /* Replace a damaged cache with the verified remote decision. */ }
       const decision = applyBankReviewDecision(cached, next.get(key));
-      if (decision === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, JSON.stringify(decision));
-      savedReviews.push([key, original]);
+      const value = decision === null ? null : JSON.stringify(decision);
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+      savedPreferences.push([key, original, value]);
     }
   } catch (error) {
-    for (const [key, original] of savedReviews) {
-      if (original === null) localStorage.removeItem(key);
-      else localStorage.setItem(key, original);
-    }
-    const reverted = await Promise.allSettled(committed.reverse().map(name => replaceDatabase(name, after[name], before[name])));
+    const reverted = await Promise.allSettled([
+      ...committed.reverse().map(name => replaceDatabase(name, after[name], before[name])),
+      ...savedPreferences.reverse().map(async ([key, original, value]) => {
+        if (localStorage.getItem(key) !== value) throw Error('Cambió una preferencia durante la reversión.');
+        if (original === null) localStorage.removeItem(key);
+        else localStorage.setItem(key, original);
+      })
+    ]);
     if (reverted.some(result => result.status === 'rejected'))
       throw new Error('Otra pestaña modificó los datos durante la sincronización. Revisa el estado local antes de repetirla.');
     throw error;

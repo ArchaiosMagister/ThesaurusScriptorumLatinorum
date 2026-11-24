@@ -204,8 +204,13 @@ export function planCurriculum(rows, settings, equivalent) {
       later: [...new Set(terms.slice(index + 1).flatMap(term => term.tags).filter(tag => !introduced.has(tag)))]
     };
   });
+  const pools = new Map();
   function candidates(group) {
-    return available.filter(row => !group.applicable.length || row.tags.some(tag => group.applicable.includes(tag)));
+    if (!pools.has(group)) {
+      const applicable = new Set(group.applicable);
+      pools.set(group, !applicable.size ? available : available.filter(row => row.tags.some(tag => applicable.has(tag))));
+    }
+    return pools.get(group);
   }
   function choose(group, omitted) {
     const entries = groups.flatMap(section => section.entries).filter(row => row !== omitted);
@@ -220,8 +225,9 @@ export function planCurriculum(rows, settings, equivalent) {
     }
     let best;
     let bestScore = -Infinity;
+    const inUse = new Set(entries);
     for (const row of candidates(group)) {
-      if (row === omitted || entries.some(used => used === row || equivalent(used.text, row.text))) continue;
+      if (row === omitted || inUse.has(row)) continue;
       const gains = group.requested.filter(tag => row.tags.includes(tag) && !covered.has(tag));
       const later = group.later.some(tag => row.tags.includes(tag));
       const target = group.review ? 1 + 4 * (group.entries.length % 5) / 4 : 1 + 2 * group.term;
@@ -230,7 +236,7 @@ export function planCurriculum(rows, settings, equivalent) {
         Math.abs(levelOf(row) - target) -
         Math.min(authors.get(row.text.source.author) ?? 0, 8) / 2 -
         Math.min(origins.get(row.text.origin?.kind) ?? 0, 8) / 10;
-      if (score > bestScore) {
+      if (score > bestScore && !entries.some(used => equivalent(used.text, row.text))) {
         best = row;
         bestScore = score;
       }

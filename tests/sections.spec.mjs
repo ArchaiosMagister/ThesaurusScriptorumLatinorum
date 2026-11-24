@@ -1977,13 +1977,18 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
       await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
+    const templateId = 'atl-v1:curriculum-template:994637a3-ec84-412d-b35c-92fe772a0001';
     await page.goto(path);
     const editable = await seedBank(page);
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     page.once('dialog', prompt => prompt.accept('Cuaderno para sincronizar'));
     await editable.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
     await expect(editable.getByText('Cuaderno para sincronizar', { exact: true }).first()).toBeVisible();
-    await page.evaluate(async () => {
+    await page.evaluate(async templateId => {
+      localStorage.setItem(templateId, JSON.stringify({ name: 'Programa sincronizado', settings: {
+        terms: [{ tags: ['gram.ablativo.absoluto'], count: 1, review: 1 }, { tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }],
+        progression: 'specific', exam: 'exclude', excludedCourses: ['2bach'], filtered: false
+      } }));
       const { recordExam } = await import('./modulos/shared/text-usage.js');
       await recordExam('exam-id', 'Examen del banco', { texto: 'Gallia est omnis divisa.', tokens: ['dato excluido'] });
       localStorage.setItem('atl-v1:examinator.current', JSON.stringify({ texto: 'Borrador excluido' }));
@@ -1992,14 +1997,16 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const pending = [{ start: 0, end: 4, tagId: 'gram.subjuntivo', evidence: ['Análisis local'], alternatives: [] }];
       localStorage.setItem(key, JSON.stringify({ rejected, pending, corrected: [], version: 1 }));
 
-    });
+    }, templateId);
     await link(page);
     await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(page.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([['exam-id', { id: 'exam-id', title: 'Examen del banco', snapshot: { texto: 'Gallia est omnis divisa.' } }]]);
     expect(JSON.stringify(remote)).not.toContain('Borrador excluido');
     expect(JSON.stringify(remote)).not.toContain('Análisis local');
-    expect(remote.data.bankReviews[0][1].rejected).toEqual(['0:4:gram.subjuntivo']);
+    expect(remote.data.bankReviews.find(([id]) => id === 'atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64))[1].rejected).toEqual(['0:4:gram.subjuntivo']);
+
+    expect(remote.data.templates[0][1].name).toBe('Programa sincronizado');
 
     const tablet = await destination.newPage();
     await tablet.goto(new URL(path, page.url()).href);
@@ -2018,16 +2025,18 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const review = JSON.parse(localStorage.getItem('atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64)));
       return {
         rejected: review.rejected,
+        template: data.templates[0][1].name,
         canOpenExam: Boolean(await savedExam('exam-id')),
         hasExamUse: index.some(entry => entry.document.id === 'exam-id' && entry.document.usageOnly),
         hasNotebook: editor.editions.some(([, row]) => row.edition.title === 'Cuaderno para sincronizar'),
         hasTags: editor.corpus[0][1].corpus.texts.some(text => text.tagIds.includes('gram.ablativo.absoluto'))
       };
-    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true, rejected: ['0:4:gram.subjuntivo'] });
+    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true, rejected: ['0:4:gram.subjuntivo'], template: 'Programa sincronizado' });
     expect(uploads).toBe(1);
     // Una baja en un dispositivo ya sincronizado debe propagarse sin reaparecer
     // ni eliminar un examen completo guardado únicamente en el otro dispositivo.
-    await tablet.evaluate(async () => {
+    await tablet.evaluate(async templateId => {
+      localStorage.removeItem(templateId);
       const db = await new Promise((resolve, reject) => {
         const request = indexedDB.open('atl-v1:exam-archive', 1);
         request.onsuccess = () => resolve(request.result);
@@ -2040,24 +2049,26 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
         tx.onabort = () => reject(tx.error);
       });
       db.close();
-    });
+    }, templateId);
     await tablet.locator('header').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(tablet.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([]);
+    expect(remote.data.templates).toBeUndefined();
     expect(uploads).toBe(2);
     const fullExamReload = page.waitForEvent('load');
     await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await fullExamReload;
     await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([]);
-    expect(await page.evaluate(async () => {
+    expect(await page.evaluate(async templateId => {
       const { readSyncData } = await import('./backup-store.js');
       const { savedExam } = await import('./modulos/shared/text-usage.js');
       return {
         sharedUses: (await readSyncData()).data.usages.length,
+        deletedTemplate: localStorage.getItem(templateId) === null,
         originalExam: (await savedExam('exam-id'))?.texto
       };
-    })).toEqual({ sharedUses: 0, originalExam: 'Gallia est omnis divisa.' });
+    }, templateId)).toEqual({ sharedUses: 0, originalExam: 'Gallia est omnis divisa.', deletedTemplate: true });
     await tablet.close();
 
     const reopened = await destination.newPage();
