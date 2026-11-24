@@ -80,10 +80,10 @@ function move(items, from, to) {
 
 // Presentation-only groups: stored templates retain the original ordered tag IDs.
 export function plannerTagGroup(tag, catalogue) {
-  const finite = /^gram\.verbo\.([^.]+)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(tag.id);
+  const finite = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(tag.id);
   if (finite) {
     const [, tense, , voice] = finite;
-    const theme = /^(presente|imperfecto|futuro|futuro-imperfecto)$/u.test(tense) ? 'Infectum' :
+    const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
       /^(perfecto|pluscuamperfecto|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
     if (theme && voice !== 'deponente') return theme + ' · ' + (voice === 'activo' ? 'activa' : 'pasiva');
     if (voice === 'deponente') return 'Verbos deponentes';
