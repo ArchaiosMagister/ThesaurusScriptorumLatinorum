@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { isRecoverableSync, mergeUsages, selectEditor, applyBankReviewDecision } from '../app/dropbox-plan.js';
+import { fingerprintEditorParts, mergeEditorParts, isRecoverableSync, mergeUsages, selectEditor, applyBankReviewDecision } from '../app/dropbox-plan.js';
 
 test('Dropbox solo sustituye el espacio editorial si sigue la revisión conocida o está vacío', () => {
   assert.equal(selectEditor('a', 'a', null, false), 'same');
@@ -9,6 +9,9 @@ test('Dropbox solo sustituye el espacio editorial si sigue la revisión conocida
   assert.equal(selectEditor('a', 'b', 'b', false), 'upload');
   assert.throws(() => selectEditor('a', 'b', null, false), /difieren/);
   assert.throws(() => selectEditor('a', 'b', 'c', false), /difieren/);
+  assert.equal(selectEditor('a', 'b', 'c', false, 'remote'), 'download');
+  assert.equal(selectEditor('a', 'b', 'c', false, 'local'), 'upload');
+  assert.equal(selectEditor('a', 'b', 'b', false, 'remote'), 'upload');
 });
 
 test('Dropbox reúne los usos de ambos dispositivos y detecta modificaciones simultáneas', () => {
@@ -35,6 +38,8 @@ test('Dropbox propaga bajas conocidas en ambos sentidos y nunca las restaura sil
   assert.deepEqual(mergeUsages([['x', old]], [['x', modified]], base, fingerprint), [['x', modified]]);
   assert.throws(() => mergeUsages([], [['x', modified]], base, fingerprint), /eliminó/);
   assert.throws(() => mergeUsages([['x', modified]], [], base, fingerprint), /eliminó/);
+  assert.deepEqual(mergeUsages([['x', modified]], [], base, fingerprint, null, 'remote'), []);
+  assert.deepEqual(mergeUsages([], [['x', modified], ['y', old]], base, fingerprint, null, 'local'), [['y', old]]);
   assert.deepEqual(mergeUsages([], [['y', old]], new Map(), fingerprint), [['y', old]]);
   assert.deepEqual(mergeUsages([['y', old]], [], new Map(), fingerprint), [['y', old]]);
 });
@@ -57,4 +62,19 @@ test('las bajas de revisiones no se recrean y no se heredan versiones obsoletas'
  assert.deepEqual(downgraded.pending,[]);
  const current=applyBankReviewDecision(cached,{version:2,rejected:[],corrected:[],pending:[row]});
  assert.deepEqual(current.pending[0].evidence,['prueba']);
+});
+
+test('Dropbox combina fichas independientes y solicita elección para una baja incompatible', async () => {
+  const editor = (texts, revision) => ({ bank: { corpus: [['current', { revision, corpus: { texts } }]] } });
+  const a = { id: 'a', title: 'A' };
+  const b = { id: 'b', title: 'B' };
+  const localA = { ...a, title: 'A local' };
+  const remoteB = { ...b, title: 'B Dropbox' };
+  const hash = async data => JSON.stringify(data);
+  const baseline = await fingerprintEditorParts(editor([a, b], 1), hash);
+  assert.deepEqual(await mergeEditorParts(editor([localA, b], 2), editor([a, remoteB], 3), baseline, hash),
+    editor([localA, remoteB], 3));
+  await assert.rejects(mergeEditorParts(editor([b], 2), editor([localA, remoteB], 3), baseline, hash), /A local/);
+  assert.deepEqual(await mergeEditorParts(editor([b], 2), editor([localA, remoteB], 3), baseline, hash, () => 'local'),
+    editor([remoteB], 3));
 });

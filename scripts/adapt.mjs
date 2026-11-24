@@ -334,6 +334,7 @@ export function lexicalValuesForDocument(option) {
     const morphology = await readFile(new URL('./exam-morphology.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-morphology.js'), morphology);
     const editor = integrateExamMorphology(exam)
+      .replace('if (!M.S) return true;', 'if (M.atlPauseAutosave || !M.S) return true;')
       .replace('      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);', `      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);
       if (S.atlPauMorph) {
         const imported = S.atlPauMorph;

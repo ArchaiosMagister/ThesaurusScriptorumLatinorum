@@ -1,3 +1,4 @@
+import { saveRecoveryCopy } from './recovery-history.js';
 import { isTemplateKey, localTemplates, validateTemplate } from './curriculum-templates.js';
 import { applyBankReviewDecision } from './dropbox-plan.js';
 import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
@@ -167,15 +168,35 @@ async function readLocal() {
   return validateData({ databases, preferences });
 }
 
-export async function captureBackup() {
+export async function captureBackup({ track = true } = {}) {
   const payload = await readLocal();
   const exportedAt = new Date().toISOString();
   const ancestors = ancestry();
   const contentHash = await fingerprint(payload);
   const signed = { exportedAt, ancestors, contentHash, payload };
   const backup = { format, version: 2, ...signed, sha256: await sha256(signed) };
-  remember([...ancestors, contentHash]);
+  if (track) remember([...ancestors, contentHash]);
   return backup;
+}
+
+export async function protectLocal(reason) {
+  const copy = await captureBackup({ track: false });
+  const verified = await saveRecoveryCopy(copy, reason);
+  await readBackupFile(JSON.stringify(verified));
+  return copy.contentHash;
+}
+
+export async function previewExactRestore(payload) {
+  const version = metadata.get(payload);
+  if (!version?.complete) throw Error('Solo una copia integral verificada admite sustituir todo el espacio.');
+  return fingerprint(await readLocal());
+}
+
+export async function restoreExact(payload, baseline) {
+  await previewExactRestore(payload);
+  if (await protectLocal('Antes de sustituir el espacio local') !== baseline)
+    throw Error('Los datos locales cambiaron. Vuelve a comparar la copia.');
+  await installNewer(payload, baseline);
 }
 
 function workspaceRows(snapshot) {
@@ -195,6 +216,7 @@ function workspaceRows(snapshot) {
 
 export async function readBackupFile(contents) {
   const data = JSON.parse(contents);
+  if (!data || typeof data !== 'object' || Array.isArray(data)) throw Error('El JSON no contiene una copia de Thesaurus.');
   if (data.format === format) {
     const { exportedAt, ancestors, contentHash, payload } = data;
     const validTime = typeof exportedAt === 'string' && Number.isFinite(Date.parse(exportedAt));
@@ -211,7 +233,7 @@ export async function readBackupFile(contents) {
       Object.keys(stores).some(store => !Object.hasOwn(payload.databases[name] ?? {}, store)))) {
       throw new Error('La copia integral está incompleta.');
     }
-    metadata.set(payload, { exportedAt, ancestors: data.version === 2 ? ancestors : [], contentHash: await fingerprint(payload) });
+    metadata.set(payload, { complete: data.version === 2, exportedAt, ancestors: data.version === 2 ? ancestors : [], contentHash: await fingerprint(payload) });
     return payload;
   }
   const payload = { databases: {}, preferences: {} };
@@ -347,6 +369,7 @@ async function installNewer(payload, baseline) {
 }
 
 export async function restoreBackup(payload, preview) {
+  await protectLocal('Antes de importar una copia integral');
   const plan = await planRestore(payload);
   if (plan.conflicts.length || !equal(plan, preview)) throw new Error('El estado local ha cambiado. Vuelve a revisar la copia.');
   if (plan.comparison === 'same' || plan.comparison === 'older')
@@ -477,6 +500,27 @@ export function validateSyncData(data) {
     ...(templates.length && { templates: templates.map(([key, value]) => [key, validateTemplate(value)]) }) };
 }
 
+export async function readDropboxBackup(contents) {
+  const envelope = JSON.parse(contents);
+  if (envelope?.format !== 'thesaurus-dropbox-v1') return null;
+  if (envelope.hash !== await fingerprint(envelope.data ?? null))
+    throw Error('La huella SHA-256 de la copia de Dropbox es incorrecta.');
+  return validateSyncData(envelope.data);
+}
+
+export async function previewDropboxRestore(data) {
+  const local = await readSyncData();
+  syncTargetRows(data, local.rows);
+  return { baseline: await fingerprint(local.rows), same: await fingerprint(data) === await fingerprint(local.data) };
+}
+
+export async function restoreDropboxBackup(data, baseline) {
+  await protectLocal('Antes de importar una copia de Dropbox');
+  const local = await readSyncData();
+  if (await fingerprint(local.rows) !== baseline) throw Error('Los datos locales cambiaron. Vuelve a comparar la copia.');
+  await applySyncData(data, local.rows);
+}
+
 export function isEmptySyncEditor(editor) {
   return syncNames.slice(0, 2).every(name => {
     const stores = editor[name];
@@ -544,6 +588,8 @@ export async function applySyncData(data, before) {
       else localStorage.setItem(key, value);
       savedPreferences.push([key, original, value]);
     }
+    if (await fingerprint((await readSyncData()).rows) !== await fingerprint(after))
+      throw Error('No se pudo verificar el resultado local de la sincronización.');
   } catch (error) {
     const reverted = await Promise.allSettled([
       ...committed.reverse().map(name => replaceDatabase(name, after[name], before[name])),
@@ -785,6 +831,7 @@ export async function planPartial(envelope, { removeCustom = false, selected = n
 }
 
 export async function restorePartial(envelope, expected, options) {
+  await protectLocal('Antes de una importación parcial');
   const next = await planPartial(envelope, options);
   const comparison = plan => ({ ...plan, banks: Object.fromEntries(
     Object.entries(plan.banks).map(([name, { before }]) => [name, before])) });
@@ -804,6 +851,13 @@ export async function restorePartial(envelope, expected, options) {
       if (localStorage.getItem(key) !== before) throw Error('Los datos locales cambiaron durante la importación.');
       localStorage.setItem(key, after);
       saved.push(key);
+    }
+    for (const [name, { after }] of Object.entries(next.banks)) {
+      if (await fingerprint(await readDatabase(name)) !== await fingerprint(after))
+        throw Error('La verificación posterior detectó diferencias en el banco.');
+    }
+    for (const [key, { after }] of Object.entries(next.preferences)) {
+      if (localStorage.getItem(key) !== after) throw Error('La verificación posterior detectó diferencias en las preferencias.');
     }
   } catch (error) {
     const reverted = await Promise.allSettled([
