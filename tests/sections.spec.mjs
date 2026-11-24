@@ -1060,6 +1060,8 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
     await expect(restored.locator('#backup-dialog')).toBeVisible();
     await restored.locator('#backup-history > summary').press('Enter');
     await expect(restored.locator('#backup-history-list')).toContainText('Antes de sustituir el espacio local');
+    await restored.locator('#backup-dialog').getByRole('button', { name: 'Cerrar', exact: true }).press('Enter');
+    await expect(restored.locator('#backup-dialog')).toBeHidden();
   } finally {
     await fresh.close();
   }
