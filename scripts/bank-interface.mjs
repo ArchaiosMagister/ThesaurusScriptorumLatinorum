@@ -63,6 +63,7 @@ export function modernizeBank(source) {
     addActions.setAttribute('aria-label', 'Añadir textos');
     addActions.append(button('Pegar en el banco', () => pasteText('bank'), 'hbtn primary'),
         button('Importar Word al banco', () => importWord('bank'), 'hbtn'),
+        button('Importar PDF · PAU CV', openPauCvImport, 'hbtn'),
         button('Biblioteca latina', openLibrary, 'hbtn'));
     bankActions.append(addActions, button('Auditar textos repetidos', openDuplicateAudit, 'tbtn'));`);
   const from = source.indexOf("    bankToolbar.append(bankField('Buscar'");

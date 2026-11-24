@@ -34,6 +34,10 @@ await cp(join(root, 'app'), staging, { recursive: true });
 const notebook = join(staging, 'modulos', 'cuaderno-integrado');
 const exam = join(staging, 'modulos', 'examinator');
 await cp(notebookDist, notebook, { recursive: true });
+const pdfjs = join(notebook, 'pdfjs');
+await mkdir(pdfjs, { recursive: true });
+for (const file of ['pdf.mjs', 'pdf.worker.mjs']) await cp(join(root, 'node_modules', 'pdfjs-dist', 'legacy', 'build', file), join(pdfjs, file));
+await cp(join(root, 'node_modules', 'pdfjs-dist', 'LICENSE'), join(pdfjs, 'LICENSE'));
 await mkdir(exam, { recursive: true });
 
 const examFiles = ['index.html', 'styles.css', 'fonts.css', 'icon.png', 'icon-192.png', 'icono.svg',

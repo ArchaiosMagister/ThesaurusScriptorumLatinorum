@@ -1036,3 +1036,12 @@
   #editor .atl-bank .atl-bank-search-panel { padding: .6rem; }
   #editor .atl-bank .atl-filter-tools { margin-inline-start: 0; }
 }
+
+@media screen {
+ .atl-pau-import, .atl-pau-pair, .atl-pau-card, .atl-pau-lexical { display:grid;gap:.65rem;min-width:0; }
+ .atl-pau-pair {border:1px solid var(--rule);border-radius:10px;padding:.8rem;background:var(--paper);}
+ .atl-pau-card,.atl-pau-lexical {padding:.8rem;border:1px solid var(--rule);border-radius:8px;background:var(--panel);}
+ .atl-pau-import .field {display:grid;gap:.3rem;}
+ .atl-pau-import :is(input,textarea) {width:100%;min-width:0;min-height:40px;font-size:16px;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:.45rem;}
+ .atl-pau-import textarea {resize:vertical;}
+}

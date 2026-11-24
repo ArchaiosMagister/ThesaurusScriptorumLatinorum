@@ -151,6 +151,14 @@ export function lexicalValuesForDocument(option) {
       .replace('Lejanía (ille)', 'Demostrativo ille'));
 
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
+    await cp(new URL('./pau-cv-parser.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-parser.js'));
+    await cp(new URL('./pau-cv-import.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-import.js'));
+    const applyFile = join(directory, 'core', 'docx-import-apply.js');
+    let apply = await readFile(applyFile, 'utf8');
+    const anchor = 'questions, vocabulary: vocab';
+    if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
+    apply = apply.replace(anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})');
+    await writeFile(applyFile, apply);
     const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
       .replaceAll('./pwa-controls.js', './atl-pwa.js').replace("./edition-app.js", "./atl-edition.js")
       .replace("button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks");
@@ -178,7 +186,17 @@ export function lexicalValuesForDocument(option) {
           'const personalBases = () => teacherPreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1));')
         .replaceAll('choosePreverbBases(academicTeacherSnapshotV1,', 'choosePreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1),')
         .replaceAll('of bases)', 'of personalBases())').replaceAll('bases.find(', 'personalBases().find(')));
-    await writeFile(controls, integrateManualNotebookUnderline(academicControls));
+    let pauControls = integrateManualNotebookUnderline(academicControls);
+    // Solo las preguntas originales importadas se excluyen de la auditoría de repeticiones.
+    const repetitionStart = pauControls.indexOf('function inspectRepetitions(');
+    const repetitionEnd = pauControls.indexOf('function repetitionNotice(', repetitionStart);
+    if (repetitionStart < 0 || repetitionEnd < 0) throw Error('Revisar repeticiones PAU CV.');
+    const repetition = pauControls.slice(repetitionStart, repetitionEnd)
+      .replace("if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;")
+      .replace('for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;");
+    if (repetition === pauControls.slice(repetitionStart, repetitionEnd)) throw Error('Revisar filtros de repeticiones PAU CV.');
+    pauControls = pauControls.slice(0, repetitionStart) + repetition + pauControls.slice(repetitionEnd);
+    await writeFile(controls, pauControls);
     const libraryFile = join(directory, notebookPage, 'js', 'library.js');
     const library = groupLibraryAuthors((await readFile(libraryFile, 'utf8'))
       .replace("    M.toast('Fragmento copiado al examen. Escribe el título del texto.');", ''));
