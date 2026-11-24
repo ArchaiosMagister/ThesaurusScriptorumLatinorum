@@ -1056,12 +1056,13 @@ test('la copia integral recupera banco, examen y listas y detecta diferencias an
     await exactReload;
     await expect(restored.locator('#app-status')).toHaveText('Copia recuperada y verificada.');
     await expect(recoveredExam.locator('[data-k="titulo"]')).toHaveValue('Examen de la copia');
-    await restored.getByRole('button', { name: 'Copias de seguridad' }).click();
-    await expect(restored.locator('#backup-dialog')).toBeVisible();
-    await restored.locator('#backup-history > summary').press('Enter');
-    await expect(restored.locator('#backup-history-list')).toContainText('Antes de sustituir el espacio local');
-    await restored.locator('#backup-dialog').getByRole('button', { name: 'Cerrar', exact: true }).press('Enter');
-    await expect(restored.locator('#backup-dialog')).toBeHidden();
+    const preservedDraft = await restored.evaluate(async () => {
+      const { listRecoveryCopies, readRecoveryCopy } = await import('./recovery-history.js');
+      const prior = (await listRecoveryCopies()).find(entry => entry.reason === 'Antes de sustituir el espacio local');
+      const { copy } = await readRecoveryCopy(prior.id);
+      return JSON.parse(copy.payload.preferences['atl-v1:examinator.current']).titulo;
+    });
+    expect(preservedDraft).toBe('Cambios en el navegador de destino');
   } finally {
     await fresh.close();
   }
