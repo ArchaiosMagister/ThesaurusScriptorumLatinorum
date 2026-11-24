@@ -826,7 +826,7 @@
   #editor .atl-bank .cuaderno-bank-row-tags .small { white-space: nowrap; }
   #editor .atl-bank .atl-bank-card-actions { flex: none; margin: 0; flex-wrap: nowrap; }
   #editor .atl-bank .atl-bank-card-actions .tbtn { min-height: 34px; }
-  #editor .atl-bank:not(.atl-selecting) .atl-bank-card-actions .cuaderno-home-select { display: none; }
+  #editor .atl-bank:not(:has(.cuaderno-bank-bulk[open])) .atl-bank-card-actions .cuaderno-home-select { display: none; }
   #editor .atl-bank .cuaderno-bank-show-more,
   #editor .atl-bank .cuaderno-bank-empty { grid-column: 1 / -1; }
 }
@@ -1269,4 +1269,20 @@
 }
 @media screen and (max-width:480px) {
   #editor .atl-bank .atl-bank-search-panel .atl-bank-results-header { grid-template-columns:minmax(0,1fr); }
+}
+
+@media screen {
+  .atl-bank-planner label[hidden] { display: none; }
+  .atl-bank-planner li { margin-block: .35rem; }
+  .atl-bank-planner li p { margin: .25rem 0; }
+  .atl-bank-planner li .atl-bank-action-group { margin-inline-start: .35rem; }
+}
+
+@media print {
+  .atl-curriculum-print-period {
+    margin: 0 0 .25em;
+    font-size: 1em;
+    text-align: center;
+    break-after: avoid;
+  }
 }

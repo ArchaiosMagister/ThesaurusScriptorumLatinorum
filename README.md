@@ -76,3 +76,5 @@ En la [consola de aplicaciones de Dropbox](https://www.dropbox.com/developers/ap
 Pulsa **Sincronizar ahora** en la barra superior, primero en el dispositivo que contiene el banco y los cuadernos que quieres compartir. Luego sincroniza desde los otros dispositivos. El archivo privado de Dropbox incluye el banco con sus etiquetas, los cuadernos y los pasajes que figuran como utilizados en exámenes. El registro de uso conserva el título y la referencia del pasaje cuando está vinculada, y permite detectar usos también en exámenes que se guardaron sin enlazar al banco. Los archivos completos de examen y las preferencias quedan en su dispositivo.
 
 Si el banco o los cuadernos cambian en ambos dispositivos desde la última sincronización, la operación se detiene y conserva las dos versiones. Exporta copias de los dispositivos y reúne los cambios en una sola versión antes de volver a sincronizar. Los registros de usos de exámenes distintos se combinan aunque se hayan guardado sin conexión.
+
+El [formato JSON de las copias parciales](docs/copias-parciales.md) incluye el flujo de ida y vuelta para revisar etiquetas gramaticales externamente.

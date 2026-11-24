@@ -170,6 +170,11 @@ export function simplifyNotebookOrganization(source) {
         const titleLabel = element.closest('#editor')?.querySelector('.cuaderno-context-current');
         if (titleLabel) titleLabel.textContent = draft.title;
         const idx`);
+  replace('        root.append(paperFor(edition, p, index, edition.placements.length));', `        const paper = paperFor(edition, p, index, edition.placements.length);
+        const label = p.period !== edition.placements[index - 1]?.period
+            ? periods.find(([key]) => key === p.period)?.[1] : '';
+        if (label) paper.prepend(node('h2', 'atl-curriculum-print-period', label));
+        root.append(paper);`);
   return "import { periods } from './atl-bank-curriculum.js';\n" + source;
 }
 

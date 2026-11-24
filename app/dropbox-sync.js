@@ -174,6 +174,7 @@ async function synchronize(session, prepareReload, report) {
     save(localStorage, checkpointKey, {
       editor: await syncFingerprint(data.editor),
       bankReviews: await Promise.all((data.bankReviews ?? []).map(async ([id, row]) => [id, await syncFingerprint(row)])),
+      templates: await Promise.all((data.templates ?? []).map(async ([id, row]) => [id, await syncFingerprint(row)])),
       usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
     });
   }
@@ -184,10 +185,12 @@ async function synchronize(session, prepareReload, report) {
     if (!remote || pending.hash !== remote.hash)
       throw new Error('Dropbox cambió mientras había una sincronización pendiente. Conserva una copia local y revisa ambas versiones.');
     const current = await fingerprints(local.rows);
-    if (pending.before && pending.after && !Object.hasOwn(pending.before, 'bankReviews') &&
-        !Object.hasOwn(pending.after, 'bankReviews')) {
-      const empty = await syncFingerprint([]);
-      pending.before.bankReviews = pending.after.bankReviews = empty;
+    for (const collection of ['bankReviews', 'templates']) {
+      if (pending.before && pending.after && !Object.hasOwn(pending.before, collection) &&
+          !Object.hasOwn(pending.after, collection)) {
+        const empty = await syncFingerprint([]);
+        pending.before[collection] = pending.after[collection] = empty;
+      }
     }
     const target = syncTargetRows(remote.data, local.rows);
     if (!isRecoverableSync(current, pending.before ?? {}, pending.after ?? {}) ||
@@ -209,11 +212,16 @@ async function synchronize(session, prepareReload, report) {
     const hashes = new Map();
     const localReviews = local.data.bankReviews ?? [];
     const remoteReviews = remote.data.bankReviews ?? [];
-    await Promise.all([...local.data.usages, ...remote.data.usages, ...localReviews, ...remoteReviews].map(async ([, row]) =>
+    const localTemplates = local.data.templates ?? [];
+    const remoteTemplates = remote.data.templates ?? [];
+    await Promise.all([...local.data.usages, ...remote.data.usages, ...localReviews, ...remoteReviews, ...localTemplates, ...remoteTemplates].map(async ([, row]) =>
       hashes.set(row, await syncFingerprint(row))));
     const bankReviews = mergeUsages(localReviews, remoteReviews, new Map(checkpoint?.bankReviews), row => hashes.get(row),
       'La revisión gramatical de una ficha cambió en ambos dispositivos. Las dos versiones se han conservado.');
+    const templates = mergeUsages(localTemplates, remoteTemplates, new Map(checkpoint?.templates), row => hashes.get(row),
+      'Una plantilla cambió en ambos dispositivos. Las dos versiones se han conservado.');
     data = {
+      ...(templates.length && { templates }),
       ...(bankReviews.length && { bankReviews }),
       editor: action === 'download' ? remote.data.editor : local.data.editor,
       usages: mergeUsages(local.data.usages, remote.data.usages, new Map(checkpoint?.usages), row => hashes.get(row))

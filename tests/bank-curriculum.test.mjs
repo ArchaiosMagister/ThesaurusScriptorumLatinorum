@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bankTagVisible, buildCurriculum, matchesInfinitive, matchesSelectividad, selectividadSession, selectividadLabel, compareSelectividadYear } from '../scripts/bank-curriculum.js';
+import { bankTagVisible, buildCurriculum, planCurriculum, matchesInfinitive, matchesSelectividad, selectividadSession, selectividadLabel, compareSelectividadYear } from '../scripts/bank-curriculum.js';
 
 function row(index, level, ...tags) {
   return { text: { id: String(index), title: 'Pasaje ' + index }, level, tags };
@@ -66,4 +66,48 @@ test('excluir Selectividad conserva solo los textos no PAU',()=>{
  assert.equal(matchesSelectividad({},'','',false,true),true);
  assert.equal(matchesSelectividad({selectividad:{}},'','',false,true),false);
  assert.equal(matchesSelectividad({},'','',false,false),true);
+});
+
+test('la planificación aplica exclusiones a todos los grupos y permite sustituir sin repetir pasajes', () => {
+  const entry = (id, tags, fields = {}) => ({
+    text: { id, title: id, source: { author: id }, latin: id, ...fields }, tags, level: 2
+  });
+  const rows = [
+    entry('a1', ['a']), entry('a2', ['a']), entry('a3', ['a']),
+    entry('b1', ['b']), entry('b2', ['b']), entry('future', ['a', 'b']),
+    entry('mixed', ['a'], { courseIds: ['1bach', '2bach'] }),
+    entry('exam', ['a'], { selectividad: {} }),
+    entry('copy', ['a'], { latin: 'a1' })
+  ];
+  const settings = {
+    progression: 'specific', exam: 'exclude', excludedCourses: ['2bach'],
+    terms: [{ tags: ['a'], count: 1, review: 1 }, { tags: ['b'], count: 1, review: 1 },
+      { tags: ['c'], count: 1, review: 0 }]
+  };
+  const plan = planCurriculum(rows, settings, (a, b) => a.latin === b.latin);
+  const [first, second, third, firstReview, secondReview] = plan.groups;
+  assert.deepEqual(plan.coverage(first), { candidates: 5, covered: ['a'], uncovered: [], later: [] });
+  assert.deepEqual(plan.coverage(third).uncovered, ['c']);
+  assert.equal(plan.coverage(second).candidates, 3);
+  assert.equal(firstReview.entries.length, 1);
+  assert.equal(secondReview.entries.length, 1);
+  const original = first.entries[0];
+  assert.equal(plan.replace(first, 0), true);
+  assert.notEqual(first.entries[0], original);
+  const latin = plan.groups.flatMap(group => group.entries.map(row => row.text.latin));
+  assert.equal(new Set(latin).size, latin.length);
+
+  const cumulative = planCurriculum(rows, { ...settings, progression: 'cumulative' }, () => false);
+  assert.equal(cumulative.coverage(cumulative.groups[2]).candidates, 7);
+  const examsOnly = planCurriculum(rows, { ...settings, exam: 'only', excludedCourses: ['unassigned'] }, () => false);
+  assert.ok(examsOnly.groups.every(group => !group.entries.length));
+});
+
+test('advierte si la cobertura necesita una etiqueta programada más adelante', () => {
+  const plan = planCurriculum([{ text: { id: 'ab', title: 'AB', source: {} }, tags: ['a', 'b'], level: 2 }], {
+    progression: 'cumulative', exam: 'all', excludedCourses: [],
+    terms: [{ tags: ['a'], count: 1, review: 0 }, { tags: ['b'], count: 1, review: 0 }, { tags: [], count: 0, review: 0 }]
+  }, () => false);
+  assert.deepEqual(plan.coverage(plan.groups[0]).later, ['b']);
+  assert.deepEqual(plan.coverage(plan.groups[1]).uncovered, ['b']);
 });

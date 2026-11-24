@@ -380,7 +380,7 @@ test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramati
   await expect(bank.getByRole('checkbox', { name: /^Demostrativo / })).toHaveCount(3);
 });
 
-test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y repaso', async ({ page }) => {
+test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente', async ({ page }) => {
   await page.goto(path);
   const frame = page.frameLocator('#panel-cuaderno iframe');
   const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
@@ -394,7 +394,7 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
     let corpus = before.corpus;
     for (let i = 0; i < 50; i++) {
       const id = 'plan.' + i;
-      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est.', author: 'César',
+      corpus = upsertText(corpus, { title: 'Lectura ' + i, latin: 'Prima lux orta est ' + i + '.', author: 'César',
         reference: String(i), work: 'Bellum Gallicum', difficulty: 1 + Math.floor(i / 10) }, id, '2026-11-22T09:00:00.000Z');
       corpus = attachGrammarTags(corpus, id, [i % 2 ? 'gram.subjuntivo' : 'gram.ablativo.absoluto']);
     }
@@ -404,24 +404,39 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
   await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
   const panel = frame.locator('.atl-bank-planner');
   const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
-  await expect(panel.getByText(/^Sin ejemplos en la selección/)).toBeVisible();
-  await expect(create).toBeDisabled();
-  await panel.getByRole('checkbox', { name: 'Limitar a etiquetas presentes en la selección' }).check();
-  await expect(panel.getByRole('status')).toContainText('50 de 50 textos');
-  await expect(panel.getByText('Tercer trimestre · 15 textos')).toBeVisible();
-  await expect(panel.getByText('Repaso y refuerzo · 5 textos')).toBeVisible();
+  await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
+  const first = panel.getByRole('combobox', { name: 'Etiqueta para primer trimestre' });
+  await first.selectOption('gram.ablativo.absoluto');
+  await first.selectOption('gram.subjuntivo');
+  await panel.getByRole('button', { name: /^Subir Subjuntivo/i }).click();
+  await expect(panel.locator('details:has(select[aria-label="Etiqueta para primer trimestre"]) li').first()).toContainText(/subjuntivo/i);
+  await panel.getByRole('button', { name: /^Quitar Subjuntivo/i }).click();
+  const second = panel.getByRole('combobox', { name: 'Etiqueta para segundo trimestre' });
+  await panel.getByText('Segundo trimestre', { exact: true }).click();
+  await second.selectOption('gram.subjuntivo');
+  await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
+  await expect(panel.getByText('Refuerzo del primer trimestre · 2/2 · 25 candidatos')).toBeVisible();
+  await panel.getByText('Plantillas de programación', { exact: true }).click();
+  await panel.getByRole('textbox', { name: 'Nombre de la plantilla' }).fill('Programa de prueba');
+  await panel.getByRole('button', { name: 'Guardar nueva' }).click();
+  await expect(panel.getByRole('combobox', { name: 'Plantilla', exact: true }).locator('option:checked'))
+    .toHaveText('Programa de prueba');
+  await expect.poll(() => page.evaluate(async () => {
+    const { captureBackup } = await import('./backup-store.js');
+    const backup = await captureBackup();
+    return Object.values(backup.payload.preferences).some(value => value.includes('Programa de prueba'));
+  })).toBe(true);
+  const third = panel.locator('[data-period="trimestre-3"]');
+  if (await third.getAttribute('open') === null) await third.locator('summary').click();
+  await third.getByRole('button', { name: /^Bajar «/ }).first().click();
   await create.click();
   await expect(frame.locator('.atl-organize-main')).toContainText('Textos del cuaderno (50)');
   const { edition } = await notebookSnapshot(frame, 'Lecturas por trimestres');
   expect(new Set(edition.placements.map(item => item.source.sourceId)).size).toBe(50);
   expect(edition.placements.map(item => item.period)).toEqual([
     ...Array(15).fill('trimestre-1'), ...Array(15).fill('trimestre-2'),
-    ...Array(15).fill('trimestre-3'), ...Array(5).fill('repaso')
+    ...Array(15).fill('trimestre-3'), 'refuerzo-1', 'refuerzo-1', 'refuerzo-2', 'refuerzo-2', 'refuerzo-3'
   ]);
-  const level = item => 1 + Math.floor(Number(item.source.sourceId.split('.')[1]) / 10);
-  const teaching = edition.placements.slice(0, 45).map(level);
-  expect(teaching).toEqual([...teaching].sort((a, b) => a - b));
-  expect(edition.placements.slice(45).map(level)).toEqual([1, 2, 3, 4, 5]);
   expect(edition.placements.flatMap(item => item.grammaticalTagIds)).toEqual(
     expect.arrayContaining(['gram.subjuntivo', 'gram.ablativo.absoluto'])
   );
@@ -430,7 +445,14 @@ test('genera 50 lecturas con cobertura, dificultad progresiva, tres trimestres y
     return new TextDecoder().decode(createNotebookDocx(edition));
   }, edition);
   expect(word).toContain('Primer trimestre');
-  expect(word).toContain('Repaso y refuerzo');
+  expect(word).toContain('Refuerzo del primer trimestre');
+  const printHeadings = await frame.locator('html').evaluate(async (_, edition) => {
+    const { renderNotebookPrintPages } = await import('../ui/atl-edition.js');
+    return [...renderNotebookPrintPages(edition).querySelectorAll('.atl-curriculum-print-period')]
+      .map(item => item.textContent);
+  }, edition);
+  expect(printHeadings).toEqual(['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre',
+    'Refuerzo del primer trimestre', 'Refuerzo del segundo trimestre', 'Refuerzo del tercer trimestre']);
 });
 
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {
@@ -1962,13 +1984,18 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
       await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
+    const templateId = 'atl-v1:curriculum-template:994637a3-ec84-412d-b35c-92fe772a0001';
     await page.goto(path);
     const editable = await seedBank(page);
     await page.getByRole('tab', { name: 'Cuadernos' }).click();
     page.once('dialog', prompt => prompt.accept('Cuaderno para sincronizar'));
     await editable.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
     await expect(editable.getByText('Cuaderno para sincronizar', { exact: true }).first()).toBeVisible();
-    await page.evaluate(async () => {
+    await page.evaluate(async templateId => {
+      localStorage.setItem(templateId, JSON.stringify({ name: 'Programa sincronizado', settings: {
+        terms: [{ tags: ['gram.ablativo.absoluto'], count: 1, review: 1 }, { tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }],
+        progression: 'specific', exam: 'exclude', excludedCourses: ['2bach'], filtered: false
+      } }));
       const { recordExam } = await import('./modulos/shared/text-usage.js');
       await recordExam('exam-id', 'Examen del banco', { texto: 'Gallia est omnis divisa.', tokens: ['dato excluido'] });
       localStorage.setItem('atl-v1:examinator.current', JSON.stringify({ texto: 'Borrador excluido' }));
@@ -1977,14 +2004,16 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const pending = [{ start: 0, end: 4, tagId: 'gram.subjuntivo', evidence: ['Análisis local'], alternatives: [] }];
       localStorage.setItem(key, JSON.stringify({ rejected, pending, corrected: [], version: 1 }));
 
-    });
+    }, templateId);
     await link(page);
     await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(page.locator('#dropbox-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([['exam-id', { id: 'exam-id', title: 'Examen del banco', snapshot: { texto: 'Gallia est omnis divisa.' } }]]);
     expect(JSON.stringify(remote)).not.toContain('Borrador excluido');
     expect(JSON.stringify(remote)).not.toContain('Análisis local');
-    expect(remote.data.bankReviews[0][1].rejected).toEqual(['0:4:gram.subjuntivo']);
+    expect(remote.data.bankReviews.find(([id]) => id === 'atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64))[1].rejected).toEqual(['0:4:gram.subjuntivo']);
+
+    expect(remote.data.templates[0][1].name).toBe('Programa sincronizado');
 
     const tablet = await destination.newPage();
     await tablet.goto(new URL(path, page.url()).href);
@@ -2003,16 +2032,18 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       const review = JSON.parse(localStorage.getItem('atl-v1:cuaderno-banco-review-v1:prueba:' + 'a'.repeat(64)));
       return {
         rejected: review.rejected,
+        template: data.templates[0][1].name,
         canOpenExam: Boolean(await savedExam('exam-id')),
         hasExamUse: index.some(entry => entry.document.id === 'exam-id' && entry.document.usageOnly),
         hasNotebook: editor.editions.some(([, row]) => row.edition.title === 'Cuaderno para sincronizar'),
         hasTags: editor.corpus[0][1].corpus.texts.some(text => text.tagIds.includes('gram.ablativo.absoluto'))
       };
-    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true, rejected: ['0:4:gram.subjuntivo'] });
+    })).toEqual({ canOpenExam: false, hasExamUse: true, hasNotebook: true, hasTags: true, rejected: ['0:4:gram.subjuntivo'], template: 'Programa sincronizado' });
     expect(uploads).toBe(1);
     // Una baja en un dispositivo ya sincronizado debe propagarse sin reaparecer
     // ni eliminar un examen completo guardado únicamente en el otro dispositivo.
-    await tablet.evaluate(async () => {
+    await tablet.evaluate(async templateId => {
+      localStorage.removeItem(templateId);
       const db = await new Promise((resolve, reject) => {
         const request = indexedDB.open('atl-v1:exam-archive', 1);
         request.onsuccess = () => resolve(request.result);
@@ -2025,24 +2056,26 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
         tx.onabort = () => reject(tx.error);
       });
       db.close();
-    });
+    }, templateId);
     await tablet.locator('header').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await expect(tablet.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([]);
+    expect(remote.data.templates).toBeUndefined();
     expect(uploads).toBe(2);
     const fullExamReload = page.waitForEvent('load');
     await page.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' }).click();
     await fullExamReload;
     await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(remote.data.usages).toEqual([]);
-    expect(await page.evaluate(async () => {
+    expect(await page.evaluate(async templateId => {
       const { readSyncData } = await import('./backup-store.js');
       const { savedExam } = await import('./modulos/shared/text-usage.js');
       return {
         sharedUses: (await readSyncData()).data.usages.length,
+        deletedTemplate: localStorage.getItem(templateId) === null,
         originalExam: (await savedExam('exam-id'))?.texto
       };
-    })).toEqual({ sharedUses: 0, originalExam: 'Gallia est omnis divisa.' });
+    }, templateId)).toEqual({ sharedUses: 0, originalExam: 'Gallia est omnis divisa.', deletedTemplate: true });
     await tablet.close();
 
     const reopened = await destination.newPage();
@@ -2213,4 +2246,172 @@ test('una restauración más nueva fallida revierte los almacenes ya escritos', 
     return {comparison:plan.comparison,failed,message,restored:(await captureBackup()).contentHash===initial.contentHash};
   });
   expect(result).toMatchObject({comparison:'newer',failed:true,message:'fallo de escritura simulado',restored:true});
+});
+
+test('exporta una selección y reimporta las etiquetas filológicas sin tocar el cuaderno', async ({ page }) => {
+  const { readFile } = await import('node:fs/promises');
+  await page.goto(path);
+  const frame = await seedBank(page);
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  await frame.locator('html').evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('../storage/indexeddb-corpus-repository.js');
+    const { attachGrammarTags } = await import('../core/grammar-tags.js');
+    const repo = new IndexedDbCorpusRepository();
+    const state = await repo.load();
+    const custom = { id: 'custom.docente', label: 'Etiqueta docente de prueba', kind: 'custom', parentId: null };
+    const text = state.corpus.texts.find(text => text.id === 'doc.uno');
+    await repo.save(attachGrammarTags(state.corpus, text.id, [...text.tagIds, custom.id], [custom]), state.revision);
+  });
+  await page.reload();
+  await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
+  const planner = frame.locator('.atl-bank-planner');
+  await planner.getByRole('checkbox', { name: 'Aceptar advertencias y crear el cuaderno con esta selección' }).check();
+  await planner.getByRole('button', { name: 'Crear cuaderno', exact: true }).click();
+  await frame.locator('.atl-organize-main').waitFor();
+  const beforeNotebook = await notebookSnapshot(frame, 'Lecturas por trimestres');
+
+  await page.getByRole('tab', { name: 'Banco de textos' }).click();
+  const manage = bank.locator('.cuaderno-bank-bulk');
+  await manage.locator('summary').click();
+  const exportSelection = manage.getByRole('button', { name: /^Exportar textos seleccionados/ });
+  await expect(exportSelection).toBeDisabled();
+  await bank.getByRole('checkbox', { name: 'Seleccionar texto: Uno' }).check();
+  await bank.getByRole('checkbox', { name: 'Seleccionar texto: Dos' }).check();
+  await expect(exportSelection).toHaveText('Exportar textos seleccionados (2)');
+  await exportSelection.click();
+
+  const download = async () => {
+    const pending = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Descargar JSON' }).click();
+    return JSON.parse(await readFile(await (await pending).path(), 'utf8'));
+  };
+  const partial = await download();
+  expect(partial.type).toBe('bank');
+  expect(partial.scope).toBe('selected');
+  expect(partial.payload.corpus.texts.map(text => text.id).sort()).toEqual(['doc.dos', 'doc.uno']);
+  const backup = page.locator('#backup-dialog');
+  await backup.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(exportSelection).toHaveText('Exportar textos seleccionados (2)');
+  await bank.getByRole('searchbox', { name: 'Buscar en banco de textos propios' }).fill('Secunda');
+  await page.getByRole('button', { name: 'Copias de seguridad' }).click();
+  await backup.getByLabel('Contenido').selectOption('bank');
+  await backup.getByLabel('Alcance').selectOption('filtered');
+  expect((await download()).payload.corpus.texts.map(text => text.id)).toEqual(['doc.dos']);
+
+  await backup.getByLabel('Contenido').selectOption('tag-exchange');
+  await backup.getByLabel('Alcance').selectOption('selected');
+  const exchange = await download();
+  expect(exchange.sha256).toMatch(/^[a-f\d]{64}$/);
+  for (const row of exchange.proposals) row.tagIds = ['gram.cum.historico'];
+
+  const before = await page.evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+    const { upsertText } = await import('./modulos/cuaderno-integrado/core/editor-operations.js');
+    const repo = new IndexedDbCorpusRepository();
+    const state = await repo.load();
+    const original = state.corpus.texts.find(text => text.id === 'doc.dos');
+    const changed = upsertText(state.corpus, { id: original.id, title: original.title, ...original.source,
+      latin: 'Secunda lux iterum orta est.' }, original.id, new Date().toISOString());
+    await repo.save(changed, state.revision);
+    return changed.texts;
+  });
+  const input = backup.locator('#backup-file');
+  const damaged = structuredClone(exchange);
+  damaged.payload.corpus.texts[0].title = 'Alterado';
+  await input.setInputFiles({ name: 'alterado.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(damaged)) });
+  await expect(backup.locator('#backup-preview')).toContainText('huella SHA-256');
+  await input.setInputFiles({ name: 'revisado.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(exchange)) });
+  await expect(backup.locator('#backup-preview')).toContainText('1 fichas seleccionadas');
+  await expect(backup.getByText(/El texto latino ha cambiado/)).toBeVisible();
+  await expect(backup.getByText(/Conservadas: custom.docente/)).toBeVisible();
+  page.once('dialog', prompt => prompt.accept());
+  await backup.getByRole('button', { name: 'Actualizar etiquetas de textos existentes', exact: true }).click();
+
+  await expect(page.locator('#app-status')).toHaveText('Importación parcial aplicada y verificada.');
+  const after = await page.evaluate(async () => {
+    const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+    return (await new IndexedDbCorpusRepository().load()).corpus.texts;
+  });
+  expect(after).toEqual(before.map(text => text.id === 'doc.uno'
+    ? { ...text, tagIds: ['gram.cum.historico', 'custom.docente'] } : text));
+  expect(await notebookSnapshot(frame, 'Lecturas por trimestres')).toEqual(beforeNotebook);
+});
+
+test('las copias parciales conservan referencias y revierten el banco si falla la escritura de decisiones', async ({ page, browser }) => {
+  await page.goto(path);
+  await seedBank(page);
+  const exports = await page.evaluate(async () => {
+    const base = './modulos/cuaderno-integrado/';
+    const { WorkspaceRepository } = await import(base + 'storage/workspace-repository.js');
+    const { IndexedDbCorpusRepository } = await import(base + 'storage/indexeddb-corpus-repository.js');
+    const { createEdition, placementFromCorpus } = await import(base + 'core/edition-factory.js');
+    const { bankReviewKey } = await import(base + 'ui/atl-bank-review.js');
+    const { capturePartial } = await import('./backup-store.js');
+    const text = (await new IndexedDbCorpusRepository().load()).corpus.texts.find(text => text.id === 'doc.uno');
+    const timestamp = new Date().toISOString();
+    const workspace = new WorkspaceRepository();
+    const create = async (id, placements) => {
+      const edition = createEdition({ id, legacyNotebookId: null, title: id, timestamp, placements });
+      await workspace.commitEdition(id, 0, { command: 'create', targetId: id, timestamp }, () => edition);
+    };
+    await create('ed.parcial', [placementFromCorpus(text, 'place.1', timestamp, () => 'item.' + crypto.randomUUID())]);
+    await create('ed.excluida', []);
+    const key = await bankReviewKey(text);
+    localStorage.setItem(key, JSON.stringify({ rejected: ['0:5:gram.subjuntivo'], corrected: [], pending: [] }));
+    const templateId = 'atl-v1:curriculum-template:994637a3-ec84-412d-b35c-92fe772a0001';
+    localStorage.setItem(templateId, JSON.stringify({ name: 'Curso parcial', settings: {
+      terms: [{ tags: ['gram.ablativo.absoluto'], count: 1, review: 1 }, { tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }],
+      progression: 'specific', exam: 'exclude', excludedCourses: ['2bach'], filtered: false
+    } }));
+    return {
+      bank: await capturePartial('bank', 'selected', ['doc.uno']),
+      notebooks: await capturePartial('notebooks', 'selected', ['ed.parcial']),
+      templates: await capturePartial('templates', 'selected', [templateId]), key
+    };
+  });
+  expect(exports.notebooks.payload.workspace.corpus[0][1].corpus.texts.map(text => text.id)).toEqual(['doc.uno']);
+  expect(exports.notebooks.payload.workspace.editions.map(([id]) => id)).toEqual(['ed.parcial']);
+  expect(exports.notebooks.payload.workspace.history).toHaveLength(1);
+
+  const fresh = await browser.newContext();
+  await isolateBank(fresh);
+  try {
+    const destination = await fresh.newPage();
+    await destination.goto(new URL(path, page.url()).href);
+    await destination.frameLocator('#panel-cuaderno iframe').getByRole('region', { name: 'Banco de textos propios' }).waitFor();
+    const result = await destination.evaluate(async ({ bank, notebooks, templates, key }) => {
+      const { planPartial, readPartial, restorePartial, readSyncData } = await import('./backup-store.js');
+      const { WorkspaceRepository } = await import('./modulos/cuaderno-integrado/storage/workspace-repository.js');
+      const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+      const repo = new IndexedDbCorpusRepository();
+      const bankImport = await readPartial(JSON.stringify(bank));
+      const plan = await planPartial(bankImport);
+      const before = await repo.load();
+      const set = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (name, value) {
+        if (name === key) throw Error('Fallo simulado de almacenamiento');
+        return set.call(this, name, value);
+      };
+      let failed = false;
+      try { await restorePartial(bankImport, plan); }
+      catch (error) { failed = error.message.includes('Fallo simulado'); }
+      finally { Storage.prototype.setItem = set; }
+      const afterFailure = await repo.load();
+      await restorePartial(bankImport, await planPartial(bankImport));
+      for (const file of [notebooks, templates]) {
+        const incoming = await readPartial(JSON.stringify(file));
+        await restorePartial(incoming, await planPartial(incoming));
+      }
+      const synced = (await readSyncData()).data;
+      const edition = (await new WorkspaceRepository().listEditions()).find(row => row.edition.id === 'ed.parcial');
+      return { failed, unchanged: JSON.stringify(before) === JSON.stringify(afterFailure),
+        sources: edition.edition.placements.map(row => row.source.sourceId), templates: synced.templates,
+        repeats: (await planPartial(bankImport)).changes, review: localStorage.getItem(key) };
+    }, exports);
+    expect(result).toMatchObject({ failed: true, unchanged: true, sources: ['doc.uno'], repeats: 0 });
+    expect(result.templates[0][1].name).toBe('Curso parcial');
+    expect(JSON.parse(result.review).rejected).toEqual(['0:5:gram.subjuntivo']);
+  } finally {
+    await fresh.close();
+  }
 });

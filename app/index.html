@@ -47,14 +47,25 @@
   </main>
   <dialog id="backup-dialog" aria-labelledby="backup-title">
     <h2 id="backup-title">Copias de seguridad</h2>
-    <p class="backup-intro">Protege tus textos, etiquetas, cuadernos y exámenes. Puedes sincronizar o guardar una copia integral.</p>
+    <p class="backup-intro">Guarda o recupera copias del espacio de trabajo, o sincroniza con Dropbox.</p>
     <div class="backup-group">
       <h3>Sincronización</h3>
       <button type="button" id="app-dropbox" class="dropbox-primary" aria-haspopup="dialog">Sincronizar con Dropbox</button>
     </div>
     <div class="backup-group">
       <h3>Exportar</h3>
-      <p>Guarda una copia integral para conservarla o llevarla a otro dispositivo.</p>
+      <label for="backup-kind">Contenido</label>
+      <select id="backup-kind">
+        <option value="full">Copia completa</option>
+        <option value="notebooks">Solo cuadernos</option>
+        <option value="bank">Solo banco de textos</option>
+        <option value="templates">Solo plantillas de programación</option>
+        <option value="tag-exchange">Intercambio para revisión filológica</option>
+      </select>
+      <label id="backup-scope-label" for="backup-scope" hidden>Alcance</label>
+      <select id="backup-scope" hidden></select>
+      <fieldset id="backup-export-items" hidden><legend>Elementos de la copia</legend></fieldset>
+      <p id="backup-export-summary" role="status"></p>
       <button type="button" id="backup-export" class="backup-primary">Descargar copia integral</button>
     </div>
     <div class="backup-group">
@@ -62,6 +73,7 @@
       <label for="backup-file">Elegir copia para recuperar</label>
       <input id="backup-file" type="file" accept=".json,application/json">
       <p id="backup-preview" role="status" aria-live="polite"></p>
+      <div id="backup-import-items"></div>
       <button type="button" id="backup-restore" class="backup-primary" disabled>Recuperar copia</button>
     </div>
     <form method="dialog" class="backup-footer"><button class="backup-secondary">Cerrar</button></form>

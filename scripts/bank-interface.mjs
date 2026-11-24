@@ -151,16 +151,30 @@ export function modernizeBank(source) {
   replace('    bank.append(bulk);', '    resultsHeader.append(bulk);');
   replace(`    bulk.append(el('p', 'small muted', 'Selecciona los resultados de la búsqueda o marca textos individuales. ' +
         'Los cuadernos editoriales no se borrarán. Los textos de cuadernos históricos están protegidos.'));`, '');
+  replace("'Selección y borrado de varios textos del banco'", "'Gestionar varios textos del banco'");
+  replace("'Seleccionar para quitar: '", "'Seleccionar texto: '");
+  replace('            checkbox.disabled = protectedIds.has(text.id);', '');
+  replace("            if (checkbox.disabled)\n                selection.title = 'Protegido: se utiliza en un cuaderno histórico';",
+    "            if (protectedIds.has(text.id)) selection.title = 'Se puede exportar. Está protegido contra el borrado.';");
+  replace('            if (!protectedIds.has(text.id))\n                selectedForRemoval.add(text.id);',
+    '            selectedForRemoval.add(text.id);');
   replace("            selection.append(checkbox, el('span', '', 'Seleccionar'));", '            selection.append(checkbox);');
 
   replace("    const bulk = el('div', 'cuaderno-bank-bulk');", `    const bulk = el('details', 'cuaderno-bank-bulk');
-    const bulkHeading = el('summary', '', 'Gestionar selección');
-    bulk.addEventListener('toggle', () => bank.classList.toggle('atl-selecting', bulk.open));`);
+    const bulkHeading = el('summary', '', 'Gestionar selección');`);
   replace('    bulk.append(selectedButton, deselect, removeSelected, selectionCount);', `    const bulkActions = el('div', 'atl-bank-action-group');
-    bulkActions.append(selectedButton, deselect, removeSelected, selectionCount);
+    const exportSelected = button('Exportar textos seleccionados', () =>
+        window.parent.atlExportSelectedTexts([...selectedForRemoval]), 'hbtn');
+    exportSelected.disabled = true;
+    window.atlBankExportScope = () => ({ selected: [...selectedForRemoval], filtered: currentResults().map(text => text.id) });
+    bulkActions.append(selectedButton, deselect, removeSelected, exportSelected, selectionCount);
     bulk.append(bulkHeading, bulkActions);`);
   replace('        removeSelected.disabled = selectedForRemoval.size === 0;', `        bulkHeading.textContent = selectedForRemoval.size ? 'Gestionar selección · ' + selectedForRemoval.size : 'Gestionar selección';
-        removeSelected.disabled = selectedForRemoval.size === 0;`);
+        exportSelected.disabled = selectedForRemoval.size === 0;
+        exportSelected.textContent = 'Exportar textos seleccionados (' + selectedForRemoval.size + ')';
+        const protectedSelection = [...selectedForRemoval].some(id => protectedIds.has(id));
+        removeSelected.disabled = selectedForRemoval.size === 0 || protectedSelection;
+        removeSelected.title = protectedSelection ? 'Desmarca los textos protegidos para quitar el resto.' : '';`);
   replace('            rowSummary.append(selection);', `            const footer = el('div', 'atl-bank-card-footer');
             const actions = el('div', 'atl-bank-card-actions');
             const tagAction = button('Etiquetar', () => tagBankText(text, restoreFocus, navigation), 'tbtn sm');
