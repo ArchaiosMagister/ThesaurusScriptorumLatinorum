@@ -5,13 +5,21 @@ function replace(source, from, to) {
 
 export function integrateOriginValidation(source) {
   source = replace(source, "['notes', 'vocabulary', 'reviewed', 'teacherDocx']);",
-    "['notes', 'vocabulary', 'reviewed', 'teacherDocx', 'origin', 'difficulty', 'selectividad']);");
+    "['notes', 'vocabulary', 'reviewed', 'teacherDocx', 'origin', 'difficulty', 'selectividad', 'courseIds']);");
   return "import { communities } from '../ui/atl-bank-curriculum.js';\n" + replace(source, "        ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(",
     `        ...(data.origin === undefined ? {} : { origin: textOrigin(data.origin, path + '.origin') }),
         ...(data.difficulty === undefined ? {} : { difficulty: textDifficulty(data.difficulty, path + '.difficulty') }),
         ...(data.selectividad === undefined ? {} : { selectividad: selectividad(data.selectividad, path + '.selectividad') }),
+         ...(data.courseIds === undefined ? {} : { courseIds: studyCourses(data.courseIds, path + '.courseIds') }),
         ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(`) + `
 
+function studyCourses(value, path) {
+    if (!Array.isArray(value) || value.length > 2 ||
+        new Set(value).size !== value.length ||
+        value.some(course => course !== '1bach' && course !== '2bach'))
+        return invalid(path, 'cursos del pasaje inválidos');
+    return value;
+}
 function selectividad(value, path) {
     const entry = record(value, path, [], ['year', 'community']);
     if (entry.year !== undefined && (!Number.isInteger(entry.year) || entry.year < 1900 || entry.year > 2099))
@@ -36,6 +44,8 @@ function textOrigin(value, path) {
 
 export function integrateOriginWrites(source) {
   return replace(source, '        tagIds: previous?.tagIds ?? [],', `        tagIds: previous?.tagIds ?? [],
+         ...(draft.courseIds === undefined && previous?.courseIds === undefined
+             ? {} : { courseIds: draft.courseIds ?? previous?.courseIds ?? [] }),
         ...((draft.difficulty === undefined ? previous?.difficulty : draft.difficulty) == null ? {}
             : { difficulty: draft.difficulty ?? previous?.difficulty }),
         ...((draft.selectividad === undefined ? previous?.selectividad : draft.selectividad) == null ? {}

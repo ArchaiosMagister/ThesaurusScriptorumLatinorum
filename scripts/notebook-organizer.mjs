@@ -59,6 +59,24 @@ export function simplifyNotebookOrganization(source) {
         principal.append(textField('Título del cuaderno', e.title, value => {
             apply((edition, at) => validateEdition({ ...edition, title: value, updatedAt: at }));
         }));
+        const exclusion = node('label', 'field atl-notebook-course-exclusion');
+        exclusion.append(node('span', '', 'Excluir textos de un curso'));
+        const excludeSelect = node('select', 'field-control');
+        excludeSelect.setAttribute('aria-label', 'Curso excluido del cuaderno');
+        excludeSelect.append(new Option('No excluir ningún curso', ''),
+            new Option('Excluir 1.º Bachillerato', '1bach'),
+            new Option('Excluir 2.º Bachillerato', '2bach'));
+        excludeSelect.value = e.excludedCourse ?? '';
+        excludeSelect.addEventListener('change', () => {
+            apply((edition, at) => {
+                const { excludedCourse, ...unchanged } = edition;
+                return validateEdition({ ...unchanged,
+                    ...(excludeSelect.value ? { excludedCourse: excludeSelect.value } : {}), updatedAt: at });
+            });
+        });
+        exclusion.append(excludeSelect);
+        principal.append(exclusion);
+        principal.append(node('p', 'small muted', 'La exclusión se aplica al elegir nuevos textos del Banco; los ya incluidos permanecen en este cuaderno.'));
         principal.append(node('h4', '', 'Textos del cuaderno (' + e.placements.length + ')'));
         const list = node('ol', 'edition-notebook-list atl-organize-list');
         function focusRow(id, selector) {
