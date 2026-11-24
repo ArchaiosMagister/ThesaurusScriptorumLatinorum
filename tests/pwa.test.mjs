@@ -8,7 +8,7 @@ import { runInNewContext } from 'node:vm';
 import { buildRootWorker } from '../scripts/root-pwa.mjs';
 
 const shell = ['index.html', 'manifest.webmanifest', 'navigation.js', 'styles.css', 'pwa.js',
-  'backup-ui.js', 'backup-store.js', 'dropbox-sync.js', 'dropbox-plan.js'];
+  'backup-ui.js', 'backup-store.js', 'dropbox-sync.js', 'dropbox-plan.js', 'curriculum-templates.js'];
 
 function memoryCaches(network) {
   const databases = new Map();

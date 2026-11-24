@@ -1,3 +1,4 @@
+import { isTemplateKey, localTemplates, validateTemplate } from './curriculum-templates.js';
 import { applyBankReviewDecision } from './dropbox-plan.js';
 import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
@@ -23,7 +24,7 @@ const examKeys = new Set(['asig', 'current', 'config', 'espacioPreguntas', 'espa
 const scopedLocal = /^(?:atl-v1:examinator\.fs:\/datos\/listas\/(?:preverbios|evolucion|prefijos|latinismos)\.json|atl-v1:cuaderno-(?:ui-theme-v1|examinator-ultimo-v1|examinator\.vocabulario\.v1|banco-review-v1:.+|collatinus-revision-v1:.+))$/u;
 function safeLocal(key) {
   const prefix = 'atl-v1:examinator.';
-  return scopedLocal.test(key) || (key.startsWith(prefix) && examKeys.has(key.slice(prefix.length)));
+  return isTemplateKey(key) || scopedLocal.test(key) || (key.startsWith(prefix) && examKeys.has(key.slice(prefix.length)));
 }
 
 const request = req => new Promise((resolve, reject) => {
@@ -130,6 +131,7 @@ function validateData(data) {
   }
   for (const [key, val] of Object.entries(data.preferences)) {
     if (!safeLocal(key) || typeof val !== 'string') throw new Error('Preferencia ajena a esta copia.');
+    if (isTemplateKey(key)) validateTemplate(JSON.parse(val));
     if (key === 'atl-v1:examinator.current') desktopExam(JSON.parse(val));
   }
   return data;
@@ -440,7 +442,9 @@ function localBankDecisions() {
 export async function readSyncData() {
   const rows = Object.fromEntries(await Promise.all(syncNames.map(async name => [name, await readDatabase(name)])));
   rows.bankReviews = localBankDecisions();
-  return { data: { ...scopedSync(rows), ...(rows.bankReviews.length && { bankReviews: rows.bankReviews }) }, rows };
+  rows.templates = localTemplates();
+  return { data: { ...scopedSync(rows), ...(rows.bankReviews.length && { bankReviews: rows.bankReviews }),
+    ...(rows.templates.length && { templates: rows.templates }) }, rows };
 }
 
 export function validateSyncData(data) {
@@ -459,7 +463,12 @@ export function validateSyncData(data) {
         !Array.isArray(row[1]?.rejected) || !Array.isArray(row[1]?.corrected) || !Array.isArray(row[1]?.pending))) {
     throw new Error('El historial de etiquetas de Dropbox no es válido.');
   }
-  return { ...scopedSync(rows), ...(reviews.length && { bankReviews: reviews.map(([key, review]) => [key, bankDecisions(review)]) }) };
+  const templates = data.templates ?? [];
+  if (!Array.isArray(templates) || new Set(templates.map(row => row?.[0])).size !== templates.length ||
+      templates.some(row => !Array.isArray(row) || row.length !== 2 || !isTemplateKey(row[0])))
+    throw Error('Las plantillas de Dropbox no son válidas.');
+  return { ...scopedSync(rows), ...(reviews.length && { bankReviews: reviews.map(([key, review]) => [key, bankDecisions(review)]) }),
+    ...(templates.length && { templates: templates.map(([key, value]) => [key, validateTemplate(value)]) }) };
 }
 
 export function isEmptySyncEditor(editor) {
@@ -487,7 +496,7 @@ export function syncTargetRows(data, before) {
     if (!combined.has(id) && !local.usageOnly)
       combined.set(id, [id, { ...local, syncSuppressed: true }]);
   }
-  return { ...data.editor, bankReviews: data.bankReviews ?? [], [archiveName]: {
+  return { ...data.editor, bankReviews: data.bankReviews ?? [], templates: data.templates ?? [], [archiveName]: {
     exams: [...combined.values()].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
   } };
 }
@@ -504,6 +513,17 @@ export async function applySyncData(data, before) {
     }
     if (!equal(localBankDecisions(), before.bankReviews))
       throw new Error('Las decisiones de etiquetas cambiaron durante la sincronización.');
+    if (!equal(localTemplates(), before.templates ?? []))
+      throw new Error('Las plantillas cambiaron durante la sincronización.');
+    const beforeTemplates = new Map(before.templates ?? []);
+    const afterTemplates = new Map(after.templates);
+    for (const key of new Set([...beforeTemplates.keys(), ...afterTemplates.keys()])) {
+      if (equal(beforeTemplates.get(key), afterTemplates.get(key))) continue;
+      const original = localStorage.getItem(key);
+      if (afterTemplates.has(key)) localStorage.setItem(key, JSON.stringify(afterTemplates.get(key)));
+      else localStorage.removeItem(key);
+      savedReviews.push([key, original]);
+    }
     const previous = new Map(before.bankReviews);
     const next = new Map(after.bankReviews);
     for (const key of new Set([...previous.keys(), ...next.keys()])) {

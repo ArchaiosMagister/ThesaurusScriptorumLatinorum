@@ -409,15 +409,25 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   await first.selectOption('gram.ablativo.absoluto');
   await first.selectOption('gram.subjuntivo');
   await panel.getByRole('button', { name: /^Subir Subjuntivo/i }).click();
-  await expect(panel.locator('details').first().locator('li').first()).toContainText(/subjuntivo/i);
+  await expect(panel.locator('details').filter({ has: first }).locator('li').first()).toContainText(/subjuntivo/i);
   await panel.getByRole('button', { name: /^Quitar Subjuntivo/i }).click();
   const second = panel.getByRole('combobox', { name: 'Etiqueta para segundo trimestre' });
   await panel.getByText('Segundo trimestre', { exact: true }).click();
   await second.selectOption('gram.subjuntivo');
   await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
   await expect(panel.getByText('Refuerzo del primer trimestre · 2/2 · 25 candidatos')).toBeVisible();
+  await panel.getByText('Plantillas de programación', { exact: true }).click();
+  await panel.getByRole('textbox', { name: 'Nombre de la plantilla' }).fill('Programa de prueba');
+  await panel.getByRole('button', { name: 'Guardar nueva' }).click();
+  await expect(panel.getByRole('combobox', { name: 'Plantilla', exact: true }).locator('option:checked'))
+    .toHaveText('Programa de prueba');
+  await expect.poll(() => page.evaluate(async () => {
+    const { captureBackup } = await import('./backup-store.js');
+    const backup = await captureBackup();
+    return Object.values(backup.payload.preferences).some(value => value.includes('Programa de prueba'));
+  })).toBe(true);
   const third = panel.locator('[data-period="trimestre-3"]');
-  await third.locator('summary').click();
+  if (await third.getAttribute('open') === null) await third.locator('summary').click();
   await third.getByRole('button', { name: /^Bajar «/ }).first().click();
   await create.click();
   await expect(frame.locator('.atl-organize-main')).toContainText('Textos del cuaderno (50)');

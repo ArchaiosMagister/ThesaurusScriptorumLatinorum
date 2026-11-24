@@ -1,3 +1,4 @@
+import { localTemplates, templatePrefix, validateTemplate } from '../../../curriculum-templates.js';
 import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum } from './atl-bank-curriculum.js';
 import { findPossibleDuplicates, normalizedLatinKey } from '../core/text-duplicates.js';
 import { assessBankDifficulty, difficultyText } from './atl-bank-difficulty.js';
@@ -114,7 +115,88 @@ export function showBankPlanner({ read, match, create, modal }) {
   const settings = node('div');
   settings.className = 'atl-planner-counts';
   settings.append(field('Progresión gramatical', progression), field('Selectividad', exam));
-  panel.append(field('Título del nuevo cuaderno', title), settings, courses,
+  const templates = node('details');
+  const templateSelect = options([]);
+  const templateName = node('input');
+  templateName.maxLength = 150;
+  const templateActions = node('div');
+  templateActions.className = 'atl-bank-action-group';
+  let loadedTemplate = null;
+  const templateStatus = node('p');
+  templateStatus.setAttribute('aria-live', 'polite');
+  function templateAction(label, perform) {
+    return action(label, () => {
+      try { perform(); templateStatus.textContent = ''; }
+      catch (error) { templateStatus.textContent = error.message; }
+    });
+  }
+  function listTemplates(selected = '') {
+    templateSelect.replaceChildren(new Option('Elegir plantilla…', ''));
+    for (const [key, template] of localTemplates().sort(([, a], [, b]) => a.name.localeCompare(b.name, 'es'))) {
+      templateSelect.append(new Option(template.name, key));
+    }
+    templateSelect.value = selected;
+    for (const button of [loadTemplate, updateTemplate, duplicateTemplate, deleteTemplate]) {
+      button.disabled = !templateSelect.value;
+    }
+  }
+  function readTemplate() {
+    const key = templateSelect.value;
+    const raw = localStorage.getItem(key);
+    if (!raw) throw Error('La plantilla ya no está disponible.');
+    return { key, raw, value: validateTemplate(JSON.parse(raw)) };
+  }
+  function saveTemplate(key, value) {
+    localStorage.setItem(key, JSON.stringify(validateTemplate(value)));
+    listTemplates(key);
+    loadedTemplate = readTemplate();
+    templateName.value = loadedTemplate.value.name;
+  }
+  const loadTemplate = templateAction('Cargar', () => {
+    loadedTemplate = readTemplate();
+    const value = loadedTemplate.value;
+    const config = value.settings;
+    templateName.value = value.name;
+    progression.value = config.progression;
+    exam.value = config.exam;
+    filtered.checked = config.filtered;
+    for (const check of exclusions) check.checked = config.excludedCourses.includes(check.value);
+    termControls.forEach(({ count, review, tags, render }, index) => {
+      const term = config.terms[index];
+      count.value = term.count;
+      review.value = term.review;
+      tags.splice(0, tags.length, ...term.tags);
+      render();
+    });
+    void generate();
+  });
+  const newTemplate = templateAction('Guardar nueva', () => saveTemplate(templatePrefix + crypto.randomUUID(),
+    { name: templateName.value, settings: readSettings() }));
+  const updateTemplate = templateAction('Guardar cambios', () => {
+    const current = readTemplate();
+    if (loadedTemplate?.key !== current.key || loadedTemplate.raw !== current.raw)
+      throw Error('Carga la plantilla actual antes de guardar cambios.');
+    saveTemplate(current.key, { name: templateName.value, settings: readSettings() });
+  });
+  const duplicateTemplate = templateAction('Duplicar', () => {
+    const { value } = readTemplate();
+    saveTemplate(templatePrefix + crypto.randomUUID(), { ...value, name: value.name.slice(0, 143) + ' (copia)' });
+  });
+  const deleteTemplate = templateAction('Eliminar', () => {
+    const { key, raw, value } = readTemplate();
+    if (!window.confirm('¿Eliminar la plantilla «' + value.name + '»?')) return;
+    if (localStorage.getItem(key) !== raw) throw Error('La plantilla cambió en otra pestaña.');
+    localStorage.removeItem(key);
+    loadedTemplate = null;
+    templateName.value = '';
+    listTemplates();
+  });
+  templateSelect.addEventListener('change', () => listTemplates(templateSelect.value));
+  templateActions.append(loadTemplate, newTemplate, updateTemplate, duplicateTemplate, deleteTemplate);
+  templates.append(node('summary', 'Plantillas de programación'), field('Plantilla', templateSelect),
+    field('Nombre de la plantilla', templateName), templateActions, templateStatus);
+  try { listTemplates(); } catch (error) { templateStatus.textContent = error.message; }
+  panel.append(field('Título del nuevo cuaderno', title), templates, settings, courses,
     field('Usar los resultados filtrados del Banco', filtered));
   periods.slice(0, 3).forEach(([, label], index) => {
     const section = node('details');
@@ -247,13 +329,18 @@ export function showBankPlanner({ read, match, create, modal }) {
     renderPreview(new Set([...preview.querySelectorAll('details[open]')].map(section => section.dataset.period)));
   }
 
+  function readSettings() {
+    return {
+      terms: termControls.map(({ count, review, tags }) => ({ count: count.valueAsNumber, review: review.valueAsNumber, tags: [...tags] })),
+      progression: progression.value, exam: exam.value, filtered: filtered.checked,
+      excludedCourses: exclusions.filter(check => check.checked).map(check => check.value)
+    };
+  }
+
   async function generate() {
     const ticket = ++sequence;
     const open = new Set([...preview.querySelectorAll('details[open]')].map(section => section.dataset.period));
-    const settings = {
-      terms: termControls.map(({ count, review, tags }) => ({ count: count.valueAsNumber, review: review.valueAsNumber, tags: [...tags] })),
-      progression: progression.value, exam: exam.value, excludedCourses: exclusions.filter(check => check.checked).map(check => check.value)
-    };
+    const settings = readSettings();
     plan = undefined;
     partial.checked = false;
     hasWarnings = false;
@@ -266,11 +353,12 @@ export function showBankPlanner({ read, match, create, modal }) {
     }
     status.textContent = 'Comprobando disponibilidad…';
     try {
-      const result = await read(filtered.checked);
+      const result = await read(settings.filtered);
       if (ticket !== sequence || !panel.isConnected) return;
       catalogue = result.catalogue.filter(tag => !isRetiredTag(tag.id));
       termControls.forEach(control => control.render());
       const requested = [...new Set(settings.terms.flatMap(term => term.tags))];
+      const unavailable = requested.filter(id => !catalogue.some(tag => tag.id === id));
       const aliases = new Map();
       const rows = result.texts.map(text => {
         const ids = [...new Set([...text.tagIds, ...(result.automatic.get(text.id) ?? [])])].filter(id => !isRetiredTag(id));
@@ -300,7 +388,8 @@ export function showBankPlanner({ read, match, create, modal }) {
         return keys.get(b.id);
       });
       status.textContent = 'La ausencia de una etiqueta no descarta la construcción.' +
-        (result.pendingAnalyses ? ' Hay fichas pendientes de análisis.' : '');
+        (result.pendingAnalyses ? ' Hay fichas pendientes de análisis.' : '') +
+        (unavailable.length ? ' Etiquetas que ya no están en el catálogo: ' + unavailable.join(', ') + '.' : '');
       renderPreview(open);
     } catch (error) {
       status.textContent = error.message || String(error);
