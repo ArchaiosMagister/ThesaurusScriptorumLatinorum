@@ -76,6 +76,7 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     const adapted = adaptStorage(original, module);
     if (adapted !== original) await writeFile(file, adapted);
   }
+  const commonUI = await readFile(new URL('./common-ui.css', import.meta.url), 'utf8');
   let notebookRevision;
   let examRevision;
   const examAssets = [
@@ -215,7 +216,8 @@ export function lexicalValuesForDocument(option) {
     const utilities = (await readFile(utilitiesFile, 'utf8'))
       .replace("  const m = M.el('div', { class: 'modal' });",
         "  bg.dataset.atlBankOverlay = document.body.dataset.atlBank || 'false';\n  const m = M.el('div', { class: 'modal' });")
-      .replace("if (e.key === 'Escape') close();", "if (e.key === 'Escape' && bg.getClientRects().length) close();");
+      .replace("if (e.key === 'Escape') close();", "if (e.key === 'Escape' && bg.getClientRects().length) close();")
+      .replace('const close = () => { bg.remove();', 'const close = () => { if (opts.beforeClose && !opts.beforeClose()) return; bg.remove();');
     await writeFile(utilitiesFile, utilities);
     const pwaFile = join(directory, 'ui', 'pwa-controls.js');
     const pwa = (await readFile(pwaFile, 'utf8'))
@@ -478,7 +480,7 @@ export function lexicalValuesForDocument(option) {
 }
 ` : '';
     await writeFile(join(directory, page, stylesheet),
-      installControls + diagnostics + examStyles + morphologyStyles + libraryStyles + (page === notebookPage ? notebookStyles : '') + badgeAlignment);
+      installControls + diagnostics + examStyles + morphologyStyles + libraryStyles + (page === notebookPage || module === 'examinator' ? commonUI : '') + (page === notebookPage ? notebookStyles : '') + badgeAlignment);
     const workerPath = join(directory, page, module === 'examinator' ? 'sw.js' : 'service-worker.js');
     const updates = await readFile(workerPath, 'utf8');
     const worker = page === notebookPage

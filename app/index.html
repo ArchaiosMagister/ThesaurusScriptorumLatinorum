@@ -47,14 +47,24 @@
   </main>
   <dialog id="backup-dialog" aria-labelledby="backup-title">
     <h2 id="backup-title">Copias de seguridad</h2>
-    <p>Para sincronizar manualmente, descarga una copia integral y ábrela en el otro dispositivo. Verás una comparación antes de aplicar cambios.</p>
-    <button type="button" id="app-dropbox" class="dropbox-primary" aria-haspopup="dialog">Sincronizar con Dropbox</button>
-    <button type="button" id="backup-export">Descargar copia integral</button>
-    <label for="backup-file">Elegir copia para recuperar</label>
-    <input id="backup-file" type="file" accept=".json,application/json">
-    <p id="backup-preview" role="status" aria-live="polite"></p>
-    <button type="button" id="backup-restore" disabled>Recuperar copia</button>
-    <form method="dialog"><button>Cerrar</button></form>
+    <p class="backup-intro">Protege tus textos, etiquetas, cuadernos y exámenes. Puedes sincronizar o guardar una copia integral.</p>
+    <div class="backup-group">
+      <h3>Sincronización</h3>
+      <button type="button" id="app-dropbox" class="dropbox-primary" aria-haspopup="dialog">Sincronizar con Dropbox</button>
+    </div>
+    <div class="backup-group">
+      <h3>Exportar</h3>
+      <p>Guarda una copia integral para conservarla o llevarla a otro dispositivo.</p>
+      <button type="button" id="backup-export" class="backup-primary">Descargar copia integral</button>
+    </div>
+    <div class="backup-group">
+      <h3>Recuperar</h3>
+      <label for="backup-file">Elegir copia para recuperar</label>
+      <input id="backup-file" type="file" accept=".json,application/json">
+      <p id="backup-preview" role="status" aria-live="polite"></p>
+      <button type="button" id="backup-restore" class="backup-primary" disabled>Recuperar copia</button>
+    </div>
+    <form method="dialog" class="backup-footer"><button class="backup-secondary">Cerrar</button></form>
   </dialog>
   <dialog id="dropbox-dialog" aria-labelledby="dropbox-title">
     <div class="dropbox-heading">
