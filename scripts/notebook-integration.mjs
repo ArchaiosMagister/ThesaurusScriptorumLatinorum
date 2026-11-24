@@ -111,7 +111,7 @@ function renderHome() {`);
     }) });
 }
 `;
-  source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
+  source = "import { bankTagAssignable, bankTagVisible, isGrammarGrouping, isRetiredTag, compactGrammarTags, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
   source = "import { appendDuplicateCards, createBankFilters, createInfinitiveAssignment, openBankReader } from './atl-bank-catalog.js';\n" + source;
@@ -898,6 +898,6 @@ window.addEventListener('atl-view', () => {
         if (automatic.children.length > 1) result.append(automatic);`);
   replace('choose.value = selections.get(key) ?? proposal.tagId;', 'choose.value = selections.get(key) ?? acceptedTag;');
   replace('            const acceptedTag = corrected.get(key) ?? proposal.tagId;',
-    "            if (!bankTagVisible(proposal.tagId) && !proposal.tagId.startsWith('gram.verbo.') && proposal.tagId !== 'gram.ut') continue;\n            if (isVerifiedPauTag(text, proposal.tagId)) continue;\n            const acceptedTag = corrected.get(key) ?? proposal.tagId;");
+    "            if (isGrammarGrouping(proposal.tagId) || isRetiredTag(proposal.tagId) || (!bankTagVisible(proposal.tagId) && !proposal.tagId.startsWith('gram.verbo.') && proposal.tagId !== 'gram.ut')) continue;\n            if (isVerifiedPauTag(text, proposal.tagId)) continue;\n            const acceptedTag = corrected.get(key) ?? proposal.tagId;");
   return source;
 }
