@@ -412,7 +412,7 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const pronouns = firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Pronombres para primer trimestre' });
   await pronouns.check();
   await expect(pronouns).toBeChecked();
-  const pronounGroup = firstPicker.locator('.atl-planner-family').filter({has: pronouns});
+  const pronounGroup = firstPicker.locator('.atl-planner-family').filter({hasText: /^Pronombres \(/u});
   await pronounGroup.getByText('Ver etiquetas', { exact: true }).click();
   const onePronoun = pronounGroup.locator('.atl-planner-family-choices input').first();
   await onePronoun.uncheck();
