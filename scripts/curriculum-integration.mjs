@@ -5,8 +5,11 @@ function required(source, old, next) {
 
 export function integratePeriodValidation(source) {
   source = required(source, "['cover']);", "['cover', 'excludedCourse']);");
-  source = required(source, "...(d.cover===undefined?{}:{cover:coverData(d.cover)})",
-    "...(d.cover===undefined?{}:{cover:coverData(d.cover)}),...(d.excludedCourse===undefined?{}:{excludedCourse:choice(d.excludedCourse,'edition.excludedCourse',['1bach','2bach'])})");
+  const editionDateCheck = /if\s*\(\s*e\.updatedAt\s*<\s*e\.createdAt\s*\)/u;
+  if (!editionDateCheck.test(source))
+    throw Error('Revisar la validación de curso excluido del cuaderno.');
+  source = source.replace(editionDateCheck, match =>
+    "if(d.excludedCourse!==undefined)e.excludedCourse=choice(d.excludedCourse,'edition.excludedCourse',['1bach','2bach']);\n  " + match);
   source = required(source, "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode']);",
     "['grammaticalSpans', 'grammarReview', 'vocabularySelectionMode', 'vocabularyQuantityMode', 'period']);");
   return required(source, "text: sourceText,\n        questions: array(d.questions", `text: sourceText,
