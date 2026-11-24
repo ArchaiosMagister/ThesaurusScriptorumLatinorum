@@ -22,7 +22,7 @@ test('44 exámenes, 88 fichas, 12 con léxico; marcas exactas, reservas y convoc
 });
 test('instalación aditiva, no restaura bajas, no sobrescribe una ficha existente',()=>{
  const corpus=empty(), first=prepare(corpus,[],rows,x=>x);
- assert.equal(first.texts.length,88);assert.equal(first.pauCvSeedVersion,2);assert.ok(isPristineSeed(first));
+ assert.equal(first.texts.length,88);assert.equal(first.pauCvSeedVersion,3);assert.ok(isPristineSeed(first));
  const deleted={...first,texts:first.texts.slice(1)};
  assert.equal(prepare(deleted,deleted.texts,rows,x=>x),deleted);assert.ok(!isPristineSeed(deleted));
  const personal={...first.texts[0],id:'doc.personal',title:'Mi título'};
@@ -55,4 +55,16 @@ test('migración v1: no restaura bajas ni toca etiquetas o revisiones docentes',
  assert.equal(migrated.texts[0],old.texts[0]);assert.equal(migrated.texts[1],old.texts[1]);assert.equal(migrated.texts[2],old.texts[2]);
  assert.ok(migrated.texts[3].tagIds.length);
  assert.equal(prepare(migrated,migrated.texts,rows,x=>x),migrated);
+});
+
+test('migración v2 incorpora tiempos pasivos solo en fichas de fábrica',()=>{
+ const fresh=prepare(empty(),[],rows,x=>x);
+ const passive=id=>id.startsWith('gram.verbo.');
+ const old={...fresh,pauCvSeedVersion:2,tags:fresh.tags.filter(t=>!passive(t.id)),texts:fresh.texts.map(t=>({...t,tagIds:t.tagIds.filter(id=>!passive(id))}))};
+ assert.ok(isPristineSeed(old));
+ const result=prepare(old,old.texts,rows,x=>x);
+ assert.equal(result.pauCvSeedVersion,3);
+ assert.deepEqual(result.texts.map(t=>t.tagIds),fresh.texts.map(t=>t.tagIds));
+ const modified={...old,texts:old.texts.map((t,i)=>i===1?{...t,tagIds:[]}:t)};
+ assert.deepEqual(prepare(modified,modified.texts,rows,x=>x).texts[1].tagIds,[]);
 });

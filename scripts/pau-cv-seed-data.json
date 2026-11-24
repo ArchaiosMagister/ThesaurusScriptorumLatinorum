@@ -113,7 +113,8 @@
       "gram.participio": "annum agens",
       "gram.inf.presente.activo": "obpugnare",
       "gram.pron.identidad": "Eodem anno",
-      "gram.pron.proximo": "Huic"
+      "gram.pron.proximo": "Huic",
+      "gram.verbo.perfecto.indicativo.pasivo": "inlatum est"
     }
   },
   {
@@ -915,7 +916,8 @@
       "gram.infinitivo": "se ex voluntate Antonio usurum esse",
       "gram.inf.futuro.deponente": "usurum esse",
       "gram.deponente": "usurum esse",
-      "gram.pron.proximo": "His"
+      "gram.pron.proximo": "His",
+      "gram.verbo.pluscuamperfecto.subjuntivo.pasivo": "designatus foret"
     }
   },
   {
@@ -969,7 +971,8 @@
       "gram.pron.relativo": "qui",
       "gram.voz.pasiva": "relictus erat",
       "gram.inf.presente.activo": "agere",
-      "gram.dativo.aprox": "proxima portui"
+      "gram.dativo.aprox": "proxima portui",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo": "relictus erat"
     }
   },
   {
@@ -1758,7 +1761,8 @@
       "gram.subjuntivo": "fecisset",
       "gram.deponente": "obtestabatur",
       "gram.pron.proximo": "Haec",
-      "gram.pron.identidad": "eodem testamento"
+      "gram.pron.identidad": "eodem testamento",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo": "erant scripti"
     }
   },
   {
@@ -2152,7 +2156,8 @@
       "gram.pron.proximo": "huius",
       "gram.pron.identidad": "Idem",
       "gram.cum.historico": "cum ad eum usque in Pamphyliam legatos deprecatoresque misissent",
-      "gram.subjuntivo": "misissent"
+      "gram.subjuntivo": "misissent",
+      "gram.verbo.perfecto.indicativo.pasivo": "capti interfectique sunt"
     }
   },
   {
@@ -2317,7 +2322,8 @@
       "gram.subjuntivo": "oppugnaret",
       "gram.voz.pasiva": "pugnatum est",
       "gram.ablativo.absoluto": "multis et inlatis et acceptis vulneribus",
-      "gram.part.perfecto.pasivo": "inlatis"
+      "gram.part.perfecto.pasivo": "inlatis",
+      "gram.verbo.perfecto.indicativo.pasivo": "pugnatum est"
     }
   },
   {
@@ -2585,7 +2591,8 @@
       "gram.pron.relativo": "Qui",
       "gram.deponente": "suspicabantur",
       "gram.participio": "inflammatus scelere",
-      "gram.part.perfecto.pasivo": "inflammatus"
+      "gram.part.perfecto.pasivo": "inflammatus",
+      "gram.verbo.perfecto.indicativo.pasivo": "acta et constituta sunt"
     }
   },
   {
@@ -3135,7 +3142,8 @@
       "gram.part.perfecto.pasivo": "proruto",
       "gram.inf.presente.activo": "exire",
       "gram.infinitivo": "exire copias iubet",
-      "gram.voz.pasiva": "locati sunt"
+      "gram.voz.pasiva": "locati sunt",
+      "gram.verbo.perfecto.indicativo.pasivo": "locati sunt"
     }
   },
   {
@@ -3252,7 +3260,8 @@
       "gram.voz.pasiva": "ventum est",
       "gram.inf.presente.pasivo": "committi",
       "gram.agente": "a ferentariis",
-      "gram.subjuntivo": "possit"
+      "gram.subjuntivo": "possit",
+      "gram.verbo.perfecto.indicativo.pasivo": "ventum est"
     }
   },
   {
@@ -3585,7 +3594,8 @@
       "gram.pron.proximo": "Huic",
       "gram.voz.pasiva": "est dictus",
       "gram.ut.consecutiva": "adeo ut",
-      "gram.subjuntivo": "diceretur"
+      "gram.subjuntivo": "diceretur",
+      "gram.verbo.perfecto.indicativo.pasivo": "est dictus"
     }
   },
   {
@@ -3689,7 +3699,8 @@
       "gram.agente": "a fratre eius Hasdrubale",
       "gram.voz.pasiva": "interficiuntur",
       "gram.relativo": "qui per multos annos victores fuerant",
-      "gram.pron.relativo": "qui"
+      "gram.pron.relativo": "qui",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo": "erant quam virtute decepti"
     }
   },
   {
@@ -3857,7 +3868,8 @@
       "gram.pron.proximo": "hunc",
       "gram.pron.enfatico": "Ipse",
       "gram.ablativo.absoluto": "cognita locorum natura",
-      "gram.part.perfecto.pasivo": "cognita"
+      "gram.part.perfecto.pasivo": "cognita",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo": "fuerat tempestate interruptus"
     }
   },
   {
@@ -3911,7 +3923,8 @@
       "gram.relativo": "qui eum cum consule sequebatur",
       "gram.pron.relativo": "qui",
       "gram.agente": "ab eo honorifice suscepti sunt",
-      "gram.voz.pasiva": "suscepti sunt"
+      "gram.voz.pasiva": "suscepti sunt",
+      "gram.verbo.perfecto.indicativo.pasivo": "suscepti sunt"
     }
   },
   {
@@ -4020,7 +4033,8 @@
       "gram.pron.relativo": "quod",
       "gram.voz.pasiva": "gerebatur",
       "gram.ablativo.absoluto": "C. Duillio et Cn. Cornelio Asina consulibus",
-      "gram.part.perfecto.pasivo": "commisso"
+      "gram.part.perfecto.pasivo": "commisso",
+      "gram.verbo.perfecto.indicativo.pasivo": "deceptus est"
     }
   },
   {
@@ -4126,7 +4140,8 @@
       "gram.voz.pasiva": "Capti deinde eadem arte sunt",
       "gram.pron.identidad": "eadem arte",
       "gram.relativo": "qua ceperant Fabios",
-      "gram.pron.relativo": "qua"
+      "gram.pron.relativo": "qua",
+      "gram.verbo.perfecto.indicativo.pasivo": "Capti deinde eadem arte sunt"
     }
   },
   {
@@ -4180,7 +4195,8 @@
       "gram.relativo": "quarum unam incolunt Belgae",
       "gram.pron.relativo": "quarum",
       "gram.genitivo.partitivo": "quarum unam",
-      "gram.pron.proximo": "Hi"
+      "gram.pron.proximo": "Hi",
+      "gram.verbo.perfecto.indicativo.pasivo": "est omnis divisa"
     }
   },
   {
@@ -4237,7 +4253,8 @@
       "gram.pron.identidad": "eodem",
       "gram.pron.lejano": "illo pugione",
       "gram.relativo": "quo Caesarem violaverant",
-      "gram.pron.relativo": "quo"
+      "gram.pron.relativo": "quo",
+      "gram.verbo.perfecto.indicativo.pasivo": "Damnati [sunt]"
     }
   },
   {
@@ -4813,7 +4830,8 @@
     },
     "verifiedGrammar": {
       "gram.genitivo.partitivo": "duodecim milia peditum",
-      "gram.voz.pasiva": "pugnatum est"
+      "gram.voz.pasiva": "pugnatum est",
+      "gram.verbo.perfecto.indicativo.pasivo": "pugnatum est"
     }
   },
   {
@@ -5093,7 +5111,8 @@
     },
     "verifiedGrammar": {
       "gram.agente": "ab Hannibale Italia liberata est",
-      "gram.voz.pasiva": "liberata est"
+      "gram.voz.pasiva": "liberata est",
+      "gram.verbo.perfecto.indicativo.pasivo": "liberata est"
     }
   }
 ]

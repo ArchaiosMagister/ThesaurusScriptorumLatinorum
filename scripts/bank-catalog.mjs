@@ -307,6 +307,13 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   const exam = element('p', { className: 'atl-reader-exam' });
   const latin = element('p', { className: 'atl-reader-latin', lang: 'la' });
   const tags = element('div', { className: 'grammar-chips atl-reader-tags' });
+  const courses = element('div', { className: 'grammar-chips atl-reader-courses' });
+  const tagSection = element('section', { className: 'atl-text-grammar' });
+  tagSection.setAttribute('aria-label', 'Etiquetas gramaticales confirmadas');
+  tagSection.append(element('h4', { textContent: 'Etiquetas gramaticales' }), tags);
+  const automaticTags = element('div', { className: 'grammar-chips atl-reader-tags atl-reader-automatic' });
+  const automaticSection = element('section', { className: 'atl-text-grammar' });
+  automaticSection.append(element('h4', { textContent: 'Etiquetas automáticas' }), automaticTags);
   const pending = element('p', { className: 'muted' });
   const notes = element('p', { className: 'muted' });
   const glossary = element('details', { className: 'atl-source-vocabulary' });
@@ -324,7 +331,7 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   const removeButton = makeButton('Quitar del banco', editCurrent(remove));
   actions.append(makeButton('Editar ficha', editCurrent(edit)), makeButton('Etiquetar', editCurrent(tag)),
     makeButton('Ver usos anteriores', editCurrent(usage)), removeButton);
-  content.append(tools, title, reference, exam, difficulty, latin, tags, pending, notes, glossary, actions);
+  content.append(tools, title, reference, exam, difficulty, latin, courses, tagSection, automaticSection, pending, notes, glossary, actions);
   const reader = modal('Lectura del texto', content, [{ label: 'Volver al listado' }],
     { width: 'min(760px, 96vw)', onClose });
   const labels = new Map(catalogue.map(tag => [tag.id, tag.label]));
@@ -345,9 +352,11 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
       (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
     latin.textContent = text.latin;
     tags.replaceChildren();
+    courses.replaceChildren();
+    automaticTags.replaceChildren();
     for (const course of text.courseIds ?? []) {
       const label = course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato';
-      tags.append(element('span', { className: 'grammar-chip', textContent: label }));
+      courses.append(element('span', { className: 'grammar-chip', textContent: label }));
     }
     for (const id of text.tagIds) {
       if (!labels.has(id) || !bankTagAssignable(id)) continue;
@@ -355,9 +364,12 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
       chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
       tags.append(chip);
     }
-    for (const id of automaticFor(text.id)) {
-      if (labels.has(id) && bankTagAssignable(id)) tags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
+    if (!tags.childElementCount) tags.append(element('span', { className: 'small muted', textContent: 'Sin etiquetas confirmadas' }));
+    courses.hidden = !courses.childElementCount;
+    for (const id of new Set(automaticFor(text.id))) {
+      if (!text.tagIds.includes(id) && labels.has(id) && bankTagAssignable(id)) automaticTags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
     }
+    automaticSection.hidden = !automaticTags.childElementCount;
     const proposals = (pendingTags?.get(text.id) ?? []).filter(bankTagAssignable).map(id => labels.get(id)).filter(Boolean);
     pending.textContent = proposals.length ? 'Propuestas pendientes: ' + proposals.join(' · ') : '';
     pending.hidden = !proposals.length;

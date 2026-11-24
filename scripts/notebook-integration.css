@@ -1286,3 +1286,12 @@
     break-after: avoid;
   }
 }
+
+@media screen {
+  .atl-text-grammar { display:grid; gap:.45rem; margin-block:.6rem; padding:.65rem; border:1px solid var(--rule); border-radius:8px; min-width:0; }
+  .atl-text-grammar h3, .atl-text-grammar h4 { margin:0; font:650 .9rem/1.3 var(--ui-font); }
+  .atl-text-grammar .grammar-chips { display:flex; flex-wrap:wrap; gap:.35rem; max-width:100%; }
+  .atl-text-grammar .grammar-chip { max-width:100%; overflow-wrap:anywhere; }
+  .atl-reader-automatic .grammar-chip { border-style:dashed; }
+  .atl-bank-reader .atl-reader-courses[hidden], .atl-bank-reader .atl-text-grammar[hidden], .atl-text-grammar [hidden] { display:none; }
+}

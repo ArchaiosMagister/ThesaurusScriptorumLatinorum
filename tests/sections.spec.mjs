@@ -2267,7 +2267,7 @@ test('la copia de Dropbox incluye las etiquetas automáticas además de las conf
   expect(result.retainedManual).toBe(true);
   expect(result.courseFieldStable).toBe(true);
   expect(result.automatic).toContain('gram.pron.posesivo');
-  expect(result.versions).toContain(2);
+  expect(result.versions).toContain(3);
   expect(result.compact).toBe(true);
 });
 
@@ -2503,4 +2503,23 @@ test('las copias parciales conservan referencias y revierten el banco si falla l
   } finally {
     await fresh.close();
   }
+});
+
+test('la tarjeta y la lectura muestran todas las etiquetas confirmadas, incluidos los tiempos pasivos',async({page})=>{
+ await page.goto(path);
+ const frame=await seedBank(page);
+ const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+ await bank.getByRole('button',{name:/^Dos /}).click();
+ const editor=frame.locator('.atl-bank-editor-modal');
+ const confirmed=editor.getByRole('region',{name:'Etiquetas gramaticales confirmadas'});
+ await expect(confirmed.getByText('Ablativo absoluto',{exact:true})).toBeVisible();
+ await expect(confirmed.getByText('Participio concertado',{exact:true})).toBeVisible();
+ await editor.getByRole('button',{name:'Cancelar',exact:true}).click();
+ await bank.getByRole('button',{name:'Leer «Dos»'}).click();
+ const reader=frame.locator('.atl-bank-reader');
+ await expect(reader.getByRole('region',{name:'Etiquetas gramaticales confirmadas'}).getByText('Ablativo absoluto',{exact:true})).toBeVisible();
+ await frame.getByRole('button',{name:'Volver al listado'}).click();
+ await bank.getByRole('button',{name:'Más filtros',exact:true}).click();
+ for(const label of ['Participio de perfecto pasivo','Perfecto de indicativo pasivo','Pluscuamperfecto de indicativo pasivo','Perfecto de subjuntivo pasivo','Pluscuamperfecto de subjuntivo pasivo'])
+   await expect(bank.getByRole('checkbox',{name:label,exact:true,includeHidden:true})).toHaveCount(1);
 });

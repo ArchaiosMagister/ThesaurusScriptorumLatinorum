@@ -1,5 +1,5 @@
 // Migración aditiva, única y transaccional. Los textos siguen siendo propios y editables.
-export const seedVersion = 2;
+export const seedVersion = 3;
 // Factory fingerprints for backup recognition. Migration requires exact Latin equality.
 const factory = {
   "2006 JUNIO / A": {
@@ -13,11 +13,35 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.part.perfecto.deponente",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo"
     ]
   },
   "2006 JUNIO / B": {
     "latin": "78af3b9f",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.part.perfecto.pasivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.identidad",
+      "gram.pron.proximo",
+      "gram.subjuntivo",
+      "gram.ut.completiva",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -42,11 +66,30 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.deponente",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2006 SEPTIEMBRE / B": {
     "latin": "ce5542d6",
     "tags": [
+      "gram.deponente",
+      "gram.part.perfecto.deponente",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.part.perfecto.deponente",
       "gram.participio",
@@ -66,11 +109,26 @@ const factory = {
       "gram.participio",
       "gram.pron.proximo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.inf.presente.activo",
+      "gram.ne.completiva",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.subjuntivo"
     ]
   },
   "2007 JUNIO / B": {
     "latin": "1c19d7a9",
     "tags": [
+      "gram.condicional",
+      "gram.genitivo.partitivo",
+      "gram.pron.lejano",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.condicional",
       "gram.genitivo.partitivo",
       "gram.pron.lejano",
@@ -86,11 +144,30 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2007 SEPTIEMBRE / B": {
     "latin": "5244c1d6",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.cum.historico",
+      "gram.part.perfecto.pasivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.cum.historico",
       "gram.part.perfecto.pasivo",
@@ -117,6 +194,20 @@ const factory = {
       "gram.relativo.enlace",
       "gram.subjuntivo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.cum.historico",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.relativo.enlace",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
     ]
   },
   "2008 JUNIO / B": {
@@ -126,11 +217,32 @@ const factory = {
       "gram.cum.historico",
       "gram.inf.presente.activo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.condicional",
+      "gram.cum.historico",
+      "gram.inf.presente.activo",
+      "gram.subjuntivo"
     ]
   },
   "2008 SEPTIEMBRE / A": {
     "latin": "1c9742ce",
     "tags": [
+      "gram.agente",
+      "gram.deponente",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.identidad",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.deponente",
       "gram.inf.presente.pasivo",
@@ -156,11 +268,32 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.pron.enfatico",
+      "gram.pron.lejano",
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2009 JUNIO / A": {
     "latin": "6d363851",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.dativo.aprox",
+      "gram.deponente",
+      "gram.inf.presente.deponente",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.dativo.aprox",
       "gram.deponente",
@@ -183,11 +316,31 @@ const factory = {
       "gram.relativo",
       "gram.subjuntivo",
       "gram.ut.completiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.ut.completiva"
     ]
   },
   "2009 SEPTIEMBRE / A": {
     "latin": "bae1e396",
     "tags": [
+      "gram.deponente",
+      "gram.inf.presente.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.inf.presente.deponente",
       "gram.part.perfecto.pasivo",
@@ -210,12 +363,32 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.proximo",
       "gram.subjuntivo",
+      "gram.verbo.pluscuamperfecto.subjuntivo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.condicional",
+      "gram.deponente",
+      "gram.inf.futuro.deponente",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.proximo",
+      "gram.subjuntivo",
       "gram.voz.pasiva"
     ]
   },
   "2010 JUNIO / A": {
     "latin": "467e269",
     "tags": [
+      "gram.dativo.aprox",
+      "gram.inf.presente.activo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.dativo.aprox",
       "gram.inf.presente.activo",
       "gram.pron.relativo",
@@ -228,11 +401,30 @@ const factory = {
     "tags": [
       "gram.concordancia.nominal",
       "gram.inf.presente.activo"
+    ],
+    "v2Tags": [
+      "gram.concordancia.nominal",
+      "gram.inf.presente.activo"
     ]
   },
   "2010 SEPTIEMBRE / A": {
     "latin": "cb5b4b94",
     "tags": [
+      "gram.acus.ext",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.lejano",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.relativo.enlace",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.acus.ext",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -262,6 +454,19 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.genitivo.partitivo",
+      "gram.inf.presente.deponente",
+      "gram.infinitivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.identidad",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2011 JUNIO / A": {
@@ -271,11 +476,25 @@ const factory = {
       "gram.inf.presente.activo",
       "gram.pron.enfatico",
       "gram.pron.posesivo"
+    ],
+    "v2Tags": [
+      "gram.acus.ext",
+      "gram.inf.presente.activo",
+      "gram.pron.enfatico",
+      "gram.pron.posesivo"
     ]
   },
   "2011 JUNIO / B": {
     "latin": "26325a7f",
     "tags": [
+      "gram.acus.ext",
+      "gram.cum.historico",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.acus.ext",
       "gram.cum.historico",
       "gram.part.perfecto.pasivo",
@@ -293,11 +512,28 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.proximo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.proximo",
+      "gram.voz.pasiva"
     ]
   },
   "2011 SEPTIEMBRE / B": {
     "latin": "5b9179b7",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.acus.ext",
+      "gram.cum.historico",
+      "gram.dativo.aprox",
+      "gram.deponente",
+      "gram.part.presente.activo",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.acus.ext",
       "gram.cum.historico",
@@ -320,11 +556,32 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.genitivo.partitivo",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2012 JUNIO / B": {
     "latin": "89f9a366",
     "tags": [
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.inf.presente.activo",
       "gram.inf.presente.pasivo",
@@ -344,6 +601,15 @@ const factory = {
       "gram.participio",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2012 SEPTIEMBRE / B": {
@@ -353,11 +619,26 @@ const factory = {
       "gram.deponente",
       "gram.inf.presente.activo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.subjuntivo"
     ]
   },
   "2013 JUNIO / A": {
     "latin": "a04a6d29",
     "tags": [
+      "gram.agente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.part.perfecto.pasivo",
       "gram.participio",
@@ -375,11 +656,29 @@ const factory = {
       "gram.pron.proximo",
       "gram.relativo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.relativo",
+      "gram.subjuntivo"
     ]
   },
   "2013 JULIO / A": {
     "latin": "bdd0ef86",
     "tags": [
+      "gram.deponente",
+      "gram.pron.identidad",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.ut.completiva",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.pron.identidad",
       "gram.pron.proximo",
@@ -401,11 +700,31 @@ const factory = {
       "gram.participio",
       "gram.pron.posesivo",
       "gram.pron.proximo"
+    ],
+    "v2Tags": [
+      "gram.agente",
+      "gram.genitivo.partitivo",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.posesivo",
+      "gram.pron.proximo"
     ]
   },
   "2014 JUNIO / A": {
     "latin": "d9763124",
     "tags": [
+      "gram.agente",
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.part.perfecto.deponente",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.cum.historico",
       "gram.deponente",
@@ -424,11 +743,26 @@ const factory = {
       "gram.relativo",
       "gram.subjuntivo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ne.final",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
     ]
   },
   "2014 JULIO / A": {
     "latin": "badc46d7",
     "tags": [
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.pron.identidad",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.cum.historico",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -444,11 +778,30 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.participio",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.inf.presente.activo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.voz.pasiva"
     ]
   },
   "2015 JUNIO / A": {
     "latin": "f617e636",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.proximo",
+      "gram.subjuntivo",
+      "gram.ut.completiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -471,12 +824,31 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.subjuntivo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.cum.historico",
+      "gram.pron.identidad",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
       "gram.voz.pasiva"
     ]
   },
   "2015 JULIO / A": {
     "latin": "54bfe9e4",
     "tags": [
+      "gram.agente",
+      "gram.deponente",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.subjuntivo",
+      "gram.ut.completiva",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.deponente",
       "gram.part.presente.activo",
@@ -493,11 +865,27 @@ const factory = {
       "gram.infinitivo",
       "gram.pron.proximo",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.pron.proximo",
+      "gram.subjuntivo"
     ]
   },
   "2016 JUNIO / A": {
     "latin": "69643e8f",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.genitivo.partitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.posesivo",
+      "gram.subjuntivo",
+      "gram.ut.final",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.genitivo.partitivo",
       "gram.part.perfecto.pasivo",
@@ -515,11 +903,25 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.participio",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.voz.pasiva"
     ]
   },
   "2016 JULIO / A": {
     "latin": "64652769",
     "tags": [
+      "gram.deponente",
+      "gram.genitivo.partitivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.genitivo.partitivo",
       "gram.pron.relativo",
@@ -535,11 +937,31 @@ const factory = {
       "gram.part.presente.activo",
       "gram.participio",
       "gram.pron.posesivo"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.part.perfecto.deponente",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.posesivo"
     ]
   },
   "2017 JUNIO / A": {
     "latin": "299797f7",
     "tags": [
+      "gram.agente",
+      "gram.cum.historico",
+      "gram.genitivo.partitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.cum.historico",
       "gram.genitivo.partitivo",
@@ -566,6 +988,20 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.relativo.enlace",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.medio",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.relativo.enlace",
       "gram.voz.pasiva"
     ]
   },
@@ -575,11 +1011,22 @@ const factory = {
       "gram.pron.proximo",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2017 JULIO / B": {
     "latin": "b0982ea",
     "tags": [
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo"
+    ],
+    "v2Tags": [
       "gram.part.perfecto.pasivo",
       "gram.participio",
       "gram.pron.relativo",
@@ -597,11 +1044,29 @@ const factory = {
       "gram.participio",
       "gram.pron.enfatico",
       "gram.pron.lejano"
+    ],
+    "v2Tags": [
+      "gram.agente",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.part.perfecto.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.lejano"
     ]
   },
   "2018 JUNIO / B": {
     "latin": "6708fa44",
     "tags": [
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.inf.presente.activo",
       "gram.infinitivo",
       "gram.part.perfecto.pasivo",
@@ -622,6 +1087,17 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.participio",
       "gram.subjuntivo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.agente",
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.subjuntivo"
     ]
   },
   "2018 JULIO / B": {
@@ -631,11 +1107,24 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.participio",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.voz.pasiva"
     ]
   },
   "2019 JUNIO / A": {
     "latin": "35196ff",
     "tags": [
+      "gram.acus.ext",
+      "gram.inf.presente.activo",
+      "gram.pron.posesivo",
+      "gram.subjuntivo",
+      "gram.ut.consecutiva"
+    ],
+    "v2Tags": [
       "gram.acus.ext",
       "gram.inf.presente.activo",
       "gram.pron.posesivo",
@@ -651,11 +1140,29 @@ const factory = {
       "gram.participio",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.part.perfecto.pasivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2019 JULIO / A": {
     "latin": "af7de487",
     "tags": [
+      "gram.cum.historico",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.ne.final",
+      "gram.part.perfecto.deponente",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.subjuntivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.cum.historico",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -676,12 +1183,34 @@ const factory = {
       "gram.infinitivo",
       "gram.part.perfecto.pasivo",
       "gram.pron.lejano",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.lejano",
       "gram.voz.pasiva"
     ]
   },
   "2020 JULIO / A": {
     "latin": "a9821008",
     "tags": [
+      "gram.acus.ext",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.enfatico",
+      "gram.pron.lejano",
+      "gram.pron.proximo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.acus.ext",
       "gram.deponente",
       "gram.inf.presente.activo",
@@ -705,6 +1234,18 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.identidad",
       "gram.subjuntivo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.agente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.identidad",
+      "gram.subjuntivo",
       "gram.voz.pasiva"
     ]
   },
@@ -718,11 +1259,27 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.enfatico",
       "gram.pron.proximo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.perfecto.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.enfatico",
+      "gram.pron.proximo"
     ]
   },
   "2020 SEPTIEMBRE / B": {
     "latin": "df30e397",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
@@ -743,6 +1300,18 @@ const factory = {
       "gram.subjuntivo",
       "gram.ut.final",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.enfatico",
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.ut.final",
+      "gram.voz.pasiva"
     ]
   },
   "2021 JUNIO / B": {
@@ -752,11 +1321,25 @@ const factory = {
       "gram.part.presente.activo",
       "gram.participio",
       "gram.pron.posesivo"
+    ],
+    "v2Tags": [
+      "gram.part.perfecto.pasivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.posesivo"
     ]
   },
   "2021 JULIO / A": {
     "latin": "a0c12d02",
     "tags": [
+      "gram.acus.ext",
+      "gram.deponente",
+      "gram.pron.posesivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo"
+    ],
+    "v2Tags": [
       "gram.acus.ext",
       "gram.deponente",
       "gram.pron.posesivo",
@@ -774,6 +1357,16 @@ const factory = {
       "gram.relativo",
       "gram.subjuntivo",
       "gram.ut.consecutiva",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.pron.enfatico",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.ut.consecutiva",
       "gram.voz.pasiva"
     ]
   },
@@ -782,11 +1375,22 @@ const factory = {
     "tags": [
       "gram.concordancia.nominal",
       "gram.genitivo.partitivo"
+    ],
+    "v2Tags": [
+      "gram.concordancia.nominal",
+      "gram.genitivo.partitivo"
     ]
   },
   "2022 JUNIO / B": {
     "latin": "75854dff",
     "tags": [
+      "gram.agente",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.pron.relativo",
       "gram.relativo",
@@ -803,6 +1407,15 @@ const factory = {
       "gram.relativo",
       "gram.relativo.enlace",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.relativo.enlace",
+      "gram.voz.pasiva"
     ]
   },
   "2022 JULIO / B": {
@@ -812,11 +1425,30 @@ const factory = {
       "gram.part.presente.activo",
       "gram.participio",
       "gram.pron.enfatico"
+    ],
+    "v2Tags": [
+      "gram.genitivo.partitivo",
+      "gram.part.presente.activo",
+      "gram.participio",
+      "gram.pron.enfatico"
     ]
   },
   "2023 JUNIO / A": {
     "latin": "795e3f1d",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.doble.dativo",
+      "gram.inf.presente.pasivo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.enfatico",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.verbo.pluscuamperfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.doble.dativo",
       "gram.inf.presente.pasivo",
@@ -836,12 +1468,28 @@ const factory = {
       "gram.deponente",
       "gram.pron.relativo",
       "gram.relativo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.agente",
+      "gram.deponente",
+      "gram.pron.relativo",
+      "gram.relativo",
       "gram.voz.pasiva"
     ]
   },
   "2023 JULIO / A": {
     "latin": "749a4d6",
     "tags": [
+      "gram.agente",
+      "gram.part.perfecto.pasivo",
+      "gram.participio",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.part.perfecto.pasivo",
       "gram.participio",
@@ -857,6 +1505,14 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
       "gram.relativo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo",
       "gram.voz.pasiva"
     ]
   },
@@ -867,11 +1523,24 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2024 JUNIO / B": {
     "latin": "58cd87e0",
     "tags": [
+      "gram.pron.identidad",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.pron.identidad",
       "gram.pron.relativo",
       "gram.relativo",
@@ -885,12 +1554,31 @@ const factory = {
       "gram.pron.proximo",
       "gram.pron.relativo",
       "gram.relativo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.genitivo.partitivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
       "gram.voz.pasiva"
     ]
   },
   "2024 JULIO / B": {
     "latin": "3aeba213",
     "tags": [
+      "gram.deponente",
+      "gram.genitivo.partitivo",
+      "gram.pron.identidad",
+      "gram.pron.lejano",
+      "gram.pron.posesivo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.deponente",
       "gram.genitivo.partitivo",
       "gram.pron.identidad",
@@ -911,6 +1599,15 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.relativo.enlace"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.enfatico",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.relativo.enlace"
     ]
   },
   "2025 JUNIO / B": {
@@ -918,11 +1615,25 @@ const factory = {
     "tags": [
       "gram.deponente",
       "gram.pron.proximo"
+    ],
+    "v2Tags": [
+      "gram.deponente",
+      "gram.pron.proximo"
     ]
   },
   "2025 JUNIO (reserva) / A": {
     "latin": "10b05b03",
     "tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.subjuntivo",
+      "gram.ut.completiva"
+    ],
+    "v2Tags": [
       "gram.ablativo.absoluto",
       "gram.deponente",
       "gram.part.perfecto.pasivo",
@@ -941,6 +1652,13 @@ const factory = {
       "gram.pron.relativo",
       "gram.relativo",
       "gram.voz.pasiva"
+    ],
+    "v2Tags": [
+      "gram.pron.posesivo",
+      "gram.pron.proximo",
+      "gram.pron.relativo",
+      "gram.relativo",
+      "gram.voz.pasiva"
     ]
   },
   "2025 JULIO / A": {
@@ -953,11 +1671,23 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.deponente",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2025 JULIO / B": {
     "latin": "1ff5a8a6",
     "tags": [
+      "gram.concordancia.nominal"
+    ],
+    "v2Tags": [
       "gram.concordancia.nominal"
     ]
   },
@@ -972,11 +1702,26 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.deponente",
+      "gram.inf.presente.activo",
+      "gram.inf.presente.deponente",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2025 JULIO (reserva) / B": {
     "latin": "a5f10623",
     "tags": [
+      "gram.genitivo.partitivo",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.genitivo.partitivo",
       "gram.voz.pasiva"
     ]
@@ -989,11 +1734,21 @@ const factory = {
       "gram.infinitivo",
       "gram.part.perfecto.pasivo",
       "gram.pron.lejano"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.inf.presente.activo",
+      "gram.infinitivo",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.lejano"
     ]
   },
   "2026 ORDINARIA / B": {
     "latin": "83848c30",
     "tags": [
+      "gram.concordancia.nominal"
+    ],
+    "v2Tags": [
       "gram.concordancia.nominal"
     ]
   },
@@ -1004,11 +1759,22 @@ const factory = {
       "gram.part.perfecto.pasivo",
       "gram.pron.relativo",
       "gram.relativo"
+    ],
+    "v2Tags": [
+      "gram.ablativo.absoluto",
+      "gram.part.perfecto.pasivo",
+      "gram.pron.relativo",
+      "gram.relativo"
     ]
   },
   "2026 EXTRAORDINARIA / B": {
     "latin": "94933de7",
     "tags": [
+      "gram.agente",
+      "gram.verbo.perfecto.indicativo.pasivo",
+      "gram.voz.pasiva"
+    ],
+    "v2Tags": [
       "gram.agente",
       "gram.voz.pasiva"
     ]
@@ -1060,7 +1826,9 @@ export function prepareSeed(corpus, existingTexts, records, validate, catalogue 
   const texts=corpus.texts.map(text=>{
     const row=byKey.get(text.id);
     if(!row||text.latin!==row.doc.latin||text.createdAt!==seedTimestamp||
-      text.updatedAt!==seedTimestamp||text.tagIds.length||text.reviewed||hasTeacherReview(text))return text;
+      text.updatedAt!==seedTimestamp||text.reviewed||hasTeacherReview(text))return text;
+    const before = corpus.pauCvSeedVersion === 2 ? factory[row.doc.pauCv]?.v2Tags : [];
+    if(!before || !sameIds(text.tagIds,before))return text;
     return {...text,tagIds:verified(row)};
   });
   // Only initial installation may add records.
@@ -1112,7 +1880,7 @@ export async function installPauCvSeed({repo,loadCombinedCorpus,validateCorpus,g
 }
 export function isPristineSeed(corpus) {
   const version=corpus.pauCvSeedVersion;
-  if(![1,2].includes(version)||corpus.texts.length!==seedCount||corpus.notebooks.length||
+  if(![1,2,3].includes(version)||corpus.texts.length!==seedCount||corpus.notebooks.length||
     corpus.textRevisions?.length||corpus.tags.some(t=>t.kind!=='catalogue'))return false;
   if(version===1&&corpus.tags.length)return false;
   const used=new Set(),byId=new Map(corpus.tags.map(t=>[t.id,t]));
@@ -1120,7 +1888,7 @@ export function isPristineSeed(corpus) {
     const key=t.teacherDocx?.pauCv,entry=factory[key];
     if(!entry||t.id!==seedId(t.teacherDocx)||signature(t.latin)!==entry.latin||
       t.createdAt!==seedTimestamp||t.updatedAt!==seedTimestamp||t.reviewed||t.difficulty!==undefined||
-      !sameIds(t.tagIds,version===1?[]:entry.tags))return false;
+      !sameIds(t.tagIds,version===1?[]:version===2?entry.v2Tags:entry.tags))return false;
     for(const id of t.tagIds){
       let current=id;
       while(current&&!used.has(current)){if(!byId.has(current))return false;used.add(current);current=byId.get(current)?.parentId;}
