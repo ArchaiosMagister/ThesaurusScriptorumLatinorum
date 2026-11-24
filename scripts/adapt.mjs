@@ -312,13 +312,11 @@ export function lexicalValuesForDocument(option) {
         const imported = S.atlPauMorph;
         delete S.atlPauMorph;
         if (imported.text === text) {
-          const tokens = imported.underlines.map(mark => toks.find(token => token.s === mark.startUtf16 &&
-            token.w === mark.exact));
-          if (tokens.length === 4 && tokens.every(Boolean)) {
-            S.subr = [];
-            for (const token of tokens) morphology.setMark(S, token, -1);
-          } else {
-            M.toast('Revisa los subrayados originales: no se han podido trasladar todos al análisis de Collatinus.', 6500);
+          const result = morphology.importPauMarks(S, imported.underlines);
+          if (result.marks.length) S.subr = result.marks;
+          if (result.marks.length !== 4 || result.missing.length) {
+            M.toast('Revisa los subrayados originales; se han conservado ' + result.marks.length +
+              ' de 4.' + (result.missing.length ? ' No trasladados: ' + result.missing.join(', ') : ''), 6500);
           }
         }
       }`)

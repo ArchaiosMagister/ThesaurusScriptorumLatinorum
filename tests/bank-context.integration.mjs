@@ -94,3 +94,15 @@ test('al recuperar una versión anterior del latín se preservan las decisiones 
  await carryBankReview(current,old,storage);
  assert.deepEqual(readBankReview(await bankReviewKey(old),old.latin,storage),destination);
 });
+
+test('las marcas PAU compuestas y las marcas válidas no se pierden por un anclaje dudoso',async()=>{
+ const {importPauMarks}=await import('../dist/modulos/examinator/atl-exam-morphology.js');
+ const texto='missi sunt pacem';
+ const tokens=[{i:0,w:'missi',s:0,e:5},{i:1,w:'sunt',s:6,e:10},{i:2,w:'pacem',s:11,e:16}];
+ const state={texto,tokens};
+ const rows=[{startUtf16:0,endUtf16:10,exact:'missi sunt'},{startUtf16:11,endUtf16:16,exact:'pacem'},{startUtf16:11,endUtf16:14,exact:'pac'}];
+ const result=importPauMarks(state,rows);
+ assert.deepEqual(result.marks.map(m=>m.toks),[[0,1],[2]]);
+ assert.ok(result.marks.every(m=>m.manual));
+ assert.deepEqual(result.missing,['pac']);
+});

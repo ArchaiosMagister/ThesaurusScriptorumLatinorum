@@ -84,6 +84,10 @@ export function integrateExamMorphology(source) {
   }
 
   function reviewMark(S, mark) {
+    if (mark.toks.length > 1) {
+      M.toast('Es una forma compuesta. Consulta las lecturas de sus componentes en el texto y analiza el conjunto.', 6500);
+      return;
+    }
     const token = S.tokens[mark.toks[0]];
     const rows = morphology.readings(token);
     if (!rows.length) { M.toast('Collatinus no ofrece lecturas clasificables para esta aparición.'); return; }
