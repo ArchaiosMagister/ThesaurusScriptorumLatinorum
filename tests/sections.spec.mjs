@@ -2318,3 +2318,82 @@ test('exporta una selección y reimporta las etiquetas filológicas sin tocar el
     ? { ...text, tagIds: ['gram.cum.historico', 'custom.docente'] } : text));
   expect(await notebookSnapshot(frame, 'Lecturas por trimestres')).toEqual(beforeNotebook);
 });
+
+test('las copias parciales conservan referencias y revierten el banco si falla la escritura de decisiones', async ({ page, browser }) => {
+  await page.goto(path);
+  await seedBank(page);
+  const exports = await page.evaluate(async () => {
+    const base = './modulos/cuaderno-integrado/';
+    const { WorkspaceRepository } = await import(base + 'storage/workspace-repository.js');
+    const { IndexedDbCorpusRepository } = await import(base + 'storage/indexeddb-corpus-repository.js');
+    const { createEdition, placementFromCorpus } = await import(base + 'core/edition-factory.js');
+    const { bankReviewKey } = await import(base + 'ui/atl-bank-review.js');
+    const { capturePartial } = await import('./backup-store.js');
+    const text = (await new IndexedDbCorpusRepository().load()).corpus.texts.find(text => text.id === 'doc.uno');
+    const timestamp = new Date().toISOString();
+    const workspace = new WorkspaceRepository();
+    const create = async (id, placements) => {
+      const edition = createEdition({ id, legacyNotebookId: null, title: id, timestamp, placements });
+      await workspace.commitEdition(id, 0, { command: 'create', targetId: id, timestamp }, () => edition);
+    };
+    await create('ed.parcial', [placementFromCorpus(text, 'place.1', timestamp, () => 'item.' + crypto.randomUUID())]);
+    await create('ed.excluida', []);
+    const key = await bankReviewKey(text);
+    localStorage.setItem(key, JSON.stringify({ rejected: ['0:5:gram.subjuntivo'], corrected: [], pending: [] }));
+    const templateId = 'atl-v1:curriculum-template:994637a3-ec84-412d-b35c-92fe772a0001';
+    localStorage.setItem(templateId, JSON.stringify({ name: 'Curso parcial', settings: {
+      terms: [{ tags: ['gram.ablativo.absoluto'], count: 1, review: 1 }, { tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }],
+      progression: 'specific', exam: 'exclude', excludedCourses: ['2bach'], filtered: false
+    } }));
+    return {
+      bank: await capturePartial('bank', 'selected', ['doc.uno']),
+      notebooks: await capturePartial('notebooks', 'selected', ['ed.parcial']),
+      templates: await capturePartial('templates', 'selected', [templateId]), key
+    };
+  });
+  expect(exports.notebooks.payload.workspace.corpus[0][1].corpus.texts.map(text => text.id)).toEqual(['doc.uno']);
+  expect(exports.notebooks.payload.workspace.editions.map(([id]) => id)).toEqual(['ed.parcial']);
+  expect(exports.notebooks.payload.workspace.history).toHaveLength(1);
+
+  const fresh = await browser.newContext();
+  await isolateBank(fresh);
+  try {
+    const destination = await fresh.newPage();
+    await destination.goto(new URL(path, page.url()).href);
+    await destination.frameLocator('#panel-cuaderno iframe').getByRole('region', { name: 'Banco de textos propios' }).waitFor();
+    const result = await destination.evaluate(async ({ bank, notebooks, templates, key }) => {
+      const { planPartial, readPartial, restorePartial, readSyncData } = await import('./backup-store.js');
+      const { WorkspaceRepository } = await import('./modulos/cuaderno-integrado/storage/workspace-repository.js');
+      const { IndexedDbCorpusRepository } = await import('./modulos/cuaderno-integrado/storage/indexeddb-corpus-repository.js');
+      const repo = new IndexedDbCorpusRepository();
+      const bankImport = await readPartial(JSON.stringify(bank));
+      const plan = await planPartial(bankImport);
+      const before = await repo.load();
+      const set = Storage.prototype.setItem;
+      Storage.prototype.setItem = function (name, value) {
+        if (name === key) throw Error('Fallo simulado de almacenamiento');
+        return set.call(this, name, value);
+      };
+      let failed = false;
+      try { await restorePartial(bankImport, plan); }
+      catch (error) { failed = error.message.includes('Fallo simulado'); }
+      finally { Storage.prototype.setItem = set; }
+      const afterFailure = await repo.load();
+      await restorePartial(bankImport, await planPartial(bankImport));
+      for (const file of [notebooks, templates]) {
+        const incoming = await readPartial(JSON.stringify(file));
+        await restorePartial(incoming, await planPartial(incoming));
+      }
+      const synced = (await readSyncData()).data;
+      const edition = (await new WorkspaceRepository().listEditions()).find(row => row.edition.id === 'ed.parcial');
+      return { failed, unchanged: JSON.stringify(before) === JSON.stringify(afterFailure),
+        sources: edition.edition.placements.map(row => row.source.sourceId), templates: synced.templates,
+        repeats: (await planPartial(bankImport)).changes, review: localStorage.getItem(key) };
+    }, exports);
+    expect(result).toMatchObject({ failed: true, unchanged: true, sources: ['doc.uno'], repeats: 0 });
+    expect(result.templates[0][1].name).toBe('Curso parcial');
+    expect(JSON.parse(result.review).rejected).toEqual(['0:5:gram.subjuntivo']);
+  } finally {
+    await fresh.close();
+  }
+});

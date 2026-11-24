@@ -1270,3 +1270,10 @@
 @media screen and (max-width:480px) {
   #editor .atl-bank .atl-bank-search-panel .atl-bank-results-header { grid-template-columns:minmax(0,1fr); }
 }
+
+@media screen {
+  .atl-bank-planner label[hidden] { display: none; }
+  .atl-bank-planner li { margin-block: .35rem; }
+  .atl-bank-planner li p { margin: .25rem 0; }
+  .atl-bank-planner li .atl-bank-action-group { margin-inline-start: .35rem; }
+}
