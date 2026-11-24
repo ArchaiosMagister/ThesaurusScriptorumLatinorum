@@ -25,7 +25,8 @@ function sourceData(text) {
   return {
     urn: '', text: text.latin, author: text.source.author ?? '',
     obra: text.source.work ?? '', cita: text.source.reference ?? '',
-    bank: { id: text.id, updatedAt: text.updatedAt, title: text.title }
+    bank: { id: text.id, updatedAt: text.updatedAt, title: text.title,
+      ...(text.teacherDocx?.pauCv ? { pau: text.teacherDocx } : {}) }
   };
 }
 

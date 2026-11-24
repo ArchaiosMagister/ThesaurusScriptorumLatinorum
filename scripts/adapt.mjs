@@ -267,7 +267,23 @@ export function lexicalValuesForDocument(option) {
       .replace(copy, `    if (d.bank) {
       S.titulo = d.bank.title;
       S.atlBankSource = { id: d.bank.id, updatedAt: d.bank.updatedAt };
+      delete S.atlPauMorph;
+      if (d.bank.pau) {
+        const doc = d.bank.pau;
+        S.subr = [];
+        S.atlPauMorph = { text: d.text, underlines: doc.underlines };
+        if (doc.preverbBases) {
+          S.prev = doc.preverbBases.map((txt, index) => ({ txt, n: index === 0 ? 3 : 2, rows: [], lplain: '' }));
+          S.evol = doc.lexical.phonetics.map(w => ({ w, g: '' }));
+          S.pref = [...doc.lexical.prefix];
+          S.latin = [...doc.lexical.latinism];
+        } else {
+          S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+          P.evol(S); P.pref(S); P.latin(S);
+        }
+      }
     } else {
+      delete S.atlPauMorph;
       delete S.atlBankSource;
     }
 ` + copy)
@@ -285,6 +301,21 @@ export function lexicalValuesForDocument(option) {
     const morphology = await readFile(new URL('./exam-morphology.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-morphology.js'), morphology);
     const editor = integrateExamMorphology(exam)
+      .replace('      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);', `      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);
+      if (S.atlPauMorph) {
+        const imported = S.atlPauMorph;
+        delete S.atlPauMorph;
+        if (imported.text === text) {
+          const tokens = imported.underlines.map(mark => toks.find(token => token.s === mark.startUtf16 &&
+            token.w === mark.exact));
+          if (tokens.length === 4 && tokens.every(Boolean)) {
+            S.subr = [];
+            for (const token of tokens) morphology.setMark(S, token, -1);
+          } else {
+            M.toast('Revisa los subrayados originales: no se han podido trasladar todos al análisis de Collatinus.', 6500);
+          }
+        }
+      }`)
       .replace(/^      \$\{\(v\.manual \|\| v\.glosasSeparadas\) .*\n/m, '')
       .replace(/      if \(e\.target\.classList\.contains\('vsplit'\)\) \{[\s\S]*?(?=      if \(!e\.target\.classList\.contains\('von'\))/, '')
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
