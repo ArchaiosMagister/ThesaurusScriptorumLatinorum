@@ -128,7 +128,9 @@ export function modernizeBank(source) {
             const actions = el('div', 'atl-bank-card-actions');
             const tagAction = button('Etiquetar', () => tagBankText(text), 'tbtn sm');
             tagAction.setAttribute('aria-label', 'Etiquetar «' + text.title + '»');
-            actions.append(tagAction, selection);
+            const readAction = button('Leer', openReader, 'tbtn sm');
+            readAction.setAttribute('aria-label', 'Leer «' + text.title + '»');
+            actions.append(readAction, tagAction, selection);
             footer.append(actions);`);
   replace("                if (item) chips.append(el('span', 'grammar-chip', item.label));", `                if (item) {
                     const chip = button(item.label, () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip');

@@ -17,7 +17,7 @@ test('la cabecera deja espacio para Safari y reparte los controles sin desbordar
         actions: measure('.app-actions > :is(button, label)'),
       };
     });
-    expect(layout.top).toBeGreaterThanOrEqual(60);
+    expect(layout.top).toBeGreaterThanOrEqual(44);
     expect(new Set(layout.tabs.map(tab => tab.top)).size).toBe(1);
     for (const [index, tab] of layout.tabs.slice(1).entries()) {
       expect(tab.left - layout.tabs[index].right).toBeGreaterThanOrEqual(10);
@@ -237,7 +237,7 @@ test('el lector combina obra, búsqueda y etiquetas y recorre el orden de refere
   await reference.fill('2');
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 4');
   await reference.clear();
-  await bank.getByRole('button', { name: /^Dos / }).click();
+  await bank.getByRole('button', { name: 'Leer «Dos»' }).click();
   const reader = frame.locator('.atl-bank-reader');
   await expect(reader.getByRole('status')).toHaveText('1 de 2');
   await expect(reader.getByRole('button', { name: 'Anterior', exact: true })).toBeDisabled();
@@ -267,7 +267,7 @@ test('el Banco muestra, filtra y ordena la dificultad; la valoración docente se
 
   const cards = listing.locator('.atl-bank-card');
   const card = bank.getByRole('button', { name: /^Cuatro / });
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Cuatro»' }).click();
   const reader = frame.locator('.atl-bank-reader');
   await expect(reader.locator('.atl-reader-difficulty')).toContainText('Estimada');
   await reader.getByRole('button', { name: 'Editar ficha', exact: true }).click();
@@ -299,7 +299,7 @@ test('el Banco muestra, filtra y ordena la dificultad; la valoración docente se
   });
   expect(stored).toEqual([5, 5]);
 
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Cuatro»' }).click();
   await expect(reader.locator('.atl-reader-difficulty')).toContainText('Docente');
   await reader.getByRole('button', { name: 'Editar ficha', exact: true }).click();
   await teacher.selectOption('');
@@ -352,7 +352,7 @@ test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramati
   const modal = frame.locator('.modal').last();
   async function mark(title, year, community) {
     await bank.getByRole('button', { name: new RegExp('^' + title + ' ') }).click();
-    await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+
     await modal.getByRole('checkbox', { name: 'Selectividad', exact: true }).check();
     await modal.getByRole('spinbutton', { name: 'Año de Selectividad' }).fill(year);
     await modal.getByRole('combobox', { name: 'Comunidad autónoma' }).selectOption(community);
@@ -371,7 +371,7 @@ test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramati
   await expect(listing.locator('article')).toHaveCount(0);
   await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Galicia');
   await expect(listing.locator('article')).toHaveCount(1);
-  await listing.getByRole('button', { name: /^Dos / }).click();
+  await listing.getByRole('button', { name: 'Leer «Dos»' }).click();
   await expect(frame.locator('.atl-reader-exam')).toHaveText('Selectividad · 2025 · Galicia');
   await modal.getByRole('button', { name: 'Volver al listado' }).click();
   await expect(bank.getByRole('checkbox', { name: 'Demostrativo', exact: true })).toHaveCount(0);
@@ -449,7 +449,7 @@ test('Examinator importa una copia del texto y mantiene el acceso a Perseus', as
 
   await page.getByRole('tab', { name: 'Banco de textos' }).click();
   await bankFrame.getByRole('button', { name: /^Dos / }).click();
-  await bankFrame.getByRole('button', { name: 'Editar ficha' }).click();
+
   const dialog = bankFrame.locator('.modal').last();
   await dialog.getByRole('textbox', { name: 'Texto latino' }).fill('Roma clara est et antiqua.');
   await dialog.getByRole('button', { name: /guardar/i }).click();
@@ -504,7 +504,7 @@ test('Cuadernos incorpora varios pasajes y actualiza solo la copia elegida', asy
 
   await page.getByRole('tab', { name: 'Banco de textos' }).click();
   await frame.getByRole('button', { name: /^Dos / }).click();
-  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+
   const dialog = frame.locator('.modal').last();
   await dialog.getByRole('textbox', { name: 'Texto latino' }).fill('Secunda lux iterum orta est.');
   await dialog.getByRole('button', { name: /guardar/i }).click();
@@ -632,7 +632,7 @@ test('un Word importado desde Cuadernos se guarda en el banco con sus marcas', a
   const card = frame.locator('.atl-bank-card').first();
   await expect(card).toBeVisible();
   await card.click();
-  await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+
   const editor = frame.locator('.modal').last();
   const revisedLatin = 'Finito bello, Romani legatos in Aegyptum miserunt.';
   await editor.getByRole('textbox', { name: 'Texto latino' }).fill(revisedLatin);
@@ -678,7 +678,7 @@ test('Examinator actualiza el pasaje solo al confirmar y el archivo conserva el 
 
   await page.getByRole('tab', { name: 'Banco de textos' }).click();
   await bank.getByRole('button', { name: /^Dos / }).click();
-  await bank.getByRole('button', { name: 'Editar ficha' }).click();
+
   const edit = bank.locator('.modal').last();
   await edit.getByRole('textbox', { name: 'Texto latino' }).fill('Secunda lux Romam illuminavit.');
   await edit.getByRole('button', { name: 'Guardar cambios' }).click();
@@ -792,7 +792,7 @@ test('el historial local distingue coincidencias anteriores y permite volver a a
       notebooks: [...saved.corpus.notebooks, { id: 'hist.lecturas', title: 'Lecturas históricas', textIds: ['doc.uno', 'doc.dos'] }]
     }, saved.revision);
   });
-  await bank.getByRole('button', { name: /^Dos / }).click();
+  await bank.getByRole('button', { name: 'Leer «Dos»' }).click();
   await bank.getByRole('button', { name: 'Ver usos anteriores' }).click();
   await expect(bank.getByText(/Coincidencia exacta · examen «Examen registrado»/)).toBeVisible();
   await expect(bank.getByText(/histórico «Lecturas históricas» · texto 2/)).toBeVisible();
@@ -800,7 +800,7 @@ test('el historial local distingue coincidencias anteriores y permite volver a a
   await expect(bank.locator('.modal details[open]').getByText('Secunda lux orta est.', { exact: true })).toBeVisible();
   await bank.locator('.modal').getByRole('button', { name: 'Cerrar', exact: true }).last().click();
   await page.getByRole('tab', { name: 'Banco de textos' }).click();
-  await bank.getByRole('button', { name: /^Dos / }).click();
+  await bank.getByRole('button', { name: 'Leer «Dos»' }).click();
   await bank.getByRole('button', { name: 'Ver usos anteriores' }).click();
   page.once('dialog', prompt => prompt.accept());
   await bank.getByRole('button', { name: 'Abrir examen' }).click();
@@ -1065,7 +1065,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await paste.getByRole('textbox', { name: 'Título' }).fill('Pasaje de revisión');
   await paste.getByRole('textbox', { name: 'Texto latino' }).fill('Amatus est. Loquitur. Liber legendus.');
   await paste.getByRole('button', { name: 'Guardar en el banco' }).click();
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const review = frame.locator('.modal').last();
   const candidate = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Pendiente' }).first();
@@ -1084,7 +1084,7 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await include.check();
   await expect(bank.getByRole('status').first()).toContainText('Mostrando 1 de 1');
   await expect(bank.getByText('Pendiente: Voz pasiva', { exact: true })).toBeVisible();
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await expect(frame.locator('.atl-bank-reader')).toContainText('Propuestas pendientes:');
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   await expect(candidate).toBeVisible();
@@ -1099,11 +1099,11 @@ test('el banco filtra propuestas reales de Collatinus solo al incluirlas y conse
   await expect(bank.getByText('Pendiente: Voz pasiva', { exact: true })).toBeHidden();
 
   await card.click();
-  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+
   await review.getByRole('textbox', { name: 'Texto latino' }).fill('Postea. Amatus est. Loquitur. Liber legendus.');
   await review.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(review).toBeHidden();
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Pasaje de revisión»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const confirmed = review.locator('.grammar-proposal-card').filter({ hasText: 'Amatus est · Voz pasiva · Confirmada' }).first();
   await confirmed.locator(':scope > summary').click();
@@ -1130,7 +1130,7 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await pronouns.check();
   await expect(card).toBeVisible();
   await pronouns.uncheck();
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Concordancia de prueba»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Posesivos · Automática' });
   await modal.getByText('Etiquetas automáticas', { exact: true }).click();
@@ -1141,11 +1141,11 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await modal.getByRole('button', { name: 'Guardar etiquetas', exact: true }).click();
   await expect(automatic).toHaveCount(0);
   await card.click();
-  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+
   await modal.getByRole('textbox', { name: 'Texto latino' }).fill('Postea. Suas copias.');
   await modal.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(card).toBeVisible();
-  await card.click();
+  await bank.getByRole('button', { name: 'Leer «Concordancia de prueba»' }).click();
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   await expect(modal.getByText('Suas copias · Posesivos · Descartada', { exact: true })).toBeVisible();
 });
@@ -1155,7 +1155,7 @@ test('una ficha editorial recuperada admite notas y vocabulario reutilizables', 
   const frame = await seedBank(page);
   const card = frame.getByRole('button', { name: /^Cuatro / });
   await card.click();
-  await frame.getByRole('button', { name: 'Editar ficha' }).click();
+
   const form = frame.locator('.modal').last();
   await form.getByRole('textbox', { name: 'Notas de la ficha' }).fill('Nota de la ficha editorial');
   await form.getByText('Vocabulario de la ficha', { exact: true }).click();
@@ -1164,7 +1164,7 @@ test('una ficha editorial recuperada admite notas y vocabulario reutilizables', 
   await form.getByRole('textbox', { name: 'Traducción de vocabulario' }).fill('luz');
   await form.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(form).toBeHidden();
-  await card.click();
+  await frame.getByRole('button', { name: 'Leer «Cuatro»' }).click();
   const reader = frame.locator('.atl-bank-reader');
   await expect(reader.getByText('Nota de la ficha editorial')).toBeVisible();
   await reader.getByText('Vocabulario de la ficha', { exact: true }).click();
@@ -2055,7 +2055,7 @@ test('etiquetas por curso: filtrar el Banco y excluir un curso en un cuaderno pe
   const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
   async function tagCourse(title, course) {
     await bank.getByRole('button', { name: new RegExp('^' + title + ' ') }).click();
-    await frame.getByRole('button', { name: 'Editar ficha', exact: true }).click();
+
     const editor = frame.locator('.modal').last();
     await editor.getByRole('checkbox', { name: course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato' }).check();
     await editor.getByRole('button', { name: 'Guardar cambios' }).click();

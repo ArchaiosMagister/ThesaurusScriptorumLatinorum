@@ -348,9 +348,19 @@ window.addEventListener('atl-view', () => {
     const actions = el('div', 'atl-bank-edit-actions');
     actions.append(save, remove);
     if (remove.disabled) actions.append(el('span', 'small muted', 'Ficha protegida por un cuaderno histórico.'));
-    form.append(actions);
+    form.classList.add('atl-bank-edit-form');
+    const main = el('div', 'atl-bank-edit-main');
+    const metadata = el('div', 'atl-bank-edit-meta');
+    main.append(el('h3', '', 'Texto'), inputs.get('title').closest('label'), inputs.get('latin').closest('label'));
+    metadata.append(el('h3', '', 'Ficha académica'), inputs.get('author').closest('label'),
+        inputs.get('work').closest('label'), inputs.get('reference').closest('label'),
+        courseField, difficultyField, exam.container, inputs.get('notes').closest('label'));
+    const columns = el('div', 'atl-bank-edit-columns');
+    columns.append(main, metadata);
+    form.prepend(columns);
+    form.append(glossary.section, actions);
     form.addEventListener('submit', event => { event.preventDefault(); save.click(); });
-    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], { width: 'min(760px, 96vw)', noFocus: true, onClose });`);
+    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], { width: 'min(1100px, 96vw)', noFocus: true, onClose });`);
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");
@@ -522,14 +532,21 @@ window.addEventListener('atl-view', () => {
                 (assessment.manual ? ' · Docente' : ' · Estimada'));
             difficulty.title = difficulty.getAttribute('aria-label');
             read.append(difficulty);
-            read.addEventListener('click', () => openBankReader({
+            read.title = 'Editar ficha';
+            read.dataset.sourceId = text.id;
+            const restoreFocus = () => {
+                const current = [...document.querySelectorAll('.atl-bank-card')].find(item => item.dataset.sourceId === text.id);
+                current?.focus({ preventScroll: true });
+            };
+            read.addEventListener('click', () => openBankTextEditor(text, restoreFocus));
+            const openReader = () => openBankReader({
                 texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),
                 edit: openBankTextEditor, tag: tagBankText, remove: removeBankText, usage: showTextUses,
                 pendingTags: bankState.includePending ? pendingIndex : undefined, automaticFor, difficultyFor,
                 isProtected: item => protectedIds.has(item.id),
-                onClose: () => read.focus({ preventScroll: true }),
+                onClose: restoreFocus,
                 onError: error => M.toast(String(error), 7000)
-            }));
+            });
             rowSummary.append(read);`);
   replace("            const titleGroup = el('span', 'cuaderno-home-text-heading-info');", `            if (text.selectividad) sourceParts.push(['Selectividad', text.selectividad.year, text.selectividad.community].filter(Boolean).join(' · '));
             const source = sourceParts.join(' · ');
