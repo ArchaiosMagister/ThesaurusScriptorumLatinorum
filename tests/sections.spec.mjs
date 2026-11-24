@@ -446,6 +446,13 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   }, edition);
   expect(word).toContain('Primer trimestre');
   expect(word).toContain('Refuerzo del primer trimestre');
+  const printHeadings = await frame.locator('html').evaluate(async (_, edition) => {
+    const { renderNotebookPrintPages } = await import('../ui/atl-edition.js');
+    return [...renderNotebookPrintPages(edition).querySelectorAll('.atl-curriculum-print-period')]
+      .map(item => item.textContent);
+  }, edition);
+  expect(printHeadings).toEqual(['Primer trimestre', 'Segundo trimestre', 'Tercer trimestre',
+    'Refuerzo del primer trimestre', 'Refuerzo del segundo trimestre', 'Refuerzo del tercer trimestre']);
 });
 
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {

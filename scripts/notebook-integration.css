@@ -1277,3 +1277,12 @@
   .atl-bank-planner li p { margin: .25rem 0; }
   .atl-bank-planner li .atl-bank-action-group { margin-inline-start: .35rem; }
 }
+
+@media print {
+  .atl-curriculum-print-period {
+    margin: 0 0 .25em;
+    font-size: 1em;
+    text-align: center;
+    break-after: avoid;
+  }
+}
