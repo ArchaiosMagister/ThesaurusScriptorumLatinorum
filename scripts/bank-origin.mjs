@@ -4,6 +4,8 @@ function replace(source, from, to) {
 }
 
 export function integrateOriginValidation(source) {
+  source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv']);");
+  source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }) };");
   source = replace(source, "['notes', 'vocabulary', 'reviewed', 'teacherDocx']);",
     "['notes', 'vocabulary', 'reviewed', 'teacherDocx', 'origin', 'difficulty', 'selectividad', 'courseIds']);");
   return "import { communities } from '../ui/atl-bank-curriculum.js';\n" + replace(source, "        ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(",

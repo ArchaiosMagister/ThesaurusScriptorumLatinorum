@@ -80,6 +80,28 @@ export function integrateNotebook(source) {
 }
 function renderHome() {`);
 
+  source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
+  source += `\nfunction openPauCvImport() {
+    importPauCv({ modal: (...args) => M.modal(...args), toast: message => M.toast(message), save: records => writeSource(async () => {
+        const current = await repo.load();
+        const existing = await loadCombinedCorpus();
+        let next = current.corpus, count = 0;
+        const identities = new Set(existing.texts.filter(t => t.teacherDocx?.pauCv).map(t => t.teacherDocx.pauCv + '\\0' + t.latin));
+        for (const { doc, year, session, option, notes } of records) {
+            const key = doc.pauCv + '\\0' + doc.latin;
+            if (identities.has(key)) continue;
+            const id = 'doc.' + crypto.randomUUID();
+            next = upsertText(next, { title: doc.title, latin: doc.latin, author: doc.author,
+                work: doc.work, reference: doc.reference, notes: ['PAU CV · ' + session + ' ' + year + ' · Opción ' + option, notes].filter(Boolean).join('\\n'),
+                selectividad: {year, community: 'Comunidad Valenciana'}, courseIds: ['2bach'], origin: {kind:'own'} }, id, new Date().toISOString());
+            next = validateCorpus({...next,texts:next.texts.map(t => t.id === id ? {...t,teacherDocx:doc} : t)});
+            identities.add(key);count++;
+        }
+        if (count) { await repo.save(next,current.revision);await reload();render(); }
+        return count;
+    }) });
+}
+`;
   source = "import { bankTagAssignable, bankTagVisible, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;

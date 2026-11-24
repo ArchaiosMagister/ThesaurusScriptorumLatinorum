@@ -2,7 +2,9 @@
   "name": "administrator-textorum-latinorum",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "vendor": "node scripts/vendor-upstreams.mjs",
@@ -10,5 +12,10 @@
     "test": "node --test tests/*.test.mjs",
     "test:webkit": "playwright test"
   },
-  "devDependencies": { "@playwright/test": "1.56.1" }
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  },
+  "dependencies": {
+    "pdfjs-dist": "5.4.624"
+  }
 }

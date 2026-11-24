@@ -151,6 +151,16 @@ export function lexicalValuesForDocument(option) {
       .replace('Lejanía (ille)', 'Demostrativo ille'));
 
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
+    await cp(new URL('./pau-cv-parser.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-parser.js'));
+    await cp(new URL('./pau-cv-import.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-import.js'));
+    const applyFile = join(directory, 'core', 'docx-import-apply.js');
+    let apply = await readFile(applyFile, 'utf8');
+    const anchor = 'questions, vocabulary: vocab';
+    if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
+    apply = apply.replace(anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})');
+    // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
+    apply = apply.replace("...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),");
+    await writeFile(applyFile, apply);
     const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
       .replaceAll('./pwa-controls.js', './atl-pwa.js').replace("./edition-app.js", "./atl-edition.js")
       .replace("button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks");
@@ -178,7 +188,25 @@ export function lexicalValuesForDocument(option) {
           'const personalBases = () => teacherPreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1));')
         .replaceAll('choosePreverbBases(academicTeacherSnapshotV1,', 'choosePreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1),')
         .replaceAll('of bases)', 'of personalBases())').replaceAll('bases.find(', 'personalBases().find(')));
-    await writeFile(controls, integrateManualNotebookUnderline(academicControls));
+    let pauControls = integrateManualNotebookUnderline(academicControls);
+    // Solo las preguntas originales importadas se excluyen de la auditoría de repeticiones.
+    const repetitionStart = pauControls.indexOf('function inspectRepetitions(');
+    const repetitionEnd = pauControls.indexOf('function repetitionNotice(', repetitionStart);
+    if (repetitionStart < 0 || repetitionEnd < 0) throw Error('Revisar repeticiones PAU CV.');
+    const repetition = pauControls.slice(repetitionStart, repetitionEnd)
+      .replace("if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;")
+      .replace('for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;");
+    if (repetition === pauControls.slice(repetitionStart, repetitionEnd)) throw Error('Revisar filtros de repeticiones PAU CV.');
+    pauControls = pauControls.slice(0, repetitionStart) + repetition + pauControls.slice(repetitionEnd);
+    const sourceUi = "        const picked = preverbBasesFor(o, p);";
+    const sourceStart = pauControls.indexOf('function setSourcesUi(');
+    const sourceEnd = pauControls.indexOf('function phoneticControls(', sourceStart);
+    if (sourceStart < 0 || sourceEnd < 0) throw Error('Revisar editor de bases PAU CV.');
+    const sourceSegment = pauControls.slice(sourceStart, sourceEnd);
+    if (!sourceSegment.includes(sourceUi)) throw Error('Revisar bases originales PAU CV.');
+    pauControls = pauControls.slice(0, sourceStart) + sourceSegment.replace(sourceUi,
+        "        if (p.pauCv && o.statement.locked && o.statement.origin === 'manual') {\n            section.append(el('p', 'hint', 'Bases originales del examen PAU CV. Edita el enunciado para modificarlas.'));\n            return;\n        }\n" + sourceUi) + pauControls.slice(sourceEnd);
+    await writeFile(controls, pauControls);
     const libraryFile = join(directory, notebookPage, 'js', 'library.js');
     const library = groupLibraryAuthors((await readFile(libraryFile, 'utf8'))
       .replace("    M.toast('Fragmento copiado al examen. Escribe el título del texto.');", ''));
@@ -239,7 +267,23 @@ export function lexicalValuesForDocument(option) {
       .replace(copy, `    if (d.bank) {
       S.titulo = d.bank.title;
       S.atlBankSource = { id: d.bank.id, updatedAt: d.bank.updatedAt };
+      delete S.atlPauMorph;
+      if (d.bank.pau) {
+        const doc = d.bank.pau;
+        S.subr = [];
+        S.atlPauMorph = { text: d.text, underlines: doc.underlines };
+        if (doc.preverbBases) {
+          S.prev = doc.preverbBases.map((txt, index) => ({ txt, n: index === 0 ? 3 : 2, rows: [], lplain: '' }));
+          S.evol = doc.lexical.phonetics.map(w => ({ w, g: '' }));
+          S.pref = [...doc.lexical.prefix];
+          S.latin = [...doc.lexical.latinism];
+        } else {
+          S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
+          P.evol(S); P.pref(S); P.latin(S);
+        }
+      }
     } else {
+      delete S.atlPauMorph;
       delete S.atlBankSource;
     }
 ` + copy)
@@ -257,6 +301,21 @@ export function lexicalValuesForDocument(option) {
     const morphology = await readFile(new URL('./exam-morphology.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-morphology.js'), morphology);
     const editor = integrateExamMorphology(exam)
+      .replace('      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);', `      restoreQuestionChoices(S, oldTokens, oldSubr, oldPrev, matched);
+      if (S.atlPauMorph) {
+        const imported = S.atlPauMorph;
+        delete S.atlPauMorph;
+        if (imported.text === text) {
+          const tokens = imported.underlines.map(mark => toks.find(token => token.s === mark.startUtf16 &&
+            token.w === mark.exact));
+          if (tokens.length === 4 && tokens.every(Boolean)) {
+            S.subr = [];
+            for (const token of tokens) morphology.setMark(S, token, -1);
+          } else {
+            M.toast('Revisa los subrayados originales: no se han podido trasladar todos al análisis de Collatinus.', 6500);
+          }
+        }
+      }`)
       .replace(/^      \$\{\(v\.manual \|\| v\.glosasSeparadas\) .*\n/m, '')
       .replace(/      if \(e\.target\.classList\.contains\('vsplit'\)\) \{[\s\S]*?(?=      if \(!e\.target\.classList\.contains\('von'\))/, '')
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
