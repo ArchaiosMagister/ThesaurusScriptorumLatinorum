@@ -193,3 +193,35 @@ test('pasiva compuesta y participio independiente no se confunden',async()=>{
  const deponent=await analyze('Profectus est.');
  assert.ok(!deponent.some(row=>row.tagId==='gram.verbo.perfecto.indicativo.pasivo'));
 });
+
+test('el selector audita el catálogo integrado completo sin repetir etiquetas', async () => {
+  const { GRAMMAR_CATALOGUE } = await import('../dist/modulos/cuaderno-integrado/core/grammar-tags.js');
+  const { isRetiredTag, plannerTagTree } = await import('../scripts/bank-curriculum.js');
+  const tree = plannerTagTree(GRAMMAR_CATALOGUE);
+  const flatten = branches => branches.flatMap(branch => [...branch.tags.map(tag => tag.id), ...flatten(branch.children)]);
+  const ids = flatten(tree);
+  assert.equal(ids.length, new Set(ids).size);
+  assert.deepEqual(new Set(ids), new Set(GRAMMAR_CATALOGUE.map(tag => tag.id).filter(id => !isRetiredTag(id))));
+  assert.deepEqual(GRAMMAR_CATALOGUE.filter(tag => isRetiredTag(tag.id)).map(tag => tag.id), [
+    'gram.concordancia.nominal', 'gram.interrogativa.indirecta', 'gram.gerundio', 'gram.gerundivo'
+  ]);
+  assert.deepEqual(tree.map(branch => branch.label), [
+    'Tiempos personales', 'Deponentes', 'Infinitivos', 'Participios',
+    'Pronombres', 'Otras subordinadas', 'Funciones sintácticas', 'Etiquetas propias'
+  ]);
+  assert.deepEqual(tree[0].children.slice(0, 9).map(branch => branch.label), [
+    'Infectum · indicativo activo', 'Infectum · indicativo pasivo', 'Infectum · subjuntivo activo',
+    'Infectum · subjuntivo pasivo', 'Perfectum · indicativo activo', 'Perfectum · indicativo pasivo',
+    'Perfectum · subjuntivo activo', 'Perfectum · subjuntivo pasivo', 'Imperativo'
+  ]);
+  const branch = (section, label) => tree.find(entry => entry.label === section).children.find(entry => entry.label === label);
+  const branchIds = (section, label) => flatten([branch(section, label)]);
+  assert.deepEqual(branchIds('Infinitivos', 'Construcciones'), ['gram.infinitivo']);
+  assert.deepEqual(branchIds('Participios', 'Construcciones'), ['gram.participio', 'gram.ablativo.absoluto']);
+  assert.deepEqual(branchIds('Pronombres', 'Relativo'), ['gram.relativo', 'gram.relativo.enlace', 'gram.pron.relativo']);
+  assert.deepEqual(branchIds('Pronombres', 'Otros pronombres'), ['gram.pron.posesivo']);
+  assert.deepEqual(branchIds('Otras subordinadas', 'Finales con ut o ne'), ['gram.ut.final', 'gram.ne.final']);
+  assert.ok(branch('Infinitivos', 'Filtros históricos').historical);
+  assert.ok(branchIds('Infinitivos', 'Filtros históricos').includes('gram.inf.forma'));
+  assert.ok(branchIds('Participios', 'Filtros históricos').includes('gram.part.forma'));
+});

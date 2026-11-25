@@ -1312,16 +1312,26 @@
   .atl-bank-planner .atl-planner-counts { gap: .65rem; }
   .atl-bank-planner :is(.atl-planner-selected, .atl-planner-picker) { margin-block: .65rem; }
   .atl-bank-planner .atl-planner-picker { display: grid; gap: .6rem; min-width: 0; }
-  .atl-planner-tag-groups {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .45rem; align-items: start;
+  .atl-planner-tag-groups,
+  .atl-picker-branch-body { display: grid; gap: .3rem; min-width: 0; }
+  .atl-picker-tools { flex-wrap: wrap; }
+  .atl-planner-branch {
+    display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start;
+    padding: 0 .55rem; min-width: 0; border: 1px solid var(--rule);
+    border-radius: var(--atl-control-radius);
   }
-  .atl-planner-family {
-    padding: .55rem .65rem; min-width: 0; border: 1px solid var(--rule);
-    border-radius: var(--atl-control-radius); background: var(--paper);
+  .atl-planner-branch > details { grid-column: 2; padding: 0; border: 0; min-width: 0; }
+  .atl-bank-planner .atl-planner-branch > details > summary {
+    min-height: 2.5rem; padding-block: .55rem; margin: 0; overflow-wrap: anywhere;
   }
-  .atl-bank-planner .atl-planner-family details { border: 0; padding: .3rem 0 0; }
-  .atl-bank-planner .atl-planner-family details > summary { color: var(--ink-2); font-size: .85rem; }
-  .atl-planner-family-choices { display: grid; gap: .45rem; }
+  .atl-picker-bulk { display: grid; place-items: center; min-width: 2rem; min-height: 2.5rem; cursor: pointer; }
+  .atl-picker-bulk input { margin: 0; }
+  .atl-picker-count { color: var(--ink-2); font-size: .85em; white-space: nowrap; }
+  .atl-picker-branch-body { padding-bottom: .35rem; }
+  .atl-picker-branch-body .atl-planner-branch { border-color: var(--rule-2, var(--rule)); }
+  .atl-picker-branch-body > .field:has(input) { padding: .26rem .35rem; }
+  .atl-picker-branch-body > .field:has(input) span { flex: 1; }
+  .atl-bank-planner .atl-picker-quick .atl-planner-counts { margin-bottom: .4rem; }
   .atl-planner-picker label.field { cursor: pointer; }
   .atl-bank-planner label span { min-width: 0; overflow-wrap: anywhere; }
   .atl-bank-planner label:has(input[type="checkbox"]) { min-height: 1.75rem; }
@@ -1340,6 +1350,10 @@
 @media screen and (max-width: 480px) {
   .atl-planner-modal .mf .primary { margin-inline-start: 0; }
   .atl-planner-modal .mf .hbtn { flex: 1 1 auto; }
+  .atl-bank-planner .atl-planner-branch { padding-inline: .3rem; }
+  .atl-picker-tools .hbtn { flex: 1 1 auto; }
+  .atl-picker-quick .atl-planner-counts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr)); }
+  .atl-picker-quick select { width: 100%; }
 }
 
 /* Progreso PAU y catálogo de filtros adaptado a pantallas táctiles. */

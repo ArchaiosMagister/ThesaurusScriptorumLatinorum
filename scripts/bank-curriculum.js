@@ -55,10 +55,7 @@ const infinitiveForm = /^gram\.inf\.(presente|perfecto|futuro)(?:\.(activo|pasiv
 const infinitiveVoice = /^gram\.inf\.(activo|pasivo|deponente)$/u;
 export const isInfinitiveTag = id => id === infinitiveId || infinitiveForm.test(id) || infinitiveVoice.test(id);
 export const bankTagAssignable = id => !isGrammarGrouping(id) && (bankTagVisible(id) || Boolean(finiteForm.test(id))) && (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
-// El planificador ofrece las formas completas. Las etiquetas generales de
-// infinitivo conservan sus IDs y su alcance en las plantillas ya guardadas.
-const plannerHeadings = new Set(['gram.oracion', 'gram.formas', 'gram.pronombres', 'gram.funciones', 'gram.verbo', 'gram.part.forma']);
-// Presentation families only: templates and stored text tags retain their original IDs.
+// Presentation only. The bank and templates continue to use the original IDs.
 export const plannerFiniteFamilies = [
   'Infectum · indicativo activo', 'Infectum · indicativo pasivo',
   'Infectum · subjuntivo activo', 'Infectum · subjuntivo pasivo',
@@ -66,19 +63,109 @@ export const plannerFiniteFamilies = [
   'Perfectum · subjuntivo activo', 'Perfectum · subjuntivo pasivo',
   'Imperativo'
 ];
-export function plannerFiniteFamily(id) {
-  const finite = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(id);
-  if (!finite) return null;
-  const [, tense, mood, voice] = finite;
-  if (voice === 'deponente') return 'Verbos deponentes';
-  if (mood === 'imperativo') return 'Imperativo';
+
+export function plannerFiniteFeatures(id) {
+  const form = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(id);
+  if (!form) return null;
+  const [, tense, mood, voice] = form;
   const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
     /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
+  return { theme, mood, voice };
+}
+
+export function plannerFiniteFamily(id) {
+  const form = plannerFiniteFeatures(id);
+  if (!form) return null;
+  const { theme, mood, voice } = form;
+  if (voice === 'deponente') return 'Verbos deponentes';
+  if (mood === 'imperativo') return 'Imperativo';
   return theme ? theme + ' · ' + mood + ' ' + voice : null;
 }
 
-export const plannerTagVisible = id => !isRetiredTag(id) && !plannerHeadings.has(id) &&
-  (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
+const plannerSections = [
+  ['Tiempos personales', [...plannerFiniteFamilies, 'Otros tiempos']],
+  ['Deponentes', ['Infectum · indicativo', 'Infectum · subjuntivo', 'Perfectum · indicativo',
+    'Perfectum · subjuntivo', 'Imperativo', 'Otros tiempos']],
+  ['Infinitivos', ['Formas · presente', 'Formas · perfecto', 'Formas · futuro', 'Construcciones']],
+  ['Participios', ['Formas', 'Construcciones']],
+  ['Pronombres', ['Demostrativos', 'Idem e ipse', 'Relativo', 'Otros pronombres']],
+  ['Otras subordinadas', ['Completivas con ut o ne', 'Finales con ut o ne', 'Consecutivas con ut',
+    'Cum histórico', 'Condicionales', 'Otras construcciones']],
+  ['Funciones sintácticas', []],
+  ['Etiquetas propias', ['Otras etiquetas del banco']]
+];
+const historical = 'Filtros históricos';
+const historicalPaths = new Map([
+  ...['gram.verbo', 'gram.formas', 'gram.voz.pasiva', 'gram.subjuntivo'].map(id => [id, ['Tiempos personales', historical]]),
+  ['gram.deponente', ['Deponentes', historical]],
+  ['gram.part.forma', ['Participios', historical]],
+  ['gram.pronombres', ['Pronombres', historical]],
+  ['gram.pron.demostrativo', ['Pronombres', historical]],
+  ['gram.oracion', ['Otras subordinadas', historical]],
+  ['gram.ut', ['Otras subordinadas', historical]],
+  ['gram.funciones', ['Funciones sintácticas', historical]]
+]);
+
+function plannerPath(tag, catalogue, visited = new Set()) {
+  if (tag.kind === 'custom') return ['Etiquetas propias'];
+  const { id } = tag;
+  if (historicalPaths.has(id)) return historicalPaths.get(id);
+  const finite = plannerFiniteFeatures(id);
+  if (finite) {
+    const { theme, mood, voice } = finite;
+    if (voice === 'deponente') {
+      const family = mood === 'imperativo' ? 'Imperativo' : theme && theme + ' · ' + mood;
+      return ['Deponentes', family || 'Otros tiempos'];
+    }
+    return ['Tiempos personales', plannerFiniteFamily(id) || 'Otros tiempos'];
+  }
+  if (isInfinitiveTag(id)) {
+    const form = infinitiveForm.exec(id);
+    return ['Infinitivos', form?.[2] ? 'Formas · ' + form[1] : historical];
+  }
+  if (id === 'gram.infinitivo') return ['Infinitivos', 'Construcciones'];
+  if (id.startsWith('gram.part.')) return ['Participios', 'Formas'];
+  if (id === 'gram.participio' || id === 'gram.ablativo.absoluto') return ['Participios', 'Construcciones'];
+  if (/^gram\.(?:pron\.relativo|relativo)(?:\.|$)/u.test(id)) return ['Pronombres', 'Relativo'];
+  if (/^gram\.pron\.(?:proximo|medio|lejano)$/u.test(id)) return ['Pronombres', 'Demostrativos'];
+  if (id === 'gram.pron.identidad' || id === 'gram.pron.enfatico') return ['Pronombres', 'Idem e ipse'];
+  if (id.startsWith('gram.pron.')) return ['Pronombres', 'Otros pronombres'];
+  if (id === 'gram.ut.completiva' || id === 'gram.ne.completiva') return ['Otras subordinadas', 'Completivas con ut o ne'];
+  if (id === 'gram.ut.final' || id === 'gram.ne.final') return ['Otras subordinadas', 'Finales con ut o ne'];
+  if (id === 'gram.ut.consecutiva') return ['Otras subordinadas', 'Consecutivas con ut'];
+  if (id === 'gram.cum.historico') return ['Otras subordinadas', 'Cum histórico'];
+  if (id === 'gram.condicional') return ['Otras subordinadas', 'Condicionales'];
+
+  const parent = catalogue.get(tag.parentId);
+  if (parent && !visited.has(parent.id)) {
+    if (parent.id === 'gram.oracion' || parent.id === 'gram.ut') return ['Otras subordinadas', 'Otras construcciones'];
+    if (parent.id === 'gram.funciones') return ['Funciones sintácticas'];
+    if (parent.id === 'gram.pronombres') return ['Pronombres', 'Otros pronombres'];
+    if (parent.id === 'gram.pron.demostrativo') return ['Pronombres', 'Demostrativos'];
+    visited.add(id);
+    return plannerPath(parent, catalogue, visited);
+  }
+  return ['Etiquetas propias', 'Otras etiquetas del banco'];
+}
+
+export function plannerTagTree(catalogue) {
+  const byId = new Map(catalogue.map(tag => [tag.id, tag]));
+  const sections = new Map(plannerSections.map(([label, families]) => [label, {
+    label, tags: [], children: [], families: new Map([...families, historical].map(name => [name, {
+      label: name, tags: [], children: [], historical: name === historical
+    }]))
+  }]));
+  for (const tag of byId.values()) {
+    if (isRetiredTag(tag.id)) continue;
+    const [label, family] = plannerPath(tag, byId);
+    const section = sections.get(label);
+    (family ? section.families.get(family) : section).tags.push(tag);
+  }
+  return [...sections.values()].map(({ families, ...section }) => ({
+    ...section, children: [...families.values()].filter(family => family.tags.length)
+  }));
+}
+
 export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' &&
   (tag.id === infinitiveId || (bankTagVisible(tag.id) && !isInfinitiveTag(tag.id))));
 
@@ -243,7 +330,8 @@ export function planCurriculum(rows, settings, equivalent) {
   }).map(row => [row.text.id, row])).values()].sort(byDifficulty);
   const groups = [];
   const introduced = new Set();
-  const specifications = terms.map(({ tags }, index) => {
+  const specifications = terms.map((term, index) => {
+    const tags = [...new Set(term.tags)];
     for (const tag of tags) introduced.add(tag);
     return {
       requested: tags,

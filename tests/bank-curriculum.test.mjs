@@ -118,3 +118,17 @@ test('expone los cuatro tiempos pasivos de perfecto sin exponer todos los tiempo
  assert.ok(!bankTagVisible('gram.verbo.perfecto.indicativo.activo'));
  assert.ok(!bankTagVisible('gram.verbo.perfecto.indicativo.deponente'));
 });
+
+test('la progresión cuenta una sola vez un ID aunque se solicite repetidamente', () => {
+  const first = { ...row(1, 1, 'form', 'form'), text: { ...row(1, 1).text, source: {} } };
+  const settings = {
+    progression: 'cumulative', exam: 'all', excludedCourses: [],
+    terms: [
+      { count: 1, review: 0, tags: ['form', 'form', 'syntax', 'syntax'] },
+      { count: 0, review: 0, tags: ['form'] },
+      { count: 0, review: 0, tags: [] }
+    ]
+  };
+  const plan = planCurriculum([first], settings, () => false);
+  assert.deepEqual(plan.coverage(plan.groups[0]), { candidates: 1, covered: ['form'], uncovered: ['syntax'], later: [] });
+});
