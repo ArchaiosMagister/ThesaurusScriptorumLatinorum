@@ -111,9 +111,16 @@ self.addEventListener('message', event => {
       // An explicit activation changes the controller of all clients. Do not
       // switch another editing window to a new runtime behind its back.
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const otherWindow = windows.some(client => client.id !== event.source?.id &&
-        client.url.startsWith(self.registration.scope) && client.frameType !== 'nested' &&
-        client.frameType !== 'none');
+      const rootPaths = new Set([new URL('./', self.registration.scope).pathname,
+        new URL('./index.html', self.registration.scope).pathname]);
+      const otherWindow = windows.some(client => {
+        if (client.id === event.source?.id || !client.url.startsWith(self.registration.scope)) return false;
+        if (client.frameType === 'nested' || client.frameType === 'none') return false;
+        // Some WebKit versions do not expose frameType. Only the root shell
+        // represents a separate editing window in that case.
+        return client.frameType === 'top-level' || client.frameType === 'auxiliary' ||
+          rootPaths.has(new URL(client.url).pathname);
+      });
       if (otherWindow) {
         event.ports[0]?.postMessage({ ok: false, message: 'Cierra las otras ventanas de Thesaurus antes de actualizar.' });
         return;
