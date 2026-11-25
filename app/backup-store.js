@@ -328,9 +328,15 @@ async function replaceDatabase(name, before, after) {
         tx.abort();
         throw new Error('Hay cambios locales en otra pestaña. Vuelve a comparar la copia.');
       }
-      collection.clear();
-      for (const [key, row] of after[store])
-        if (collection.keyPath) collection.add(row); else collection.add(row, key);
+      // Conserva la comprobación completa de la revisión dentro de la
+      // transacción, pero no reescribe registros cuyo contenido no cambió.
+      const target = new Map(after[store].map(([key, row]) => [JSON.stringify(key), row]));
+      for (const key of keys) if (!target.has(JSON.stringify(key))) collection.delete(key);
+      for (const [key, row] of after[store]) {
+        const index = JSON.stringify(key);
+        if (expected.has(index) && equal(expected.get(index), row)) continue;
+        if (collection.keyPath) collection.put(row); else collection.put(row, key);
+      }
     });
     await Promise.all([...checks, done]);
   } finally { db.close(); }
