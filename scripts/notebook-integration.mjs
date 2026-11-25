@@ -818,10 +818,10 @@ window.addEventListener('atl-view', () => {
                 const current = [...document.querySelectorAll('.atl-bank-card')].find(item => item.dataset.sourceId === text.id);
                 current?.focus({ preventScroll: true });
             };
-            const navigation = { results: () => currentResults() };
+            const navigation = { results: () => currentResults().filter(item => Boolean(item.selectividad) === Boolean(text.selectividad)) };
             read.addEventListener('click', () => openBankTextEditor(text, restoreFocus, navigation));
             const openReader = () => openBankReader({
-                texts: currentResults(), selected: text, catalogue, modal: (...args) => M.modal(...args),
+                texts: navigation.results(), selected: text, catalogue, modal: (...args) => M.modal(...args),
                 edit: item => openBankTextEditor(item, restoreFocus, navigation), tag: item => tagBankText(item, restoreFocus, navigation), remove: removeBankText, usage: showTextUses,
                 pendingTags: bankState.includePending ? pendingIndex : undefined, automaticFor, difficultyFor,
                 isProtected: item => protectedIds.has(item.id),
@@ -876,17 +876,33 @@ window.addEventListener('atl-view', () => {
   const listingStart = source.indexOf('        const addLazyRows =');
   const listingEnd = source.indexOf("    search.addEventListener('input', populate);", listingStart);
   if (listingStart < 0 || listingEnd < 0) throw Error('Revisar el listado del Banco.');
-  source = source.slice(0, listingStart) + `        appendTextRows(listing, matching.slice(0, visibleResults));
-        if (visibleResults < matching.length) listing.append(button(
-            'Mostrar más textos (' + (matching.length - visibleResults) + ' restantes)', () => {
-                visibleResults += 36;
+  source = source.slice(0, listingStart) + `        const chosen = [];
+        const exams = [];
+        for (const text of matching) (text.selectividad ? exams : chosen).push(text);
+        appendBankSection('Textos elegidos', chosen);
+        appendBankSection('Selectividad', exams);
+    }
+    function appendBankSection(title, texts) {
+        if (!texts.length) return;
+        const section = el('section', 'atl-bank-results-section');
+        section.setAttribute('aria-label', title);
+        const cards = el('div', 'cuaderno-home-bank-list');
+        section.append(el('h4', '', title + ' (' + texts.length + ')'), cards);
+        listing.append(section);
+        const visible = visibleBySection.get(title) ?? pageSize;
+        appendTextRows(cards, texts.slice(0, visible));
+        if (visible < texts.length) {
+            const more = button('Mostrar más textos (' + (texts.length - visible) + ' restantes)', () => {
+                visibleBySection.set(title, visible + pageSize);
                 populate();
-                listing.querySelectorAll('.atl-bank-card')[visibleResults - 36]?.focus();
-            }, 'hbtn cuaderno-bank-show-more'));
+                listing.querySelector('[aria-label="' + title + '"]')?.querySelectorAll('.atl-bank-card')[visible]?.focus();
+            }, 'hbtn cuaderno-bank-show-more');
+            cards.append(more);
+        }
     }
 ` + source.slice(listingEnd);
   replace("    const listing = el('div', 'cuaderno-home-bank-list');",
-    "    const listing = el('div', 'cuaderno-home-bank-list');\n    let visibleResults = 36;");
+    "    const listing = el('div', 'atl-bank-list');\n    const pageSize = 36;\n    const visibleBySection = new Map();");
   replace("    const sourceTags = new Map(corpus.texts.map(text => [text.id, text.tagIds]));\n    const idsFor = (id) => sourceTags.get(id) ?? [];\n", '');
   replace("    viewSelect.addEventListener('change', populate);", '');
   const viewStart = source.indexOf("    const viewSelect = el('select');");

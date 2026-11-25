@@ -753,6 +753,15 @@
   #editor .atl-bank .atl-tag-option input[type="checkbox"] { flex: none; margin: 0; }
   #editor .atl-bank :is(.atl-bank-more, .atl-tag-option)[hidden] { display: none; }
 
+  #editor .atl-bank .atl-bank-list {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  #editor .atl-bank .atl-bank-results-section { min-width: 0; }
+  #editor .atl-bank .atl-bank-results-section > h4 { margin: 0 0 .45rem; }
+
   #editor .atl-bank .cuaderno-home-bank-list {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
     gap: .45rem;
