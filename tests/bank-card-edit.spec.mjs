@@ -242,3 +242,32 @@ test('en iPhone los grupos se pliegan, buscar abre coincidencias y limpiar etiqu
   await bank.getByRole('button', { name: 'Ver resultados' }).click();
   await expect(bank.getByRole('button', { name: 'Más filtros' })).toHaveAttribute('aria-expanded', 'false');
 });
+
+
+test('la ficha conserva navegación y guardado accesibles durante la lectura de un texto largo en iPhone', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+  await modal.getByRole('textbox', { name: 'Título', exact: true }).fill('Pasaje extenso');
+  await modal.getByRole('textbox', { name: 'Autor', exact: true }).fill('César');
+  await modal.getByRole('textbox', { name: 'Texto latino', exact: true }).fill(Array(30).fill('Gallia est omnis divisa in partes tres.').join('\n'));
+  await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  await bank.locator('.atl-bank-card').click();
+  const body = modal.locator('.mb');
+  await expect(modal.locator('.atl-edit-citation')).toContainText('César');
+  expect(await body.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(2);
+  const footer = modal.locator('.atl-edit-footer');
+  await expect(footer.getByRole('button', { name: 'Guardar cambios' })).toBeInViewport();
+  const initial = await footer.boundingBox();
+  await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await expect(footer.getByRole('button', { name: 'Guardar cambios' })).toBeInViewport();
+  const after = await footer.boundingBox();
+  expect(Math.abs(initial.y - after.y)).toBeLessThan(2);
+  await modal.getByRole('textbox', { name: 'Autor', exact: true }).fill('Julio César');
+  await expect(modal.locator('.atl-edit-citation')).toHaveText('Julio César');
+  await footer.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(modal).toBeHidden();
+});
