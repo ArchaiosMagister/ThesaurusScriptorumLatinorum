@@ -2224,6 +2224,9 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Sin vincular');
     await reopened.locator('#dropbox-back').click();
+    // La restauración directa ya dejó ambas copias iguales. Introduce una diferencia
+    // para comprobar también la restauración independiente desde un archivo descargado.
+    await changeReview(reopened, 'gram.gerundio');
     await reopened.locator('#backup-file').setInputFiles({
       name: 'thesaurus-recovery.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(remote))
     });
