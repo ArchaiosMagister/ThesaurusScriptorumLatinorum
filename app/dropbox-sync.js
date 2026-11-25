@@ -248,8 +248,10 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
     await saveCheckpoint(remote.data);
     remove(localStorage, pendingKey);
     report('Sincronización con Dropbox completada.');
-    save(sessionStorage, 'completed', true);
-    location.reload();
+    if (pending.applyLocal !== false) {
+      save(sessionStorage, 'completed', true);
+      location.reload();
+    }
     return;
   }
   const localHash = await syncFingerprint(local.data);
@@ -437,6 +439,7 @@ export async function setupDropbox(prepareReload, setStatus) {
       for (const [root, previous] of states) root.inert = previous;
       releaseLocal = null;
     };
+    report('Aplicando cambios de Dropbox…');
     for (const [root] of states) root.inert = true;
   }
   let completionTimer = null;
@@ -476,7 +479,7 @@ export async function setupDropbox(prepareReload, setStatus) {
     paint();
     try { await work(); }
     catch (error) {
-      if (error instanceof AutoDeferred) return;
+      if (error instanceof AutoDeferred) { scheduleAuto(); return; }
       if (!automatic || lastAutoError !== error.message) report(error.message);
       if (automatic) lastAutoError = error.message;
       if (error instanceof SyncConflict && error.comparison) {
@@ -576,11 +579,12 @@ export async function setupDropbox(prepareReload, setStatus) {
   });
   if (read(sessionStorage, 'completed')) {
     remove(sessionStorage, 'completed');
+    lastSuccess = 'Última sincronización: ' + new Date().toLocaleString('es-ES');
     report('Sincronización con Dropbox completada.');
   }
   try {
     if (await authorizeCallback()) {
-      report('Dropbox vinculado. Pulsa «Sincronizar ahora» para comparar los datos.');
+      report(autoEnabled() ? 'Dropbox vinculado. La sincronización automática comenzará al cerrar este menú.' : 'Dropbox vinculado. Pulsa «Sincronizar ahora» para comparar los datos.');
       dialog.showModal();
     }
   } catch (error) { report(error.message); }
