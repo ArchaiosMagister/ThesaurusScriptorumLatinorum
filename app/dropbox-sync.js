@@ -1,3 +1,4 @@
+import { readSyncState, saveSyncState, removeSyncState } from './recovery-history.js';
 import { applySyncData, protectLocal, isEmptySyncEditor, maxBackupSize, readSyncData, syncFingerprint, syncTargetRows, validateSyncData } from './backup-store.js';
 import { fingerprintEditorParts, isRecoverableSync, mergeEditorParts, mergeUsages, selectEditor, SyncConflict, unchangedCheckpoint, withWorkspaceLock } from './dropbox-plan.js';
 
@@ -205,8 +206,8 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   const scope = session.appKey + ':' + session.account;
   const checkpointKey = 'checkpoint:' + scope;
   const pendingKey = 'checkpoint-pending:' + scope;
-  const checkpoint = read(localStorage, checkpointKey);
-  let pending = read(localStorage, pendingKey);
+  const checkpoint = await readSyncState(checkpointKey);
+  let pending = await readSyncState(pendingKey);
   await prepareReload();
   const local = await readSyncData();
   const localHash = await syncFingerprint(local.data);
@@ -223,7 +224,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   const fingerprints = async rows => Object.fromEntries(await Promise.all(
     names.map(async name => [name, await syncFingerprint(rows[name])])));
   async function saveCheckpoint(data, revision) {
-    save(localStorage, checkpointKey, {
+    await saveSyncState(checkpointKey, {
       revision, hash: await syncFingerprint(data),
       editor: await syncFingerprint(data.editor),
       editorParts: await fingerprintEditorParts(data.editor, syncFingerprint),
@@ -248,13 +249,13 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       throw new Error('La copia de Dropbox cambió durante la preparación. Vuelve a intentar la restauración.');
     const target = await fingerprints(after);
     // Conserva el diario hasta verificar la aplicación y actualizar el punto de control.
-    save(localStorage, pendingKey, {
+    await saveSyncState(pendingKey, {
       hash: remote.hash, applyLocal: true, revision: remote.revision, previousHash: remote.hash,
       before, after: target
     });
     await applySyncData(remote.data, current.rows);
     await saveCheckpoint(remote.data, remote.revision);
-    remove(localStorage, pendingKey);
+    await removeSyncState(pendingKey);
     report('Sincronización con Dropbox completada.');
     save(sessionStorage, 'completed', true);
     location.reload();
@@ -265,7 +266,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   if (pending && Object.hasOwn(pending, 'revision') && pending.hash !== remote?.hash &&
       pending.revision === (remote?.revision ?? null) && pending.previousHash === (remote?.hash ?? null)) {
     // Dropbox conserva el estado anterior. Volvemos a comparar antes de publicar.
-    remove(localStorage, pendingKey);
+    await removeSyncState(pendingKey);
     pending = null;
   }
   if (pending) {
@@ -289,7 +290,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       await applySyncData(remote.data, local.rows);
     }
     await saveCheckpoint(remote.data, remote.revision);
-    remove(localStorage, pendingKey);
+    await removeSyncState(pendingKey);
     report('Sincronización con Dropbox completada.');
     if (pending.applyLocal !== false) {
       save(sessionStorage, 'completed', true);
@@ -374,7 +375,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
     if (!isRecoverableSync(await fingerprints(current.rows), before, before))
       throw Error('Los datos locales cambiaron durante la preparación. Vuelve a sincronizar.');
     const after = localChanges ? syncTargetRows(data, local.rows) : local.rows;
-    save(localStorage, pendingKey, {
+    await saveSyncState(pendingKey, {
       hash, applyLocal: localChanges, revision: remote?.revision ?? null, previousHash: remote?.hash ?? null,
       before, after: await fingerprints(after)
     });
@@ -383,20 +384,20 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       catch (error) {
         // Un 409 explícito demuestra que nuestra escritura no se aplicó.
         // Los fallos de red ambiguos conservan el diario de recuperación.
-        if (error instanceof RevisionConflict) remove(localStorage, pendingKey);
+        if (error instanceof RevisionConflict) await removeSyncState(pendingKey);
         throw error;
       }
     }
     const saved = await readRemote(session);
     if (saved?.hash !== hash) {
-      if (!remoteChanges) remove(localStorage, pendingKey);
+      if (!remoteChanges) await removeSyncState(pendingKey);
       throw Error('Dropbox cambió antes de verificar la sincronización. Se ha conservado la copia local.');
     }
     verifiedRevision = saved.revision;
     if (localChanges) await applySyncData(data, local.rows);
   }
   await saveCheckpoint(data, verifiedRevision);
-  remove(localStorage, pendingKey);
+  await removeSyncState(pendingKey);
   report('Sincronización con Dropbox completada.', localChanges || remoteChanges);
   if (localChanges) {
     save(sessionStorage, 'completed', true);
