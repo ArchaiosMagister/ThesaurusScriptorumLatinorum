@@ -961,7 +961,7 @@
     padding: .5rem .6rem; background: var(--paper); color: var(--ink); font-size: 16px;
   }
   .atl-bank-edit-form textarea[aria-label="Texto latino"] {
-    min-height: 16rem; height: clamp(16rem, 43vh, 32rem); resize: vertical; font: 1.18rem/1.6 var(--text-font);
+    box-sizing: border-box; min-height: 3.5rem; height: auto; resize: none; font: 1.18rem/1.6 var(--text-font);
   }
   .atl-bank-edit-form :is(input, textarea, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .atl-bank-edit-form :is(.atl-bank-courses, .atl-selectividad, .atl-source-vocabulary) {
@@ -978,7 +978,6 @@
 }
 @media screen and (max-width: 680px) {
   .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
-  .atl-bank-edit-form textarea[aria-label="Texto latino"] { min-height: 13rem; height: 34vh; }
 }
 
 /* Buscador del banco: filtros cotidianos visibles, facetas avanzadas plegables. */
@@ -1048,7 +1047,7 @@
 
 /* Dedicated bank-edit workspace. Unrelated dialogs retain their original dimensions. */
 @media screen {
-  .modal.atl-bank-editor-modal { max-width: none; max-height: calc(100dvh - 24px); height: min(940px, calc(100dvh - 24px)); overflow: hidden; }
+  .modal.atl-bank-editor-modal { max-width: none; max-height: calc(100dvh - 24px); height: auto; overflow: hidden; }
   .modal-bg:has(> .atl-bank-editor-modal) { padding: 8px; }
   .atl-bank-editor-modal .mh { flex-wrap: wrap; gap: .5rem; padding: .65rem 1rem; background: var(--panel); }
   .atl-bank-editor-modal .mh h2 { font-size: 1.08rem; flex: 1; min-width: 10rem; margin: 0; color: var(--accent); }
@@ -1058,7 +1057,7 @@
   .atl-edit-nav-button:disabled { opacity: .45; }
   .atl-edit-position { font-variant-numeric: tabular-nums; font-size: .83rem; font-weight: 650; min-width: 4.5rem; text-align: center; }
   .atl-bank-editor-modal .mb { flex: 1; min-height: 0; padding: 0; overflow: auto; background: var(--paper); }
-  .atl-bank-editor-modal .atl-bank-edit-form { min-height: 100%; display: flex; flex-direction: column; gap: 0; margin: 0; }
+  .atl-bank-editor-modal .atl-bank-edit-form { display: flex; flex-direction: column; gap: 0; margin: 0; }
   .atl-bank-editor-modal .atl-bank-edit-columns { flex: 1; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 0; align-items: stretch; }
   .atl-bank-editor-modal .atl-bank-edit-main, .atl-bank-editor-modal .atl-bank-edit-meta {
     border: 0; border-radius: 0; padding: clamp(.75rem, 1.8vw, 1.5rem); gap: .75rem;
@@ -1069,9 +1068,9 @@
   .atl-bank-editor-modal .atl-edit-title-field input { font: 700 clamp(1.1rem, 2.2vw, 1.55rem)/1.35 var(--text-font, Georgia, serif); min-height: 50px; }
   .atl-edit-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
   .atl-edit-word-count { color: var(--ink-2); font-size: .8rem; font-variant-numeric: tabular-nums; }
-  .atl-bank-editor-modal .atl-edit-latin-field { flex: 1; display: flex; flex-direction: column; }
+  .atl-bank-editor-modal .atl-edit-latin-field { flex: none; display: flex; flex-direction: column; }
   .atl-bank-editor-modal .atl-edit-latin-field > span { display: none; }
-  .atl-bank-editor-modal .atl-edit-latin-field textarea { flex: 1; min-height: clamp(240px, 48vh, 620px); height: auto; font: 1.19rem/1.7 var(--text-font, Georgia, serif); padding: .9rem; }
+  .atl-bank-editor-modal .atl-edit-latin-field textarea { flex: none; box-sizing: border-box; min-height: 3.5rem; height: auto; overflow-y: hidden; font: 1.19rem/1.7 var(--text-font, Georgia, serif); padding: .65rem .8rem; margin: 0; }
   .atl-edit-bibliography, .atl-edit-teaching { display: grid; gap: .6rem; min-width: 0; }
   .atl-edit-teaching { padding-top: .8rem; border-top: 1px solid var(--rule); }
   .atl-bank-editor-modal .atl-bank-courses { display: flex; flex-wrap: wrap; gap: .45rem .8rem; }
@@ -1087,12 +1086,11 @@
   .atl-bank-editor-modal .atl-bank-edit-actions button:last-of-type { color: var(--danger, #a33); }
 }
 @media screen and (max-width: 740px) {
-  .modal.atl-bank-editor-modal { height: calc(100dvh - 12px); max-height: calc(100dvh - 12px); }
+  .modal.atl-bank-editor-modal { max-height: calc(100dvh - 12px); }
   .atl-bank-editor-modal .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
   .atl-bank-editor-modal .atl-bank-edit-meta { border-inline-start: 0; border-top: 1px solid var(--rule); }
   .atl-bank-editor-modal .mh { padding: .45rem .65rem; }
   .atl-edit-nav { order: 3; width: 100%; justify-content: space-between; }
-  .atl-bank-editor-modal .atl-edit-latin-field textarea { min-height: 220px; }
   .atl-bank-editor-modal .atl-bank-edit-actions { padding: .5rem; gap: .35rem; }
   .atl-bank-editor-modal .atl-edit-dirty { flex-basis: 100%; }
 }

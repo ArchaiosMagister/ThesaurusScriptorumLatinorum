@@ -115,3 +115,39 @@ test('la ficha puede retirar dificultad y procedencia PAU sin restaurarlas al gu
  await expect(modal.getByRole('combobox',{name:'Dificultad docente'})).toHaveValue('');
  await expect(modal.getByRole('checkbox',{name:'Selectividad',exact:true})).not.toBeChecked();
 });
+
+
+test('el campo latino de la ficha crece y encoge según el texto y el ancho disponible', async ({ page }) => {
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  const shortText = 'Roma magna est.';
+  const longText = Array(12).fill('Gallia est omnis divisa in partes tres.').join('\n');
+  for (const [title, latin] of [['A breve', shortText], ['B extenso', longText]]) {
+    await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+    await modal.getByRole('textbox', { name: 'Título', exact: true }).fill(title);
+    await modal.getByRole('textbox', { name: 'Texto latino', exact: true }).fill(latin);
+    await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  }
+  await bank.locator('.atl-bank-card').filter({ hasText: 'A breve' }).click();
+  const latin = modal.getByRole('textbox', { name: 'Texto latino', exact: true });
+  const dimensions = () => latin.evaluate(node => ({
+    height: node.getBoundingClientRect().height,
+    overflow: node.scrollHeight - node.clientHeight
+  }));
+  await expect.poll(async () => (await dimensions()).height).toBeLessThan(115);
+  const shortHeight = (await dimensions()).height;
+  await modal.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await expect(latin).toHaveValue(longText);
+  await expect.poll(async () => (await dimensions()).height).toBeGreaterThan(shortHeight + 100);
+  await expect.poll(async () => (await dimensions()).overflow).toBeLessThanOrEqual(2);
+  await latin.fill(shortText);
+  await expect.poll(async () => (await dimensions()).height).toBeLessThan(115);
+  const wrapped = Array(12).fill('Gallia est omnis divisa in partes tres.').join(' ');
+  await latin.fill(wrapped);
+  const wideHeight = (await dimensions()).height;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect.poll(async () => (await dimensions()).height).toBeGreaterThan(wideHeight);
+  await expect.poll(async () => (await dimensions()).overflow).toBeLessThanOrEqual(2);
+});
