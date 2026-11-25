@@ -167,7 +167,7 @@ async function archiveRemote(session, remote) {
   if (copy?.hash !== remote.hash) throw Error('No se pudo verificar la copia anterior de Dropbox.');
 }
 
-async function synchronize(session, prepareReload, report, resolution, restoreFromCloud = false) {
+async function synchronize(session, prepareReload, report, resolution, restoreFromCloud = false, lockLocal = () => {}) {
   const scope = session.appKey + ':' + session.account;
   const checkpointKey = 'checkpoint:' + scope;
   const pendingKey = 'checkpoint-pending:' + scope;
@@ -240,7 +240,11 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
     if (!isRecoverableSync(current, pending.before ?? {}, pending.after ?? {}) ||
         !isRecoverableSync(await fingerprints(target), pending.after ?? {}, pending.after ?? {}))
       throw new Error('Se detectaron cambios durante una sincronización interrumpida. Conserva los datos locales y revisa ambas copias.');
-    if (pending.applyLocal !== false) await applySyncData(remote.data, local.rows);
+    if (pending.applyLocal !== false) {
+      lockLocal();
+      await prepareReload();
+      await applySyncData(remote.data, local.rows);
+    }
     await saveCheckpoint(remote.data);
     remove(localStorage, pendingKey);
     report('Sincronización con Dropbox completada.');
@@ -313,6 +317,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   if (localChanges) await protectLocal('Antes de sincronizar con Dropbox');
   if (remoteChanges && remote) await archiveRemote(session, remote);
   if (localChanges || remoteChanges) {
+    if (localChanges) lockLocal();
     await prepareReload();
     const current = await readSyncData();
     const before = await fingerprints(local.rows);
@@ -331,12 +336,14 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   }
   await saveCheckpoint(data);
   remove(localStorage, pendingKey);
-  report('Sincronización con Dropbox completada.');
+  report('Sincronización con Dropbox completada.', localChanges || remoteChanges);
   if (localChanges) {
     save(sessionStorage, 'completed', true);
     location.reload();
   }
 }
+
+class AutoDeferred extends Error {}
 
 export async function setupDropbox(prepareReload, setStatus) {
   const dialog = document.getElementById('dropbox-dialog');
@@ -355,8 +362,83 @@ export async function setupDropbox(prepareReload, setStatus) {
   const conflictPanel = document.getElementById('dropbox-conflict');
   const keepRemote = document.getElementById('dropbox-keep-remote');
   const keepLocal = document.getElementById('dropbox-keep-local');
+  const autoToggle = document.getElementById('dropbox-auto');
+  const autoSettings = document.getElementById('dropbox-auto-settings');
+  const autoStatus = document.getElementById('dropbox-auto-status');
+  const autoDelay = 3000;
+  const autoInterval = 60000;
+  let autoTimer = null;
+  let lastActivity = 0;
+  let autoPaused = false;
+  let lastAutoError = '';
+  let lastSuccess = '';
+  let releaseLocal = null;
   let comparison;
   let busy = false;
+  const observed = new WeakSet();
+  function autoEnabled() {
+    return Boolean(read(localStorage, 'connection')) && read(localStorage, 'auto') !== false;
+  }
+  function safeToSync() {
+    if (document.visibilityState !== 'visible' || document.querySelector('dialog[open]')) return false;
+    if (Date.now() - lastActivity < autoDelay) return false;
+    const editable = 'input:not([type=button]):not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]:not([contenteditable=false])';
+    if (document.activeElement?.closest(editable)) return false;
+    for (const frame of document.querySelectorAll('iframe')) {
+      const child = frame.contentDocument;
+      if (!child || child.readyState !== 'complete' ||
+          child.querySelector('.modal-bg, dialog[open], [aria-modal=true]') ||
+          child.activeElement?.closest(editable)) return false;
+    }
+    return true;
+  }
+  function scheduleAuto(delay = autoDelay) {
+    clearTimeout(autoTimer);
+    autoTimer = null;
+    if (!autoEnabled() || autoPaused) return;
+    autoTimer = setTimeout(async () => {
+      autoTimer = null;
+      if (!autoEnabled() || autoPaused) return;
+      if (busy || !navigator.onLine || !safeToSync()) {
+        scheduleAuto(document.visibilityState === 'visible' && navigator.onLine ? autoDelay : autoInterval);
+        return;
+      }
+      await syncNow(undefined, false, true);
+      if (autoTimer === null) scheduleAuto(autoInterval);
+    }, delay);
+  }
+  function activity(event) {
+    if (!event.isTrusted) return;
+    lastActivity = Date.now();
+    if (!busy) scheduleAuto();
+  }
+  function observe(doc) {
+    if (!doc || observed.has(doc)) return;
+    observed.add(doc);
+    for (const type of ['pointerdown', 'keydown', 'input', 'change', 'focusout', 'scroll'])
+      doc.addEventListener(type, activity, { capture: true, passive: true });
+  }
+  function observeFrames() {
+    observe(document);
+    for (const frame of document.querySelectorAll('iframe')) {
+      observe(frame.contentDocument);
+      if (!observed.has(frame)) {
+        observed.add(frame);
+        frame.addEventListener('load', () => observe(frame.contentDocument));
+      }
+    }
+  }
+  function lockForAutomaticApply() {
+    if (!safeToSync() || !autoEnabled()) throw new AutoDeferred();
+    const roots = [document.body, ...[...document.querySelectorAll('iframe')]
+      .map(frame => frame.contentDocument?.documentElement).filter(Boolean)];
+    const states = roots.map(root => [root, root.inert]);
+    releaseLocal = () => {
+      for (const [root, previous] of states) root.inert = previous;
+      releaseLocal = null;
+    };
+    for (const [root] of states) root.inert = true;
+  }
   let completionTimer = null;
   function report(text) {
     if (completionTimer !== null) clearTimeout(completionTimer);
@@ -373,6 +455,10 @@ export async function setupDropbox(prepareReload, setStatus) {
   }
   function paint() {
     const connected = Boolean(read(localStorage, 'connection'));
+    autoSettings.hidden = !connected;
+    autoToggle.checked = autoEnabled();
+    autoToggle.disabled = busy || !connected;
+    autoStatus.textContent = !autoEnabled() ? 'Desactivada' : autoPaused ? 'Requiere revisión manual' : !navigator.onLine ? 'Sin conexión; se reanudará automáticamente' : lastAutoError || lastSuccess || 'Activada';
     dialog.dataset.connected = String(connected);
     connection.textContent = connected ? 'Vinculado' : 'Sin vincular';
     setup.hidden = connectButton.hidden = connected;
@@ -384,21 +470,24 @@ export async function setupDropbox(prepareReload, setStatus) {
     if (connected) quickSync.removeAttribute('aria-haspopup');
     else quickSync.setAttribute('aria-haspopup', 'dialog');
   }
-  async function run(work) {
+  async function run(work, automatic = false) {
     if (busy) return;
     busy = true;
     paint();
     try { await work(); }
     catch (error) {
-      report(error.message);
+      if (error instanceof AutoDeferred) return;
+      if (!automatic || lastAutoError !== error.message) report(error.message);
+      if (automatic) lastAutoError = error.message;
       if (error instanceof SyncConflict && error.comparison) {
+        autoPaused = true;
         comparison = error.comparison;
         paint();
-        if (!dialog.open) openDialog();
-        document.getElementById('dropbox-conflict-title').focus();
+        if (!dialog.open && (!automatic || safeToSync())) openDialog();
+        if (dialog.open) document.getElementById('dropbox-conflict-title').focus();
       }
     }
-    finally { busy = false; paint(); }
+    finally { releaseLocal?.(); busy = false; paint(); }
   }
   appKey.value = read(localStorage, 'appKey') ?? '';
   function openDialog() {
@@ -407,7 +496,14 @@ export async function setupDropbox(prepareReload, setStatus) {
     dialog.showModal();
   }
   open.addEventListener('click', openDialog);
-  dialog.addEventListener('close', () => { comparison = undefined; paint(); });
+  dialog.addEventListener('close', () => { comparison = undefined; paint(); scheduleAuto(); });
+  autoToggle.addEventListener('change', () => {
+    save(localStorage, 'auto', autoToggle.checked);
+    autoPaused = false;
+    lastAutoError = '';
+    paint();
+    scheduleAuto();
+  });
   back.addEventListener('click', () => {
     dialog.close();
     backupDialog.showModal();
@@ -424,23 +520,39 @@ export async function setupDropbox(prepareReload, setStatus) {
     remove(localStorage, 'connection');
     remove(sessionStorage, 'session');
     comparison = undefined;
+    autoPaused = false;
+    lastAutoError = lastSuccess = '';
+    scheduleAuto();
     paint();
     report('Sesión de Dropbox cerrada en este navegador.');
   });
-  function syncNow(preference, restoreFromCloud = false) {
+  function syncNow(preference, restoreFromCloud = false, automatic = false) {
     if (busy || (preference && !comparison)) return;
+    if (!automatic) autoPaused = false;
     const resolution = preference ? {
       ...comparison, choices: { ...comparison.choices, [comparison.item]: preference }
     } : undefined;
     comparison = undefined;
-    void run(async () => {
+    return run(async () => {
       const current = read(localStorage, 'connection');
       if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
-      report(restoreFromCloud ? 'Verificando la copia de Dropbox…' : 'Comparando los datos con Dropbox…');
-      const work = () => synchronize(current, prepareReload, report, resolution, restoreFromCloud);
+      if (!automatic) report(restoreFromCloud ? 'Verificando la copia de Dropbox…' : 'Comparando los datos con Dropbox…');
+      const prepare = async () => {
+        if (automatic && !releaseLocal && (!safeToSync() || !autoEnabled())) throw new AutoDeferred();
+        await prepareReload();
+      };
+      const notify = (text, changed = true) => {
+        if (!automatic || changed) report(text);
+        if (text === 'Sincronización con Dropbox completada.') {
+          lastAutoError = '';
+          lastSuccess = 'Última sincronización: ' + new Date().toLocaleString('es-ES');
+        }
+      };
+      const work = () => synchronize(current, prepare, notify, resolution, restoreFromCloud,
+        automatic ? lockForAutomaticApply : undefined);
       if (navigator.locks) await navigator.locks.request(key, work);
       else await work();
-    });
+    }, automatic).finally(() => { if (!automatic) scheduleAuto(autoInterval); });
   }
   syncButton.addEventListener('click', () => syncNow());
   restoreRemote.addEventListener('click', () => {
@@ -455,7 +567,12 @@ export async function setupDropbox(prepareReload, setStatus) {
     else openDialog();
   });
   addEventListener('storage', event => {
-    if (event.key === key + ':connection' || event.key === null) paint();
+    if (event.key === key + ':connection' || event.key === key + ':auto' || event.key === null) {
+      autoPaused = false;
+      lastAutoError = '';
+      paint();
+      scheduleAuto();
+    }
   });
   if (read(sessionStorage, 'completed')) {
     remove(sessionStorage, 'completed');
@@ -467,5 +584,14 @@ export async function setupDropbox(prepareReload, setStatus) {
       dialog.showModal();
     }
   } catch (error) { report(error.message); }
+  observeFrames();
+  new MutationObserver(observeFrames).observe(document.body, { childList: true, subtree: true });
+  addEventListener('online', () => { paint(); scheduleAuto(0); });
+  addEventListener('offline', paint);
+  addEventListener('pageshow', () => scheduleAuto(0));
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') scheduleAuto(0);
+  });
   paint();
+  scheduleAuto(0);
 }
