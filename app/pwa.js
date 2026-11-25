@@ -1,3 +1,5 @@
+import { withWorkspaceLock } from './dropbox-plan.js';
+
 const base = new URL('./', import.meta.url);
 let installation;
 let registration;
@@ -86,5 +88,5 @@ export async function updateApplication(prepareReload) {
       for (const [root, previous] of states) root.inert = previous;
     }
   };
-  return navigator.locks ? navigator.locks.request('atl-v1:dropbox', activate) : activate();
+  return withWorkspaceLock(activate);
 }
