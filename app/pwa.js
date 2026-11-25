@@ -52,10 +52,31 @@ export async function updateApplication(prepareReload) {
     return registration.installing ? 'La actualización se está preparando. Vuelve a pulsar Actualizar.' : 'La aplicación está actualizada.';
   }
   if (!window.confirm('¿Aplicar la actualización y recargar la aplicación?')) return 'Actualización pendiente.';
-  await prepareReload();
-  const waiting = registration.waiting;
-  if (!waiting) return 'La actualización ya se ha aplicado. Puedes recargar.';
-  navigator.serviceWorker.addEventListener('controllerchange', () => location.reload(), { once: true });
-  waiting.postMessage('activate');
-  return 'Aplicando actualización…';
+  const activate = async () => {
+    await prepareReload();
+    const waiting = registration.waiting;
+    if (!waiting) return 'La actualización ya se ha aplicado. Puedes recargar.';
+    const channel = new MessageChannel();
+    // Keep the write lock until the controller changes or activation is refused.
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => finish(new Error('No se pudo confirmar la actualización. Vuelve a intentarlo.')), 30000);
+      const changed = () => {
+        finish(null, 'Aplicando actualización…');
+        location.reload();
+      };
+      function finish(error, message) {
+        clearTimeout(timeout);
+        channel.port1.close();
+        navigator.serviceWorker.removeEventListener('controllerchange', changed);
+        if (error) reject(error); else resolve(message);
+      }
+      navigator.serviceWorker.addEventListener('controllerchange', changed, { once: true });
+      channel.port1.onmessage = ({ data }) => {
+        if (!data?.ok) finish(new Error(data?.message || 'No se pudo activar la actualización.'));
+      };
+      try { waiting.postMessage('activate', [channel.port2]); }
+      catch (error) { finish(error); }
+    });
+  };
+  return navigator.locks ? navigator.locks.request('atl-v1:dropbox', activate) : activate();
 }
