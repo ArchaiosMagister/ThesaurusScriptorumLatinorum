@@ -2135,6 +2135,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
         const args = JSON.parse(headers['dropbox-api-arg']);
         if (args.path.startsWith('/thesaurus-recovery-')) {
           if (url.endsWith('/upload')) recovery.set(args.path, JSON.parse(body));
+          else if (!recovery.has(args.path)) return { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
           return { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'recovery' }) },
             json: recovery.get(args.path) };
         }
@@ -2176,6 +2177,8 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       await view.getByRole('button', { name: 'Vincular Dropbox' }).click();
       await expect(view.locator('#dropbox-status')).toContainText('Dropbox vinculado');
       await expect(view.locator('#dropbox-connection')).toHaveText('Vinculado');
+      // This scenario exercises the manual protocol deterministically.
+      await view.locator('#dropbox-auto').uncheck();
       await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
       await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
