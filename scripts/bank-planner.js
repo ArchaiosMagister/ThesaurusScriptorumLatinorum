@@ -94,6 +94,20 @@ function checkState(check, ids, selected) {
 
 const normalize = value => value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es');
 
+function pickerCaption(label, family, form) {
+  const suffix = form && ' de ' + form.mood + ' ' + form.voice;
+  if (suffix && family.toLowerCase().includes(form.mood) && label.endsWith(suffix)) {
+    const tense = label.slice(0, -suffix.length);
+    return form.mood === 'imperativo' ? tense + ' ' + form.voice : tense;
+  }
+  const infinitive = /^Infinitivo de (presente|perfecto|futuro) (activo|pasivo|deponente)$/u.exec(label);
+  if (infinitive && family === 'Formas · ' + infinitive[1]) {
+    const voice = infinitive[2];
+    return voice[0].toUpperCase() + voice.slice(1);
+  }
+  return label;
+}
+
 function tagPicker(label, tags, setTags) {
   const picker = node('div');
   picker.className = 'atl-planner-picker';
@@ -129,30 +143,39 @@ function tagPicker(label, tags, setTags) {
   const quickLabel = node('span');
   const quickField = node('label');
   quickField.className = 'field';
-  quickField.append(quickLabel, quickCheck);
+  quickField.append(quickCheck, quickLabel);
   quick.append(node('summary', 'Selección rápida de formas personales'), criteria, quickField);
-  picker.append(search, controls, quick, groups, message);
+  const toolbar = node('div');
+  toolbar.className = 'atl-picker-bar';
+  toolbar.append(search, controls);
+  picker.append(toolbar, quick, groups, message);
 
   let source, branches = [], finite = [], quickIds = [], beforeSearch;
-  function allBranches(items = branches) {
-    return items.flatMap(branch => [branch, ...allBranches(branch.children)]);
+  function disclosures() {
+    return [...branches, ...branches.flatMap(branch => branch.children)].filter(branch => branch.details);
   }
   function setExpanded(open) {
-    for (const branch of allBranches()) branch.details.open = open && !branch.row.hidden;
-    if (beforeSearch) beforeSearch = new Map(allBranches().map(branch => [branch.path, open]));
+    for (const branch of disclosures()) branch.details.open = open && !branch.row.hidden;
+    if (beforeSearch) beforeSearch = new Map(disclosures().map(branch => [branch.path, open]));
   }
 
   function renderBranch(section, ancestors = '') {
     const { label: name, historical, children, tags: members } = section;
     const row = node('div');
-    row.className = 'atl-planner-branch';
-    const details = node('details');
-    details.dataset.group = name;
-    const summary = node('summary');
-    summary.append(node('span', name), ' ');
+    row.className = ancestors ? 'atl-picker-family' : 'atl-picker-section';
+    if (historical) row.classList.add('atl-picker-history');
+    const collapsible = !ancestors || historical;
+    const details = collapsible ? node('details') : null;
+    if (details) {
+      details.className = 'atl-picker-disclosure';
+      details.dataset.group = name;
+    }
+    const header = node(collapsible ? 'summary' : 'div');
+    header.className = 'atl-picker-group-heading';
+    header.append(node('span', name), ' ');
     const counter = node('span');
     counter.className = 'atl-picker-count';
-    summary.append(counter);
+    header.append(counter);
     const path = ancestors + ' ' + name;
     const branch = { row, details, counter, path, shown: [], children: [], leaves: [], historical };
     if (!historical && (members.length || children.some(child => !child.historical))) {
@@ -163,38 +186,57 @@ function tagPicker(label, tags, setTags) {
       bulk.addEventListener('change', () => setTags(branch.shown, bulk.checked));
       const bulkLabel = node('label');
       bulkLabel.className = 'atl-picker-bulk';
-      bulkLabel.append(bulk);
-      row.append(bulkLabel);
+      bulkLabel.append(bulk, node('span', 'Todas'));
+      row.classList.add('atl-picker-has-bulk');
       branch.bulk = bulk;
+      branch.bulkLabel = bulkLabel;
     }
     const body = node('div');
     body.className = 'atl-picker-branch-body';
     if (historical) body.append(node('small', 'Estos filtros se seleccionan de uno en uno.'));
     if (!members.length && !children.length) body.append(node('small', 'No hay etiquetas disponibles.'));
-    for (const tag of members) {
-      const check = node('input');
-      check.type = 'checkbox';
-      check.dataset.tagId = tag.id;
-      check.addEventListener('change', () => setTags([tag.id], check.checked));
-      const entry = field(tag.label, check);
-      body.append(entry);
-      branch.leaves.push({ id: tag.id, check, entry, searchable: normalize(path + ' ' + tag.label + ' ' + tag.id) });
-      const form = plannerFiniteFeatures(tag.id);
-      if (form && tag.kind !== 'custom') finite.push({ id: tag.id, ...form });
+    if (members.length) {
+      const chips = node('div');
+      chips.className = 'atl-picker-chips';
+      for (const tag of members) {
+        const form = tag.kind === 'custom' ? null : plannerFiniteFeatures(tag.id);
+        const chip = action(pickerCaption(tag.label, name, form), () => setTags([tag.id], !tags.includes(tag.id)));
+        chip.className = 'atl-picker-chip';
+        chip.dataset.tagId = tag.id;
+        chip.setAttribute('aria-label', tag.label);
+        chips.append(chip);
+        branch.leaves.push({ id: tag.id, chip, searchable: normalize(path + ' ' + tag.label + ' ' + tag.id) });
+        if (form) finite.push({ id: tag.id, ...form });
+      }
+      body.append(chips);
     }
     branch.children = children.map(child => renderBranch(child, path));
-    body.append(...branch.children.map(child => child.row));
-    details.append(summary, body);
-    row.append(details);
+    if (branch.children.length) {
+      const families = node('div');
+      families.className = 'atl-picker-families';
+      families.append(...branch.children.map(child => child.row));
+      body.append(families);
+    }
+    if (details) {
+      details.append(header, body);
+      if (branch.bulk) row.append(branch.bulkLabel);
+      row.append(details);
+    } else {
+      const familyHeader = node('div');
+      familyHeader.className = 'atl-picker-family-header';
+      familyHeader.append(header);
+      if (branch.bulk) familyHeader.append(branch.bulkLabel);
+      row.append(familyHeader, body);
+    }
     return branch;
   }
 
   function updateBranch(branch, selected, query) {
     const visible = [];
     for (const leaf of branch.leaves) {
-      leaf.entry.hidden = Boolean(query && !leaf.searchable.includes(query));
-      leaf.check.checked = selected.has(leaf.id);
-      if (!leaf.entry.hidden) visible.push(leaf.id);
+      leaf.chip.hidden = Boolean(query && !leaf.searchable.includes(query));
+      leaf.chip.setAttribute('aria-pressed', String(selected.has(leaf.id)));
+      if (!leaf.chip.hidden) visible.push(leaf.id);
     }
     for (const child of branch.children) {
       updateBranch(child, selected, query);
@@ -204,6 +246,7 @@ function tagPicker(label, tags, setTags) {
     branch.row.hidden = Boolean(query && !visible.length && branch.children.every(child => child.row.hidden));
     const total = branch.bulk ? checkState(branch.bulk, visible, selected) : visible.filter(id => selected.has(id)).length;
     branch.counter.textContent = visible.length ? total + '/' + visible.length : '';
+    if (branch.bulk) branch.bulkLabel.hidden = Boolean(query && !visible.length);
   }
 
   function updateQuick(selected) {
@@ -230,7 +273,7 @@ function tagPicker(label, tags, setTags) {
   quickCheck.addEventListener('change', () => setTags(quickIds, quickCheck.checked));
   search.addEventListener('input', () => {
     const query = search.value.trim();
-    const items = allBranches();
+    const items = disclosures();
     if (query) {
       beforeSearch ??= new Map(items.map(branch => [branch.path, branch.details.open]));
       update();
@@ -248,16 +291,16 @@ function tagPicker(label, tags, setTags) {
     render(tree) {
       if (tree !== source) {
         source = tree;
-        const expanded = beforeSearch ?? new Map(allBranches().map(branch => [branch.path, branch.details.open]));
+        const expanded = beforeSearch ?? new Map(disclosures().map(branch => [branch.path, branch.details.open]));
         finite = [];
         branches = tree.map(section => renderBranch(section));
         groups.replaceChildren(...branches.map(branch => branch.row));
         if (search.value.trim()) {
           beforeSearch = expanded;
           update();
-          for (const branch of allBranches()) branch.details.open = !branch.row.hidden;
+          for (const branch of disclosures()) branch.details.open = !branch.row.hidden;
         } else {
-          for (const branch of allBranches()) branch.details.open = expanded.get(branch.path) ?? false;
+          for (const branch of disclosures()) branch.details.open = expanded.get(branch.path) ?? false;
         }
       }
       update();
@@ -630,7 +673,7 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
   partial.addEventListener('change', updateButton);
   title.addEventListener('input', updateButton);
   const dialog = modal('Crear cuaderno por trimestres', panel, [{ label: 'Cerrar' }], {
-    width: 'min(54rem, 96vw)', beforeClose: () => !saving, onClose: returnFocus
+    width: 'min(68rem, 96vw)', beforeClose: () => !saving, onClose: returnFocus
   });
   dialog.el.classList.add('atl-planner-modal');
   dialog.el.setAttribute('role', 'dialog');
