@@ -128,7 +128,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   }
   const infinitive = element('input', { type: 'checkbox', checked: state.tags.includes(infinitiveId) });
   const infinitiveLabel = element('label', { className: 'atl-tag-option' });
-  infinitiveLabel.append(infinitive, element('span', { textContent: 'Infinitivo' }));
+  infinitiveLabel.append(infinitive, element('span', { textContent: 'Forma de infinitivo' }));
   const facet = (label, values, value) => {
     const control = element('select');
     control.setAttribute('aria-label', label);
@@ -140,7 +140,13 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const infTime = facet('Tiempo del infinitivo', infinitiveTenses, state.infTime);
   const infVoice = facet('Voz del infinitivo', infinitiveVoices, state.infVoice);
   const infGroup = element('fieldset', { className: 'atl-infinitive-filters' });
-  infGroup.append(infinitiveLabel, infTime, infVoice);
+  const facetLabel = (text, control) => {
+    const label = element('label', { className: 'atl-infinitive-facet' });
+    label.append(element('span', { textContent: text }), control);
+    return label;
+  };
+  infGroup.append(infinitiveLabel, facetLabel('Tiempo', infTime), facetLabel('Voz', infVoice));
+  groups.get('gram.formas').options.prepend(infGroup);
   function updateInfinitive() {
     infTime.disabled = infVoice.disabled = !infinitive.checked;
     if (!infinitive.checked) infTime.value = infVoice.value = '';
@@ -151,19 +157,21 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   list.append(noTags);
   const findTags = () => {
     const query = foldLatin(tagQuery.value.trim());
-    infGroup.hidden = !foldLatin('infinitivo tiempo voz ' + infinitiveTenses.join(' ') + ' ' + infinitiveVoices.join(' ')).includes(query);
+    const infTerms = foldLatin('forma de infinitivo tiempo voz ' + infinitiveTenses.join(' ') + ' ' + infinitiveVoices.join(' '));
+    infGroup.hidden = !query.split(/\s+/u).every(term => infTerms.includes(term));
     let found = !infGroup.hidden;
     for (const { row, terms } of selections.values()) {
       row.hidden = !terms.includes(query);
       found ||= !row.hidden;
     }
-    for (const { section, options } of groups.values()) section.hidden = !options.querySelector('.atl-tag-option:not([hidden])');
+    for (const [id, { section, options }] of groups)
+      section.hidden = !(id === 'gram.formas' && !infGroup.hidden) && !Array.from(options.children).some(row => row.matches('.atl-tag-option:not([hidden])'));
     noTags.hidden = found;
   };
   tagQuery.addEventListener('input', findTags);
   const toolbar = element('div', { className: 'atl-bank-tag-controls' });
   toolbar.append(tagQuery, modeLabel, pendingLabel);
-  panel.append(toolbar, infGroup, list);
+  panel.append(toolbar, list);
   findTags();
   function read() {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);

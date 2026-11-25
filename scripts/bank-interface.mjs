@@ -272,7 +272,7 @@ export function modernizeBank(source) {
         for (const id of criteria.tags) {
             const item = catalogue.find(tag => tag.id === id);
             if (!item) continue;
-            const label = id === infinitiveId ? ['Infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
+            const label = id === infinitiveId ? ['Forma de infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
             const chip = button(label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip atl-facet-chip');
             chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
             chip.setAttribute('aria-label', 'Quitar filtro «' + label + '»');
