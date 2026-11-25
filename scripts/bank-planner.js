@@ -39,7 +39,13 @@ export function selectividadEditor(value) {
   community.value = value?.community ?? '';
   const details = node('div');
   details.className = 'atl-selectividad-fields';
-  details.append(field('Año de Selectividad', year), field('Comunidad autónoma', community));
+  const done = node('input');
+  done.type = 'checkbox';
+  done.checked = value?.hecho === true;
+  const doneLabel = node('label', '');
+  doneLabel.className = 'atl-pau-done';
+  doneLabel.append(done, node('span', 'Hecho'));
+  details.append(field('Año de Selectividad', year), field('Comunidad autónoma', community), doneLabel);
   const update = () => { details.hidden = !enabled.checked; };
   enabled.addEventListener('change', update);
   update();
@@ -49,7 +55,7 @@ export function selectividadEditor(value) {
     read() {
       if (!enabled.checked) return null;
       if (!year.validity.valid) throw Error('Introduce un año entero entre 1900 y 2099.');
-      return { ...(year.value ? { year: Number(year.value) } : {}), ...(community.value ? { community: community.value } : {}) };
+      return { ...(year.value ? { year: Number(year.value) } : {}), ...(community.value ? { community: community.value } : {}), ...(done.checked && { hecho: true }) };
     }
   };
 }

@@ -99,7 +99,22 @@ export function modernizeBank(source) {
     moreFilters.append(el('h5', 'atl-facet-heading', 'Procedencia y uso'));
     const examFields = el('div', 'atl-bank-more-fields');
     examFields.append(filters.examLabel, filters.excludeExamLabel, bankField('Año de Selectividad', filters.examYear, ''),
-        bankField('Comunidad autónoma', filters.examCommunity, ''));
+        bankField('Comunidad autónoma', filters.examCommunity, ''), bankField('Estado', filters.examProgress, ''));
+    const progressBar = el('div', 'atl-pau-progress');
+    const pauTexts = corpus.texts.filter(text => text.selectividad);
+    const doneCount = pauTexts.filter(text => text.selectividad.hecho).length;
+    const progressSummary = el('span', 'small muted', doneCount + ' de ' + pauTexts.length + ' textos hechos');
+    const resetDone = button('Reiniciar todos los «Hecho»', async () => {
+        if (!window.confirm('¿Desmarcar todos los textos de Selectividad hechos para empezar un nuevo curso? No se borrará ningún texto ni etiqueta.')) return;
+        resetDone.disabled = true;
+        try {
+            await setPauDone(null, false);
+            M.toast('Estados de Selectividad reiniciados.');
+        } finally { resetDone.disabled = false; }
+    }, 'hbtn');
+    resetDone.disabled = !doneCount;
+    progressBar.append(progressSummary, resetDone);
+    examFields.append(progressBar);
     moreFilters.append(filterFields, el('h5', 'atl-facet-heading', 'Selectividad'), examFields);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
     filterChips.setAttribute('aria-label', 'Etiquetas de filtro activas');
@@ -181,6 +196,25 @@ export function modernizeBank(source) {
             tagAction.setAttribute('aria-label', 'Etiquetar «' + text.title + '»');
             const readAction = button('Leer', openReader, 'tbtn sm');
             readAction.setAttribute('aria-label', 'Leer «' + text.title + '»');
+            if (text.selectividad) {
+                const done = el('input');
+                done.type = 'checkbox';
+                done.checked = Boolean(text.selectividad.hecho);
+                done.setAttribute('aria-label', 'Hecho: ' + text.title);
+                const doneLabel = el('label', 'atl-pau-done');
+                doneLabel.append(done, el('span', '', 'Hecho'));
+                row.dataset.pauDone = String(done.checked);
+                done.addEventListener('change', async () => {
+                    const checked = done.checked;
+                    done.disabled = true;
+                    try { await setPauDone(text.id, checked); }
+                    catch (error) {
+                        done.checked = !checked;
+                        M.toast('No se pudo guardar el estado: ' + error.message, 5500);
+                    } finally { done.disabled = false; }
+                });
+                actions.append(doneLabel);
+            }
             actions.append(readAction, tagAction, selection);
             footer.append(actions);`);
   replace("                if (item) chips.append(el('span', 'grammar-chip', item.label));", `                if (item) {
@@ -215,6 +249,7 @@ export function modernizeBank(source) {
         activeSelect(filters.usage, 'Uso');
         activeSelect(filters.examYear, 'Selectividad');
         activeSelect(filters.examCommunity, 'Comunidad');
+        activeSelect(filters.examProgress, 'Estado PAU');
         if (criteria.reference.trim()) clearFacet('Referencia: ' + criteria.reference.trim(), filters.reference, '');
         if (criteria.exam) clearFacet('Solo Selectividad', filters.examLabel.querySelector('input'), '');
         if (criteria.excludeExam) clearFacet('Excluir Selectividad', filters.excludeExamLabel.querySelector('input'), '');
@@ -228,7 +263,7 @@ export function modernizeBank(source) {
         }
         if (criteria.mode !== 'all') clearFacet('Coincidencia: alguna etiqueta', filters.panel.querySelector('#atl-grammar-match'), 'all');
         const advancedCount = [criteria.work, criteria.reference.trim(), criteria.origin, criteria.usage,
-            criteria.examYear, criteria.examCommunity, criteria.includePending, criteria.mode !== 'all', ...criteria.tags].filter(Boolean).length;
+            criteria.examYear, criteria.examCommunity, criteria.examProgress, criteria.includePending, criteria.mode !== 'all', ...criteria.tags].filter(Boolean).length;
         filterCount.textContent = String(advancedCount);
         filterCount.dataset.empty = String(!advancedCount);
         filterToggle.dataset.hasFilters = String(advancedCount > 0);

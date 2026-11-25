@@ -43,13 +43,14 @@ function studyCourses(value, path) {
     return value;
 }
 function selectividad(value, path) {
-    const entry = record(value, path, [], ['year', 'community']);
+    const entry = record(value, path, [], ['year', 'community', 'hecho']);
+    if (entry.hecho !== undefined && typeof entry.hecho !== 'boolean') invalid(path + '.hecho', 'estado de Selectividad inválido');
     if (entry.year !== undefined && (!Number.isInteger(entry.year) || entry.year < 1900 || entry.year > 2099))
         invalid(path + '.year', 'año de Selectividad inválido');
     if (entry.community !== undefined && !communities.includes(entry.community))
         invalid(path + '.community', 'comunidad de Selectividad inválida');
     return { ...(entry.year !== undefined && { year: entry.year }),
-        ...(entry.community !== undefined && { community: entry.community }) };
+        ...(entry.community !== undefined && { community: entry.community }), ...(entry.hecho === true && { hecho: true }) };
 }
 function textDifficulty(value, path) {
     if (!Number.isInteger(value) || value < 1 || value > 5) return invalid(path, 'dificultad fuera de la escala 1–5');

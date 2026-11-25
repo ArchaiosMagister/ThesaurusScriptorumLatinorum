@@ -1887,7 +1887,7 @@ export function isPristineSeed(corpus) {
   for(const t of corpus.texts){
     const key=t.teacherDocx?.pauCv,entry=factory[key];
     if(!entry||t.id!==seedId(t.teacherDocx)||signature(t.latin)!==entry.latin||
-      t.createdAt!==seedTimestamp||t.updatedAt!==seedTimestamp||t.reviewed||t.difficulty!==undefined||
+      t.createdAt!==seedTimestamp||t.updatedAt!==seedTimestamp||t.reviewed||t.difficulty!==undefined||t.selectividad?.hecho===true||
       !sameIds(t.tagIds,version===1?[]:version===2?entry.v2Tags:entry.tags))return false;
     for(const id of t.tagIds){
       let current=id;
