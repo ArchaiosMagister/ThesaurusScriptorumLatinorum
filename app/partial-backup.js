@@ -26,22 +26,42 @@ export function subsetCorpus(corpus, texts, extraTags = []) {
   return validateCorpus({ ...emptyCorpus(), texts, tags: [...tags.values()] });
 }
 
+// An overlap must contain at least eight consecutive normalized words. The
+// index is only a candidate filter; the existing detector decides every match.
+function passageWindows(key) {
+  const words = key.split(' ');
+  const windows = new Set();
+  for (let i = 0; i + 8 <= words.length; i++) windows.add(words.slice(i, i + 8).join(' '));
+  return windows;
+}
+
 export function mergeBank(local, deposits, incoming, equal, catalogue = allGrammarTags(local)) {
   const added = [];
   const conflicts = [];
   const indexed = new Map(deposits.map(text => [text.id, text]));
-  const keys = new Set(deposits.map(text => normalizedLatinKey(text.latin)));
+  const keys = new Set();
+  const passages = new Map();
+  const register = (text, key) => {
+    keys.add(key);
+    for (const window of passageWindows(key)) {
+      const rows = passages.get(window);
+      if (rows) rows.push(text);
+      else passages.set(window, [text]);
+    }
+  };
+  for (const text of deposits) register(text, normalizedLatinKey(text.latin));
   for (const text of incoming.texts) {
     const old = indexed.get(text.id);
     if (old && equal(old, text)) continue;
     const key = normalizedLatinKey(text.latin);
     if (old || keys.has(key) ||
-        findPossibleDuplicates([...deposits, ...added], { latin: text.latin, ...text.source }).some(item => item.kind === 'overlap')) {
+        findPossibleDuplicates([...new Set([...passageWindows(key)].flatMap(window => passages.get(window) ?? []))],
+          { latin: text.latin, ...text.source }).some(item => item.kind === 'overlap')) {
       conflicts.push(text.title + ' · identificador o pasaje coincidente');
       continue;
     }
     added.push(text);
-    keys.add(key);
+    register(text, key);
     indexed.set(text.id, text);
   }
   const needed = subsetCorpus(incoming, added);

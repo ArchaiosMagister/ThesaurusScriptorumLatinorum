@@ -2099,6 +2099,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
   let remote;
   const recovery = new Map();
   let loseUploadResponse = false;
+  let rejectUpload = false;
   let uploads = 0;
   let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
@@ -2135,6 +2136,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
         const args = JSON.parse(headers['dropbox-api-arg']);
         if (args.path.startsWith('/thesaurus-recovery-')) {
           if (url.endsWith('/upload')) recovery.set(args.path, JSON.parse(body));
+          else if (!recovery.has(args.path)) return { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
           return { status: 200, headers: { 'Dropbox-API-Result': JSON.stringify({ rev: 'recovery' }) },
             json: recovery.get(args.path) };
         }
@@ -2144,6 +2146,10 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
             : { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
         }
         expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
+        if (rejectUpload) {
+          rejectUpload = false;
+          return { status: 409, json: { error: { '.tag': 'path', path: { reason: { '.tag': 'conflict' } } } } };
+        }
         uploads++;
         remote = JSON.parse(body);
         if (loseUploadResponse) {
@@ -2176,6 +2182,8 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
       await view.getByRole('button', { name: 'Vincular Dropbox' }).click();
       await expect(view.locator('#dropbox-status')).toContainText('Dropbox vinculado');
       await expect(view.locator('#dropbox-connection')).toHaveText('Vinculado');
+      // This scenario exercises the manual protocol deterministically.
+      await view.locator('#dropbox-auto').uncheck();
       await expect(view.getByLabel('Clave pública de la aplicación de Dropbox')).toBeHidden();
       await expect(view.locator('#dropbox-dialog').getByRole('button', { name: 'Sincronizar ahora' })).toHaveCSS('background-color', 'rgb(0, 97, 255)');
     }
@@ -2320,11 +2328,21 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     const previousRemote = remote;
     const beforeInterruptedUpload = uploads;
     await changeReview(page, 'gram.participio');
+    rejectUpload = true;
+    await sourceSync.click();
+    await expect(page.locator('#app-status')).toContainText('Otro dispositivo actualizó Dropbox');
+    expect(uploads).toBe(beforeInterruptedUpload);
+    expect(await page.evaluate(async () => {
+      const {readSyncState} = await import(new URL('./recovery-history.js', location.href));
+      return readSyncState('checkpoint-pending:claveprueba:cuenta-prueba');
+    })).toBeNull();
+    const archivedBeforeRetry = recovery.size;
     loseUploadResponse = true;
     await sourceSync.click();
     await expect(page.locator('#app-status')).toContainText('No se pudo conectar con Dropbox');
     expect(uploads).toBe(beforeInterruptedUpload + 1);
     expect([...recovery.values()]).toContainEqual(previousRemote);
+    expect(recovery.size).toBe(archivedBeforeRetry);
     await sourceSync.click();
     await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(uploads).toBe(beforeInterruptedUpload + 1);

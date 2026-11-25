@@ -1,3 +1,4 @@
+import { requiredPatch, requiredPatches, requiredReplaceAll } from './required-patch.mjs';
 import { integratePeriodValidation, integrateCurriculumComposer, integrateCurriculumExport } from './curriculum-integration.mjs';
 import { simplifyNotebookOrganization, simplifyNotebookHeader, stableNotebookOverview } from './notebook-organizer.mjs';
 import { modernizeBank } from './bank-interface.mjs';
@@ -56,6 +57,19 @@ async function scripts(directory) {
   return nested.flat();
 }
 
+// Explicit pipeline: the ordering is part of the integration contract.
+function composeNotebookSource(source) {
+  return [integrateNotebook, integrateNotebookWorkflow, integrateNotebookLibrary,
+    completeNotebookVocabulary, modernizeBank, simplifyNotebookHeader, stableNotebookOverview]
+    .reduce((code, transform) => transform(code), source);
+}
+
+function composeEditionSource(source) {
+  return [integrateEditionSourceRefresh, integrateMorphologyEdition, organizeNotebookEditor,
+    alignNotebookEditorMarkup, simplifyNotebookOrganization]
+    .reduce((code, transform) => transform(code), source);
+}
+
 export async function adaptModule(directory, module, pages, academicRevision) {
   const checks = module === 'cuaderno'
     ? [
@@ -109,15 +123,15 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     await writeFile(editionOperations, editionSource.replace('function reanchorGrammarSpan(', 'export function reanchorGrammarSpan('));
     const morphSelection = join(directory, 'core', 'morph-selection-collatinus.js');
     const originalMorphSelection = await readFile(morphSelection, 'utf8');
-    const updatedMorphSelection = originalMorphSelection
-      .replace('replaceWordId = null, verifiedChoices = [])', 'replaceWordId = null, verifiedChoices = [], allowDifferentCategory = false)')
-      .replace('const options = replace ? candidates.filter(c => c.key !== key(replace.surface)) : candidates;', `
+    const updatedMorphSelection = requiredPatches(originalMorphSelection, [
+      ['replaceWordId = null, verifiedChoices = [])', 'replaceWordId = null, verifiedChoices = [], allowDifferentCategory = false)'],
+      ['const options = replace ? candidates.filter(c => c.key !== key(replace.surface)) : candidates;', `
     const occupiedForms = new Set(others.map(word => key(word.surface)));
     const type = replace && category(replace);
     const options = replace ? candidates.filter(c => c.key !== key(replace.surface) && !occupiedForms.has(c.key) &&
-        (allowDifferentCategory || !type || c.category === type)) : candidates;`.trimStart())
-      .replace('words: [...existing, ...newWords]', 'words: removed ? question.words.flatMap(word => word.id === replaceWordId ? newWords : [word]) : [...existing, ...newWords]');
-    if (updatedMorphSelection === originalMorphSelection) throw Error('Revisar la sustitución morfológica en Cuadernos.');
+        (allowDifferentCategory || !type || c.category === type)) : candidates;`.trimStart()],
+      ['words: [...existing, ...newWords]', 'words: removed ? question.words.flatMap(word => word.id === replaceWordId ? newWords : [word]) : [...existing, ...newWords]']
+    ], 'Sustitución morfológica de Cuadernos');
     await writeFile(morphSelection, updatedMorphSelection);
     const academicEngine = join(directory, 'core', 'academic-engine.js');
     await writeFile(academicEngine, (await readFile(academicEngine, 'utf8')) + `
@@ -128,10 +142,11 @@ export function lexicalValuesForDocument(option) {
 }
 `);
     const documents = join(directory, 'export', 'notebook-documents.js');
-    await writeFile(documents, integrateCurriculumExport(await readFile(documents, 'utf8'))
-      .replace('import { displayedAcademicSlotValue }', 'import { lexicalValuesForDocument }')
-      .replace('option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {')
-      .replace('displayedAcademicSlotValue(option.kind, slot)', 'value'));
+    await writeFile(documents, requiredPatches(integrateCurriculumExport(await readFile(documents, 'utf8')), [
+      ['import { displayedAcademicSlotValue }', 'import { lexicalValuesForDocument }'],
+      ['option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {'],
+      ['displayedAcademicSlotValue(option.kind, slot)', 'value']
+    ], 'Exportación léxica de Cuadernos'));
     const file = join(directory, 'ui', 'examinator-notebook-app.js');
     const catalogue = await readFile(new URL('./bank-catalog.mjs', import.meta.url), 'utf8');
     const bankReview = await readFile(new URL('./bank-review.js', import.meta.url), 'utf8');
@@ -167,23 +182,26 @@ export function lexicalValuesForDocument(option) {
     let apply = await readFile(applyFile, 'utf8');
     const anchor = 'questions, vocabulary: vocab';
     if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
-    apply = apply.replace(anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})');
+    apply = requiredPatch(apply, anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})', 'Metadatos PAU CV');
     // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
-    apply = apply.replace("...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),");
+    apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
     await writeFile(applyFile, apply);
-    const integrated = stableNotebookOverview(simplifyNotebookHeader(modernizeBank(completeNotebookVocabulary(integrateNotebookLibrary(integrateNotebookWorkflow(integrateNotebook(await readFile(file, 'utf8'))))))))
-      .replaceAll('./pwa-controls.js', './atl-pwa.js').replace("./edition-app.js", "./atl-edition.js")
-      .replace("button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks");
+    const integrated = requiredPatches(requiredReplaceAll(
+      composeNotebookSource(await readFile(file, 'utf8')), './pwa-controls.js', './atl-pwa.js'), [
+      ['./edition-app.js', './atl-edition.js'],
+      ["button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks"]
+    ], 'Entradas de Cuadernos');
     await writeFile(join(directory, 'ui', 'atl-repertorios.js'), integrated);
-    const edition = simplifyNotebookOrganization(alignNotebookEditorMarkup(organizeNotebookEditor(integrateMorphologyEdition(integrateEditionSourceRefresh(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8'))))));
+    const edition = composeEditionSource(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8'));
     const readingCardFile = join(directory, 'ui', 'latin-reading-card.js');
     const readingCard = integrateLatinReadingCard(await readFile(readingCardFile, 'utf8'));
     await writeFile(readingCardFile, readingCard);
     const editionWithCards = integrateReadingCardPreview(integrateCurriculumComposer(edition));
-    await writeFile(join(directory, 'ui', 'atl-edition.js'), editionWithCards
-      .replace('import { displayedAcademicSlotValue }', 'import { displayedAcademicSlotValue, lexicalValuesForDocument }')
-      .replace('option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {')
-      .replace('displayedAcademicSlotValue(option.kind, slot)', 'value'));
+    await writeFile(join(directory, 'ui', 'atl-edition.js'), requiredPatches(editionWithCards, [
+      ['import { displayedAcademicSlotValue }', 'import { displayedAcademicSlotValue, lexicalValuesForDocument }'],
+      ['option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {'],
+      ['displayedAcademicSlotValue(option.kind, slot)', 'value']
+    ], 'Presentación léxica de Cuadernos'));
     const teacher = join(directory, 'core', 'academic-teacher-bank.js');
     const teacherSource = "import { withPersonalLists } from '../../shared/personal-academic.js';\n" +
       (await readFile(teacher, 'utf8')).replace('return importTeacherAcademicSources(academicTeacherSnapshotV1);',
@@ -203,10 +221,10 @@ export function lexicalValuesForDocument(option) {
     const repetitionStart = pauControls.indexOf('function inspectRepetitions(');
     const repetitionEnd = pauControls.indexOf('function repetitionNotice(', repetitionStart);
     if (repetitionStart < 0 || repetitionEnd < 0) throw Error('Revisar repeticiones PAU CV.');
-    const repetition = pauControls.slice(repetitionStart, repetitionEnd)
-      .replace("if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;")
-      .replace('for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;");
-    if (repetition === pauControls.slice(repetitionStart, repetitionEnd)) throw Error('Revisar filtros de repeticiones PAU CV.');
+    const repetition = requiredPatches(pauControls.slice(repetitionStart, repetitionEnd), [
+      ["if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;"],
+      ['for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;"]
+    ], 'Filtros de repeticiones PAU CV');
     pauControls = pauControls.slice(0, repetitionStart) + repetition + pauControls.slice(repetitionEnd);
     const sourceUi = "        const picked = preverbBasesFor(o, p);";
     const sourceStart = pauControls.indexOf('function setSourcesUi(');
@@ -469,19 +487,22 @@ export function lexicalValuesForDocument(option) {
     const stylesheet = page === notebookPage || module === 'examinator' ? 'atl-style.css' : 'integracion.css';
     let html = embeddedHtml(await readFile(path, 'utf8')).replace('./integracion.css', './' + stylesheet);
     if (module === 'examinator') {
-      html = html.replace('js/exam.js', 'js/atl-exam-editor.js').replace('js/start.js', 'js/atl-exam-start.js')
-        .replace('<script src="js/pwa.js"></script>', '')
-        .replace('<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>')
-        .replace('<script src="lib/jszip.min.js"></script>', '<script src="js/atl-word-loader.js"></script>')
-        .replace('js/lists.js', 'js/atl-exam-lists.js')
-        .replace('js/library.js', 'js/atl-exam-library.js')
-        .replace('js/lexico-filtros.js', 'js/atl-exam-filters.js')
-        .replace('js/propose.js', 'js/atl-exam-propose.js')
-        .replace('<script src="js/bancos-datos.js"></script>', '<script src="../academic/teacher-bank.js"></script>\n<script src="js/bancos-datos.js"></script>')
-        .replace('</body>', '<script type="module" src="./atl-exam-bank.js"></script>\n</body>');
+      html = requiredPatches(html, [
+        ['js/exam.js', 'js/atl-exam-editor.js'],
+        ['js/start.js', 'js/atl-exam-start.js'],
+        ['<script src="js/pwa.js"></script>', ''],
+        ['<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>'],
+        ['<script src="lib/jszip.min.js"></script>', '<script src="js/atl-word-loader.js"></script>'],
+        ['js/lists.js', 'js/atl-exam-lists.js'],
+        ['js/library.js', 'js/atl-exam-library.js'],
+        ['js/lexico-filtros.js', 'js/atl-exam-filters.js'],
+        ['js/propose.js', 'js/atl-exam-propose.js'],
+        ['<script src="js/bancos-datos.js"></script>', '<script src="../academic/teacher-bank.js"></script>\n<script src="js/bancos-datos.js"></script>'],
+        ['</body>', '<script type="module" src="./atl-exam-bank.js"></script>\n</body>']
+      ], 'HTML de Examinator');
     }
     if (page === notebookPage) {
-      html = html.replace('../ui/examinator-notebook-app.js', '../ui/atl-repertorios.js');
+      html = requiredPatch(html, '../ui/examinator-notebook-app.js', '../ui/atl-repertorios.js', 'HTML de Cuadernos');
       await writeFile(join(directory, page, 'atl-index.html'), html);
       await writeFile(join(directory, page, 'atl-cuadernos.html'), html);
       await writeFile(join(directory, page, 'atl-repertorios.html'), html);
@@ -528,7 +549,6 @@ export function lexicalValuesForDocument(option) {
         ? updates.replace(/^(const VERSION = .+?)';$/m, "$1-" + examRevision + "';")
         : updates;
     const marker = module === 'examinator' ? 'const PRECACHE = [' : 'const FILES = [';
-    if (!worker.includes(marker)) throw new Error('Revisar recursos sin conexión en ' + workerPath);
     const additions = ['./' + stylesheet, ...(module === 'examinator'
       ? [...examAssets, './js/atl-exam-editor.js', './js/atl-exam-start.js', './js/atl-exam-lists.js',
         './js/atl-exam-library.js', './js/atl-exam-filters.js', './js/atl-exam-propose.js',
@@ -541,6 +561,6 @@ export function lexicalValuesForDocument(option) {
         '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js', '../ui/atl-bank-curriculum.js', '../ui/atl-bank-planner.js',
         '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../../shared/text-usage.js');
     }
-    await writeFile(workerPath, worker.replace(marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ','));
+    await writeFile(workerPath, requiredPatch(worker, marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ',', workerPath));
   }
 }

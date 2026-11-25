@@ -110,3 +110,33 @@ test('la compilación autónoma detecta una modificación de sus motores incorpo
     await rm(root, { recursive: true, force: true });
   }
 });
+
+import { requiredPatch, requiredPatches, requiredReplaceAll } from '../scripts/required-patch.mjs';
+import { publishBuild } from '../scripts/publish-build.mjs';
+
+test('los parches obligatorios rechazan anclajes ausentes o ambiguos y conservan la semántica de replace', () => {
+  assert.equal(requiredPatch('abc', 'b', '$&!'), 'ab!c');
+  assert.equal(requiredPatch('a1', /(\d)/, '$1$1'), 'a11');
+  assert.throws(() => requiredPatch('abc', 'z', '', 'exportación'), /0.*exportación/);
+  assert.throws(() => requiredPatch('abb', 'b', '', 'léxico'), /2.*léxico/);
+  assert.throws(() => requiredPatch('a1a2', /a\d/, ''), /ambiguo/);
+  assert.equal(requiredReplaceAll('aba', 'a', 'x'), 'xbx');
+  assert.throws(() => requiredReplaceAll('aba', 'z', 'x'), /ausente/);
+  assert.throws(() => requiredPatches('abc', [['a','x'], ['z','y']], 'cadena'), /paso 2/);
+  assert.equal(requiredPatches('abc', [['a','x'], ['x','y']], 'cadena'), 'ybc');
+});
+
+test('la sustitución de dist conserva el resultado anterior si falta la compilación nueva', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'tsl-build-publish-'));
+  const output = join(root, 'dist'), staging = join(root, 'dist-build');
+  try {
+    await mkdir(output);
+    await writeFile(join(output, 'index.html'), 'anterior');
+    await assert.rejects(() => publishBuild(staging, output));
+    assert.equal(await readFile(join(output, 'index.html'), 'utf8'), 'anterior');
+    await mkdir(staging);
+    await writeFile(join(staging, 'index.html'), 'nueva');
+    await publishBuild(staging, output);
+    assert.equal(await readFile(join(output, 'index.html'), 'utf8'), 'nueva');
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
