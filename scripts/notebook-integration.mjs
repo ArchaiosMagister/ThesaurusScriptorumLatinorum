@@ -705,10 +705,12 @@ window.addEventListener('atl-view', () => {
                 render();
                 return id;
             }),
-            modal: (...args) => M.modal(...args)
+            modal: (...args) => M.modal(...args),
+            returnFocus: () => plannerButton.focus({ preventScroll: true })
         });
     }
-    bankActions.append(button('Crear cuaderno por trimestres', () => openPlanner(), 'hbtn'));
+    const plannerButton = button('Crear cuaderno por trimestres', openPlanner, 'hbtn');
+    bankActions.append(plannerButton);
     const loadAnalysis = async () => {
         const saved = await bankAnalysisIndex(corpus.texts, catalogue, isRejectedProposal);
         if (!bank.isConnected) return;

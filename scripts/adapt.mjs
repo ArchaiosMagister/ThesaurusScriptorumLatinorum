@@ -76,7 +76,8 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     const adapted = adaptStorage(original, module);
     if (adapted !== original) await writeFile(file, adapted);
   }
-  const commonUI = await readFile(new URL('./common-ui.css', import.meta.url), 'utf8');
+  const commonUI = await readFile(new URL('../app/ui-tokens.css', import.meta.url), 'utf8') + '\n' +
+    await readFile(new URL('./common-ui.css', import.meta.url), 'utf8');
   let notebookRevision;
   let examRevision;
   const examAssets = [
@@ -237,7 +238,8 @@ export function lexicalValuesForDocument(option) {
     const classic = join(directory, 'ui', 'library-app.js');
     await writeFile(classic, (await readFile(classic, 'utf8'))
       .replace("navigator.serviceWorker.register('./service-worker.js')", 'navigator.serviceWorker.ready'));
-    notebookRevision = createHash('sha256').update(integrated).update(notebookStyles)
+    notebookRevision = createHash('sha256').update(integrated).update(notebookStyles).update(commonUI)
+      .update(await readFile(new URL('./bank-planner.js', import.meta.url))).update(await readFile(new URL('./bank-curriculum.js', import.meta.url)))
       .update(library).update(utilities).update(pwa).update(catalogue).update(bankReview).update(bankVocabulary).update(edition)
       .update(academicRevision).update(usage).update(personalAcademic).update(academicControls).update(teacherSource)
        .update(readingCard).update(editionWithCards).update(pauSeedData).update(pauSeedScript)
@@ -459,7 +461,7 @@ export function lexicalValuesForDocument(option) {
     await writeFile(join(directory, 'js', 'atl-exam-propose.js'), proposals);
     examRevision = createHash('sha256').update(editor).update(morphology).update(bankScript).update(start).update(usage).update(lists).update(library)
       .update(filters).update(proposals)
-      .update(JSON.stringify(examAssets)).update(academicRevision)
+      .update(JSON.stringify(examAssets)).update(academicRevision).update(commonUI)
       .digest('hex').slice(0, 12);
   }
   for (const page of pages) {

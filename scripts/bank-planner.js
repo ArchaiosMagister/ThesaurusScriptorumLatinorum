@@ -1,5 +1,5 @@
 import { localTemplates, templatePrefix, validateTemplate } from '../../../curriculum-templates.js';
-import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum } from './atl-bank-curriculum.js';
+import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum, plannerTagVisible } from './atl-bank-curriculum.js';
 import { findPossibleDuplicates, normalizedLatinKey } from '../core/text-duplicates.js';
 import { assessBankDifficulty, difficultyText } from './atl-bank-difficulty.js';
 
@@ -101,7 +101,7 @@ export function plannerTagGroup(tag, catalogue) {
     catalogue.find(parent => parent.id === tag.parentId)?.label ?? tag.category ?? 'Otras etiquetas';
 }
 
-export function showBankPlanner({ read, match, create, modal }) {
+export function showBankPlanner({ read, match, create, modal, returnFocus }) {
   const panel = node('div');
   panel.className = 'atl-bank-planner';
   const title = node('input');
@@ -124,17 +124,16 @@ export function showBankPlanner({ read, match, create, modal }) {
   const status = node('p');
   status.setAttribute('role', 'status');
   const preview = node('div');
+  preview.className = 'atl-planner-preview-list';
   const partial = node('input');
   partial.type = 'checkbox';
   const partialField = field('Aceptar advertencias y crear el cuaderno con esta selección', partial);
   const createButton = action('Crear cuaderno', confirm, true);
   const refresh = action('Actualizar previsualización', generate);
-  const actions = node('div');
-  actions.className = 'atl-bank-action-group';
-  actions.append(refresh, createButton);
   const termControls = [];
-  let catalogue = [], plan, sequence = 0, saving = false, hasWarnings = false;
-  const tagLabels = ids => ids.map(id => catalogue.find(tag => tag.id === id)?.label ?? id).join(', ');
+  let sourceCatalogue, catalogue = [], families = [], plan, sequence = 0, saving = false, hasWarnings = false;
+  const tagLabels = ids => ids.map(id => id === infinitiveId ? 'Cualquier infinitivo' :
+    id === 'gram.part.forma' ? 'Cualquier participio' : catalogue.find(tag => tag.id === id)?.label ?? id).join(', ');
   const settings = node('div');
   settings.className = 'atl-planner-counts';
   settings.append(field('Progresión gramatical', progression), field('Selectividad', exam));
@@ -219,10 +218,16 @@ export function showBankPlanner({ read, match, create, modal }) {
   templates.append(node('summary', 'Plantillas de programación'), field('Plantilla', templateSelect),
     field('Nombre de la plantilla', templateName), templateActions, templateStatus);
   try { listTemplates(); } catch (error) { templateStatus.textContent = error.message; }
-  panel.append(field('Título del nuevo cuaderno', title), templates, settings, courses,
+  const filters = node('details');
+  filters.append(node('summary', 'Filtros de selección'), settings, courses,
     field('Usar los resultados filtrados del Banco', filtered));
+  const terms = node('section');
+  terms.className = 'atl-planner-terms';
+  terms.append(node('h3', 'Distribución por trimestres'));
+  panel.append(field('Título del nuevo cuaderno', title), templates, filters, terms);
   periods.slice(0, 3).forEach(([, label], index) => {
     const section = node('details');
+    section.className = 'atl-planner-term';
     section.open = index === 0;
     const count = countInput(15);
     const review = countInput(index === 0 ? 2 : index === 1 ? 2 : 1);
@@ -247,10 +252,13 @@ export function showBankPlanner({ read, match, create, modal }) {
     selectedDetails.append(selectedSummary, list);
     // Keep the individual quick-add control and the ordered selection for existing workflows.
     selectedDetails.open = true;
-    picker.append(node('p', 'Marca una familia completa o despliega sus etiquetas para seleccionar solo algunas.'), search, groups);
+    picker.append(search, groups);
     const setTags = (ids, checked) => {
-      if (checked) for (const id of ids) { if (!tags.includes(id)) tags.push(id); }
-      else for (let i = tags.length - 1; i >= 0; i--) { if (ids.includes(tags[i])) tags.splice(i, 1); }
+      if (checked) {
+        tags.push(...ids.filter(id => !tags.includes(id)));
+      } else {
+        tags.splice(0, tags.length, ...tags.filter(id => !ids.includes(id)));
+      }
       render();
       void generate();
     };
@@ -258,17 +266,9 @@ export function showBankPlanner({ read, match, create, modal }) {
     function renderGroups() {
       const expanded = new Set([...groups.querySelectorAll('details[open]')].map(row => row.dataset.family));
       const focused = document.activeElement?.dataset?.pickerKey;
-      const families = new Map();
-      for (const tag of catalogue) {
-        const family = plannerTagGroup(tag, catalogue);
-        if (!families.has(family)) families.set(family, []);
-        families.get(family).push(tag);
-      }
-      const preferred = ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva', 'Pronombres', 'Participios', 'Infinitivos', 'Verbos deponentes'];
-      const rank = name => preferred.includes(name) ? preferred.indexOf(name) : preferred.length;
       groups.replaceChildren();
       const query = normalize(search.value.trim());
-      for (const [family, members] of [...families].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b, 'es'))) {
+      for (const [family, members] of families) {
         const visible = members.filter(tag => !query || normalize(family + ' ' + tag.label).includes(query));
         if (!visible.length) continue;
         const ids = members.map(tag => tag.id);
@@ -304,8 +304,9 @@ export function showBankPlanner({ read, match, create, modal }) {
         row.append(head, detail);
         groups.append(row);
       }
+      if (focused) [...groups.querySelectorAll('input')]
+        .find(input => input.dataset.pickerKey === focused)?.focus({ preventScroll: true });
       if (!groups.childElementCount) groups.append(node('p', query ? 'No hay etiquetas que coincidan.' : 'Cargando etiquetas…'));
-      if (focused) [...groups.querySelectorAll('input')].find(input => input.dataset.pickerKey === focused)?.focus();
     }
     search.addEventListener('input', renderGroups);
     const counts = node('div');
@@ -314,30 +315,28 @@ export function showBankPlanner({ read, match, create, modal }) {
     const render = () => {
       const selected = select.value;
       select.replaceChildren(new Option('Añadir etiqueta…', ''));
-      const categories = new Map();
-      for (const tag of catalogue) {
-        if (tags.includes(tag.id)) continue;
-        const name = tag.kind === 'custom' ? 'Etiquetas propias' :
-          catalogue.find(parent => parent.id === tag.parentId)?.label ?? tag.category ?? 'Gramática';
-        if (!categories.has(name)) {
-          const group = node('optgroup');
-          group.label = name;
-          categories.set(name, group);
-          select.append(group);
-        }
-        categories.get(name).append(new Option(tag.label, tag.id));
+      for (const [family, members] of families) {
+        const available = members.filter(tag => !tags.includes(tag.id));
+        if (!available.length) continue;
+        const group = node('optgroup');
+        group.label = family;
+        for (const tag of available) group.append(new Option(tag.label, tag.id));
+        select.append(group);
       }
       if ([...select.options].some(option => option.value === selected)) select.value = selected;
       list.replaceChildren();
       tags.forEach((id, position) => {
-        const row = node('li', tagLabels([id]));
+        const row = node('li');
+        row.append(node('span', tagLabels([id])));
         const controls = node('span');
         controls.className = 'atl-bank-action-group';
         for (const [name, direction] of [['Subir', -1], ['Bajar', 1]]) {
           const control = action(name, () => {
             move(tags, position, position + direction);
             render();
-            list.children[position + direction].querySelector('button').focus();
+            const buttons = list.children[position + direction].querySelectorAll('button');
+            const same = buttons[direction < 0 ? 0 : 1];
+            (same.disabled ? buttons[direction < 0 ? 1 : 0] : same).focus();
             void generate();
           });
           control.setAttribute('aria-label', name + ' ' + tagLabels([id]));
@@ -356,6 +355,7 @@ export function showBankPlanner({ read, match, create, modal }) {
         list.append(row);
       });
       selectedSummary.textContent = 'Orden de las etiquetas seleccionadas (' + tags.length + ')';
+      selectedDetails.hidden = !tags.length;
       renderGroups();
       summary.textContent = label + (tags.length ? ' · ' + tags.length + (tags.length === 1 ? ' etiqueta' : ' etiquetas') : '');
     };
@@ -365,16 +365,28 @@ export function showBankPlanner({ read, match, create, modal }) {
       render();
       void generate();
     });
-    count.addEventListener('change', generate);
-    review.addEventListener('change', generate);
+    for (const input of [count, review]) {
+      input.addEventListener('input', () => {
+        sequence++;
+        plan = undefined;
+        updateButton();
+      });
+      input.addEventListener('change', generate);
+    }
     termControls.push({ count, review, tags, render });
-    section.append(summary, counts, picker, field('Añadir una etiqueta', select), selectedDetails);
-    panel.append(section);
+    section.append(summary, counts, selectedDetails, field('Añadir una etiqueta', select), picker);
+    terms.append(section);
   });
-  panel.append(status, preview, partialField, actions);
+  const results = node('section');
+  results.className = 'atl-planner-preview';
+  results.append(node('h3', 'Previsualización'), status, preview, partialField);
+  panel.append(results);
 
   function updateButton() {
     partialField.hidden = !hasWarnings;
+    createButton.textContent = saving ? 'Creando cuaderno…' : 'Crear cuaderno';
+    refresh.disabled = saving;
+    partial.disabled = saving;
     createButton.disabled = saving || !title.value.trim() || !plan?.groups.some(group => group.entries.length) ||
       (hasWarnings && !partial.checked);
   }
@@ -421,6 +433,7 @@ export function showBankPlanner({ read, match, create, modal }) {
       if (group.entries.length < group.size) details.append(node('p', 'Faltan textos compatibles.'));
       if (info.uncovered.length || info.later.length || group.entries.length < group.size) {
         hasWarnings = true;
+        details.classList.add('atl-planner-warning');
         details.open = true;
       }
       details.append(list);
@@ -447,6 +460,7 @@ export function showBankPlanner({ read, match, create, modal }) {
   }
 
   async function generate() {
+    if (saving) return;
     const ticket = ++sequence;
     const open = new Set([...preview.querySelectorAll('details[open]')].map(section => section.dataset.period));
     const settings = readSettings();
@@ -464,8 +478,21 @@ export function showBankPlanner({ read, match, create, modal }) {
     try {
       const result = await read(settings.filtered);
       if (ticket !== sequence || !panel.isConnected) return;
-      catalogue = result.catalogue.filter(tag => !isRetiredTag(tag.id));
-      termControls.forEach(control => control.render());
+      if (result.catalogue !== sourceCatalogue) {
+        sourceCatalogue = result.catalogue;
+        catalogue = sourceCatalogue.filter(tag => !isRetiredTag(tag.id));
+        const byFamily = new Map();
+        for (const tag of catalogue.filter(({ id }) => plannerTagVisible(id))) {
+          const family = plannerTagGroup(tag, catalogue);
+          if (!byFamily.has(family)) byFamily.set(family, []);
+          byFamily.get(family).push(tag);
+        }
+        const preferred = ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva',
+          'Pronombres', 'Participios', 'Infinitivos', 'Verbos deponentes'];
+        const rank = name => preferred.includes(name) ? preferred.indexOf(name) : preferred.length;
+        families = [...byFamily].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b, 'es'));
+        termControls.forEach(control => control.render());
+      }
       const requested = [...new Set(settings.terms.flatMap(term => term.tags))];
       const unavailable = requested.filter(id => !catalogue.some(tag => tag.id === id));
       const aliases = new Map();
@@ -496,7 +523,8 @@ export function showBankPlanner({ read, match, create, modal }) {
         }
         return keys.get(b.id);
       });
-      status.textContent = 'La ausencia de una etiqueta no descarta la construcción.' +
+      const count = plan.groups.reduce((sum, group) => sum + group.entries.length, 0);
+      status.textContent = count + ' de ' + total + ' textos previstos.' +
         (result.pendingAnalyses ? ' Hay fichas pendientes de análisis.' : '') +
         (unavailable.length ? ' Etiquetas que ya no están en el catálogo: ' + unavailable.join(', ') + '.' : '');
       renderPreview(open);
@@ -512,6 +540,7 @@ export function showBankPlanner({ read, match, create, modal }) {
     updateButton();
     try {
       const id = await create(title.value.trim(), entries);
+      saving = false;
       dialog.close();
       await window.parent.atlOpenRelated({ type: 'edición', id });
     } catch (error) {
@@ -524,6 +553,13 @@ export function showBankPlanner({ read, match, create, modal }) {
   for (const input of [progression, exam, filtered, ...exclusions]) input.addEventListener('change', generate);
   partial.addEventListener('change', updateButton);
   title.addEventListener('input', updateButton);
-  const dialog = modal('Crear cuaderno por trimestres', panel, [{ label: 'Cerrar' }]);
+  const dialog = modal('Crear cuaderno por trimestres', panel, [{ label: 'Cerrar' }], {
+    width: 'min(54rem, 96vw)', beforeClose: () => !saving, onClose: returnFocus
+  });
+  dialog.el.classList.add('atl-planner-modal');
+  dialog.el.setAttribute('role', 'dialog');
+  dialog.el.setAttribute('aria-labelledby', 'atl-planner-title');
+  dialog.el.querySelector('.mh h2').id = 'atl-planner-title';
+  dialog.el.querySelector('.mf').append(refresh, createButton);
   void generate();
 }

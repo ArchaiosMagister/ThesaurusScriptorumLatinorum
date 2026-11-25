@@ -55,6 +55,11 @@ const infinitiveForm = /^gram\.inf\.(presente|perfecto|futuro)(?:\.(activo|pasiv
 const infinitiveVoice = /^gram\.inf\.(activo|pasivo|deponente)$/u;
 export const isInfinitiveTag = id => id === infinitiveId || infinitiveForm.test(id) || infinitiveVoice.test(id);
 export const bankTagAssignable = id => !isGrammarGrouping(id) && (bankTagVisible(id) || Boolean(finiteForm.test(id))) && (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
+// El planificador ofrece las formas completas. Las etiquetas generales de
+// infinitivo conservan sus IDs y su alcance en las plantillas ya guardadas.
+const plannerHeadings = new Set(['gram.oracion', 'gram.formas', 'gram.pronombres', 'gram.funciones', 'gram.verbo', 'gram.part.forma']);
+export const plannerTagVisible = id => !isRetiredTag(id) && !plannerHeadings.has(id) &&
+  (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
 export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' &&
   (tag.id === infinitiveId || (bankTagVisible(tag.id) && !isInfinitiveTag(tag.id))));
 

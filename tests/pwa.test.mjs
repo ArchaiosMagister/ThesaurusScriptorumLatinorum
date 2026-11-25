@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { buildRootWorker } from '../scripts/root-pwa.mjs';
 
-const shell = ['index.html', 'manifest.webmanifest', 'navigation.js', 'styles.css', 'pwa.js',
+const shell = ['index.html', 'manifest.webmanifest', 'navigation.js', 'styles.css', 'ui-tokens.css', 'pwa.js',
   'backup-ui.js', 'recovery-history.js', 'backup-store.js', 'dropbox-sync.js', 'dropbox-plan.js', 'curriculum-templates.js', 'partial-backup.js'];
 
 function memoryCaches(network) {

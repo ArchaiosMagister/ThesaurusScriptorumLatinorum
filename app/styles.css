@@ -1,8 +1,9 @@
 @import url("./modulos/examinator/fonts.css");
+@import url("./ui-tokens.css");
 
 :root {
   color-scheme: light;
-  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--atl-ui-font);
   --paper: #f4f1ea;
   --panel: #fbfaf6;
   --ink: #26292b;
@@ -36,7 +37,7 @@ h1 {
   background: var(--banner);
   color: white;
   text-align: center;
-  font: 400 clamp(1.25rem, 3vw, 1.65rem)/1.1 'Gentium Book Plus', 'Palatino Linotype', 'Book Antiqua', serif;
+  font: 400 clamp(1.25rem, 3vw, 1.65rem)/1.1 var(--atl-display-font);
   font-variant: small-caps;
   letter-spacing: .03em;
 }
@@ -59,7 +60,7 @@ nav {
 nav button, .app-actions button {
   appearance: none;
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--atl-control-radius);
   padding: .25rem .5rem;
   min-height: 34px;
   background: var(--panel);
@@ -86,7 +87,7 @@ nav button {
   padding-inline: .35rem;
   min-height: 34px;
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--atl-control-radius);
   background: var(--panel);
   color: var(--ink);
   font-size: .8125rem;
@@ -111,7 +112,7 @@ nav button {
   margin-top: .25rem;
   padding: .5rem .75rem;
   border: 1px solid var(--rule);
-  border-radius: 6px;
+  border-radius: var(--atl-control-radius);
   background: var(--panel);
 }
 @media (max-width: 339px) {
@@ -144,7 +145,7 @@ nav button[aria-selected="true"] {
   box-shadow: inset 0 -3px rgb(255 255 255 / 32%);
   font-weight: 700;
 }
-nav button:focus-visible, .app-actions button:focus-visible, .app-theme select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+nav button:focus-visible, .app-actions button:focus-visible, .app-theme select:focus-visible { outline: var(--atl-focus); outline-offset: 2px; }
 main, section { height: 100%; min-height: 0; }
 main { background: var(--paper); }
 iframe { display: block; width: 100%; height: 100%; border: 0; }
@@ -181,8 +182,8 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
   width: min(32rem, calc(100% - 2rem));
   max-height: calc(100dvh - 2rem);
   padding: clamp(1rem, 4vw, 1.75rem);
-  border-radius: 1rem;
-  box-shadow: 0 16px 48px rgb(0 0 0 / 25%);
+  border-radius: var(--atl-dialog-radius);
+  box-shadow: var(--atl-dialog-shadow);
 }
 .dropbox-heading {
   display: flex;
@@ -214,7 +215,7 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
   width: 100%;
   padding: .6rem .7rem;
   border: 1px solid var(--rule);
-  border-radius: .5rem;
+  border-radius: var(--atl-control-radius);
   background: var(--paper);
   color: var(--ink);
   font: inherit;
@@ -234,9 +235,9 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 }
 .dropbox-primary, .dropbox-secondary {
   border: 1px solid transparent;
-  border-radius: .5rem;
+  border-radius: var(--atl-control-radius);
   padding: .55rem .85rem;
-  min-height: 38px;
+  min-height: var(--atl-control-height);
   font: inherit;
   font-size: .875rem;
   font-weight: 650;
@@ -249,7 +250,7 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 .dropbox-secondary:hover:not(:disabled) { background: var(--paper); border-color: var(--rule); }
 .dropbox-secondary:disabled { opacity: .6; cursor: wait; }
 :is(.dropbox-primary, .dropbox-secondary, #dropbox-app-key):focus-visible {
-  outline: 2px solid var(--accent);
+  outline: var(--atl-focus);
   outline-offset: 2px;
 }
 #dropbox-status:not(:empty) {
@@ -281,15 +282,15 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 }
 
 /* Same typography, spacing and control hierarchy as the integrated editors. */
-#backup-dialog { width: min(40rem, calc(100% - 1rem)); max-height: calc(100dvh - 1.5rem); padding: clamp(.85rem, 3vw, 1.5rem); border-radius: 14px; box-shadow: 0 16px 48px rgb(0 0 0 / 25%); }
-#backup-title, #dropbox-title { color: var(--accent); font-family: 'Gentium Book Plus', 'Palatino Linotype', serif; font-size: 1.55rem; line-height: 1.2; }
+#backup-dialog { width: min(40rem, calc(100% - 1rem)); max-height: calc(100dvh - 1.5rem); padding: clamp(.85rem, 3vw, 1.5rem); border-radius: var(--atl-dialog-radius); box-shadow: var(--atl-dialog-shadow); }
+#backup-title, #dropbox-title { color: var(--accent); font-family: var(--atl-display-font); font-size: 1.55rem; line-height: 1.2; }
 #backup-title { margin: 0; }
 .backup-intro { line-height: 1.5; margin: .65rem 0 1rem; }
-.backup-group { display: grid; gap: .55rem; padding: .85rem; margin-top: .65rem; border: 1px solid var(--rule); border-radius: 10px; background: var(--paper); }
+.backup-group { display: grid; gap: .55rem; padding: .85rem; margin-top: .65rem; border: 1px solid var(--rule); border-radius: var(--atl-panel-radius); background: var(--paper); }
 .backup-group h3 { font-size: .95rem; margin: 0; color: var(--accent); }
 .backup-group p { font-size: .875rem; line-height: 1.45; margin: 0; }
 #backup-dialog .backup-group label { margin: 0; font-size: .875rem; font-weight: 650; }
-.backup-primary, .backup-secondary, #backup-file::file-selector-button { border: 1px solid var(--rule); border-radius: 8px; padding: .55rem .8rem; min-height: 40px; font: inherit; font-size: .875rem; font-weight: 650; cursor: pointer; }
+.backup-primary, .backup-secondary, #backup-file::file-selector-button { border: 1px solid var(--rule); border-radius: var(--atl-control-radius); padding: .55rem .8rem; min-height: var(--atl-control-height); font: inherit; font-size: .875rem; font-weight: 650; cursor: pointer; }
 .backup-primary { background: #45604e; border-color: #45604e; color: #fff; justify-self: start; }
 .backup-primary:disabled { opacity: .5; cursor: default; }
 .backup-secondary, #backup-file::file-selector-button { background: var(--panel); color: var(--ink); }
@@ -298,7 +299,7 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 #backup-preview:empty { display: none; }
 #backup-preview:not(:empty) { padding: .65rem; background: var(--panel); border: 1px solid var(--rule); border-radius: 7px; }
 #backup-dialog .backup-footer { display: flex; justify-content: flex-end; border-top: 1px solid var(--rule); padding-top: .75rem; }
-#backup-dialog :is(button,input):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#backup-dialog :is(button,input):focus-visible { outline: var(--atl-focus); outline-offset: 2px; }
 
 #backup-export-items label,
 #backup-import-items label,
@@ -315,13 +316,13 @@ iframe { display: block; width: 100%; height: 100%; border: 0; }
 }
 
 #backup-dialog select {
-  min-height: 40px;
+  min-height: var(--atl-control-height);
   max-width: 100%;
   padding: .35rem .55rem;
   border: 1px solid var(--rule);
-  border-radius: 8px;
+  border-radius: var(--atl-control-radius);
   background: var(--panel);
   color: var(--ink);
   font: inherit;
 }
-#backup-dialog select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#backup-dialog select:focus-visible { outline: var(--atl-focus); outline-offset: 2px; }

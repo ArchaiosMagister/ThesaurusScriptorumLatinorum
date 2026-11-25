@@ -1,0 +1,10 @@
+:root {
+  --atl-ui-font: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --atl-display-font: 'Gentium Book Plus', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+  --atl-control-radius: 8px;
+  --atl-panel-radius: 10px;
+  --atl-dialog-radius: 14px;
+  --atl-control-height: 40px;
+  --atl-focus: 2px solid var(--accent);
+  --atl-dialog-shadow: 0 16px 48px rgb(0 0 0 / 24%);
+}
