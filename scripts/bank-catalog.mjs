@@ -67,6 +67,10 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const years = [...new Set(texts.map(text => text.selectividad?.year).filter(Boolean))].sort((a, b) => b - a);
   examYear.append(new Option('Todos los años', ''), ...years.map(year => new Option(String(year), String(year))));
   examYear.value = years.includes(Number(state.examYear)) ? state.examYear : '';
+  const examProgress = element('select');
+  examProgress.setAttribute('aria-label', 'Filtrar por estado de Selectividad');
+  examProgress.append(new Option('Todos los estados', ''), new Option('Hechos', 'done'), new Option('Por hacer', 'todo'));
+  examProgress.value = state.examProgress ?? '';
   const examCommunity = communitySelect('Todas las comunidades');
   examCommunity.setAttribute('aria-label', 'Filtrar por comunidad autónoma');
   examCommunity.value = state.examCommunity;
@@ -74,13 +78,13 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     exam.checked = mode === 'only';
     excludeExam.checked = mode === 'exclude';
     // Year and community refer exclusively to PAU; excluding PAU clears them.
-    if (excludeExam.checked) examYear.value = examCommunity.value = '';
+    if (excludeExam.checked) examYear.value = examCommunity.value = examProgress.value = '';
     onChange();
   }
-  if (excludeExam.checked) examYear.value = examCommunity.value = '';
+  if (excludeExam.checked) examYear.value = examCommunity.value = examProgress.value = '';
   exam.addEventListener('change', () => setExamMode(exam.checked ? 'only' : 'all'));
   excludeExam.addEventListener('change', () => setExamMode(excludeExam.checked ? 'exclude' : 'all'));
-  for (const control of [examYear, examCommunity]) control.addEventListener('change', () => {
+  for (const control of [examYear, examCommunity, examProgress]) control.addEventListener('change', () => {
     if (control.value) excludeExam.checked = false;
     onChange();
   });
@@ -101,19 +105,30 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const list = element('div', { className: 'atl-tag-groups' });
   list.setAttribute('aria-label', 'Etiquetas gramaticales');
   const selections = new Map();
+  const groups = new Map();
+  const groupIds = [...GRAMMAR_GROUP_IDS, 'custom'];
+  for (const id of groupIds) {
+    const section = element('section', { className: 'atl-filter-family' });
+    const heading = element('h6', { textContent: catalogue.find(tag => tag.id === id)?.label ?? 'Otras etiquetas y personalizadas' });
+    const options = element('div', { className: 'atl-filter-family-options' });
+    section.append(heading, options);
+    groups.set(id, { section, options });
+    list.append(section);
+  }
   const compareLabels = (a, b) => compare(a.label, b.label);
   for (const tag of catalogue.filter(tag => bankTagVisible(tag.id) && !isInfinitiveTag(tag.id)).sort(compareLabels)) {
     const check = element('input', { type: 'checkbox', value: tag.id, checked: state.tags.includes(tag.id) });
     const row = element('label', { className: 'atl-tag-option' });
-    row.append(check, tag.label);
+    row.append(check, element('span', { textContent: tag.label }));
     const parent = catalogue.find(item => item.id === tag.parentId);
     selections.set(tag.id, { check, row, terms: foldLatin([tag.label, parent?.label ?? ''].join(' ')) });
     check.addEventListener('change', onChange);
-    list.append(row);
+    const group = GRAMMAR_GROUP_IDS.find(id => matchesGrammarTag(tag.id, id, catalogue)) ?? 'custom';
+    groups.get(group).options.append(row);
   }
   const infinitive = element('input', { type: 'checkbox', checked: state.tags.includes(infinitiveId) });
   const infinitiveLabel = element('label', { className: 'atl-tag-option' });
-  infinitiveLabel.append(infinitive, ' Infinitivo');
+  infinitiveLabel.append(infinitive, element('span', { textContent: 'Infinitivo' }));
   const facet = (label, values, value) => {
     const control = element('select');
     control.setAttribute('aria-label', label);
@@ -142,17 +157,19 @@ export function createBankFilters(texts, catalogue, state, onChange) {
       row.hidden = !terms.includes(query);
       found ||= !row.hidden;
     }
+    for (const { section, options } of groups.values()) section.hidden = !options.querySelector('.atl-tag-option:not([hidden])');
     noTags.hidden = found;
   };
   tagQuery.addEventListener('input', findTags);
   const toolbar = element('div', { className: 'atl-bank-tag-controls' });
   toolbar.append(tagQuery, modeLabel, pendingLabel);
   panel.append(toolbar, infGroup, list);
+  findTags();
   function read() {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
     if (infinitive.checked) tags.push(infinitiveId);
     return { infTime: infTime.value, infVoice: infVoice.value, work: work.value, reference: reference.value, origin: origin.value,
-      course: course.value, usage: usage.value, exam: exam.checked, excludeExam: excludeExam.checked, examYear: examYear.value, examCommunity: examCommunity.value, mode: mode.value, tags, includePending: pending.checked };
+      course: course.value, usage: usage.value, exam: exam.checked, excludeExam: excludeExam.checked, examYear: examYear.value, examCommunity: examCommunity.value, examProgress: examProgress.value, mode: mode.value, tags, includePending: pending.checked };
   }
   function reset() {
     work.value = '';
@@ -164,6 +181,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     excludeExam.checked = false;
     examYear.value = '';
     examCommunity.value = '';
+    examProgress.value = '';
     mode.value = 'all';
     pending.checked = false;
     infinitive.checked = false;
@@ -197,7 +215,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const voice = second || (infinitiveVoices.includes(first) ? first : '');
     return infinitive.checked && infTime.value === tense && infVoice.value === voice;
   }
-  return { panel, work, reference, origin, course, usage, examLabel, excludeExamLabel, examYear, examCommunity, setExamMode, read, reset, toggleTag, isActive };
+  return { panel, work, reference, origin, course, usage, examLabel, excludeExamLabel, examYear, examCommunity, examProgress, setExamMode, read, reset, toggleTag, isActive };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {

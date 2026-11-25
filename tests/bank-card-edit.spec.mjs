@@ -151,3 +151,65 @@ test('el campo latino de la ficha crece y encoge según el texto y el ancho disp
   await expect.poll(async () => (await dimensions()).height).toBeGreaterThan(wideHeight);
   await expect.poll(async () => (await dimensions()).overflow).toBeLessThanOrEqual(2);
 });
+
+
+test('Selectividad: marcar hecho, filtrar, conservar al recargar y reiniciar todos', async ({ page }) => {
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  for (const [title, latin, pau] of [['A PAU','Roma magna est.',true], ['B PAU','Gallia clara est.',true], ['C ordinario','Italia pulchra est.',false]]) {
+    await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+    await modal.getByRole('textbox', { name: 'Título', exact: true }).fill(title);
+    await modal.getByRole('textbox', { name: 'Texto latino', exact: true }).fill(latin);
+    await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+    if (pau) {
+      await bank.locator('.atl-bank-card').filter({ hasText: title }).click();
+      await modal.getByRole('checkbox', { name: 'Selectividad', exact: true }).check();
+      await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+    }
+  }
+  const first = bank.getByRole('checkbox', { name: 'Hecho: A PAU' });
+  const second = bank.getByRole('checkbox', { name: 'Hecho: B PAU' });
+  await expect(bank.getByRole('checkbox', { name: 'Hecho: C ordinario' })).toHaveCount(0);
+  await first.check();
+  await expect(first).toBeChecked();
+  await expect(first).toBeEnabled();
+  await second.check();
+  await expect(second).toBeChecked();
+  await expect(second).toBeEnabled();
+  await page.reload();
+  await expect(first).toBeChecked();
+  await expect(second).toBeChecked();
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  const progress = bank.getByRole('combobox', { name: 'Filtrar por estado de Selectividad' });
+  await progress.selectOption('done');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
+  const reset = bank.getByRole('button', { name: 'Reiniciar todos los «Hecho»' });
+  page.once('dialog', d => d.dismiss());
+  await reset.click();
+  await expect(first).toBeChecked();
+  page.once('dialog', d => d.accept());
+  await reset.click();
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(0);
+  await progress.selectOption('todo');
+  await expect(bank.locator('.atl-bank-card')).toHaveCount(2);
+  await expect(first).not.toBeChecked();
+  await expect(second).not.toBeChecked();
+});
+
+test('los filtros gramaticales se ajustan a la pantalla estrecha sin desbordar', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const bank = page.frameLocator('#panel-cuaderno iframe').getByRole('region', { name: 'Banco de textos propios' });
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  const panel = bank.locator('.atl-grammar-filters');
+  await expect(panel).toBeVisible();
+  expect(await panel.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(2);
+  const groups = panel.locator('.atl-filter-family');
+  await expect(groups.first()).toBeVisible();
+  await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('ablativo absoluto');
+  await expect(panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true })).toBeVisible();
+  await panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true }).check();
+  await expect(panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true })).toBeChecked();
+});

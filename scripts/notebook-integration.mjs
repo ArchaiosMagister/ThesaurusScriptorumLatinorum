@@ -147,7 +147,7 @@ function renderHome() {`);
   replace('    const bank = el(\'section\', \'cuaderno-home-bank\');', `    return home;
 }
 
-const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', course: '', usage: '', exam: false, excludeExam: false, examYear: '', examCommunity: '', mode: 'all', tags: [], includePending: false };
+const bankState = { query: '', author: 'all', sort: 'author-asc', difficulty: '', work: '', reference: '', origin: '', course: '', usage: '', exam: false, excludeExam: false, examYear: '', examCommunity: '', examProgress: '', mode: 'all', tags: [], includePending: false };
 let refreshBankProposals = () => {};
 let bankAutomaticTags = () => [];
 let refreshBankUses = () => {};
@@ -201,6 +201,32 @@ function updateUseBadges(view) {
     }
 }
 
+// Progress is metadata, not a new revision of the Latin text.
+async function setPauDone(id, done) {
+    await writeSource(async () => {
+        const historical = await repo.load();
+        const editorial = await workspace.loadCorpus();
+        const update = current => {
+            let changed = false;
+            const texts = current.texts.map(text => {
+                if (!text.selectividad || (id !== null && text.id !== id) ||
+                    Boolean(text.selectividad.hecho) === done) return text;
+                changed = true;
+                const selectividad = { ...text.selectividad };
+                if (done) selectividad.hecho = true;
+                else delete selectividad.hecho;
+                return { ...text, selectividad };
+            });
+            return changed ? validateCorpus({ ...current, texts }) : current;
+        };
+        const nextHistorical = update(historical.corpus);
+        const nextEditorial = update(editorial.corpus);
+        if (nextHistorical !== historical.corpus) await repo.save(nextHistorical, historical.revision);
+        if (nextEditorial !== editorial.corpus) await workspace.saveCorpus(nextEditorial, editorial.revision);
+    });
+    await reload();
+    render();
+}
 function renderBank() {
     const bank = el('section', 'cuaderno-home-bank');`);
   replace('    home.append(bank);\n    return home;\n}', `    return bank;
@@ -663,11 +689,12 @@ window.addEventListener('atl-view', () => {
   replace('    bank.append(bankToolbar);', '    bank.append(bankToolbar, filters.panel);');
   replace("        viewSelect.value = 'all';\n        populate();", "        difficultySelect.value = '';\n        filters.reset();\n        populate();");
   replace('    function currentResults() {', `    function currentResults() {
-        const { work, reference, origin, course, usage, mode, tags, exam, excludeExam, examYear, examCommunity, infTime, infVoice } = filters.read();
+        const { work, reference, origin, course, usage, mode, tags, exam, excludeExam, examYear, examCommunity, examProgress, infTime, infVoice } = filters.read();
         const referenceNeedle = foldLatin(reference);`);
   replace("            const author = t.source.author?.trim() ?? '';", `            const author = t.source.author?.trim() ?? '';
             if (difficultySelect.value && String(difficultyFor(t).level) !== difficultySelect.value) return false;
             if (!matchesSelectividad(t, examYear, examCommunity, exam, excludeExam)) return false;
+            if (examProgress && (!t.selectividad || Boolean(t.selectividad.hecho) !== (examProgress === 'done'))) return false;
             if (work && t.source.work?.trim() !== work) return false;
             if (course === 'unassigned' ? (t.courseIds ?? []).length > 0 :
                 course && !(t.courseIds ?? []).includes(course)) return false;
@@ -697,7 +724,7 @@ window.addEventListener('atl-view', () => {
             return authorOrder || workOrder || referenceOrder || titleOrder || compare(a.id, b.id);`);
   replace("        const isFiltered = Boolean(search.value.trim()) || authorSelect.value !== 'all';", `        const criteria = filters.read();
         Object.assign(bankState, criteria, { query: search.value, author: authorSelect.value, sort: sortSelect.value, difficulty: difficultySelect.value });
-        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage || criteria.course || criteria.exam || criteria.excludeExam || criteria.examYear || criteria.examCommunity ||
+        const isFiltered = Boolean(search.value.trim() || difficultySelect.value || criteria.work || criteria.reference.trim() || criteria.origin || criteria.usage || criteria.course || criteria.exam || criteria.excludeExam || criteria.examYear || criteria.examCommunity || criteria.examProgress ||
             criteria.tags.length || criteria.includePending) || authorSelect.value !== 'all';
         if (criteria.usage && !usesReady) {
             bankResultCount.textContent = usesUnavailable ? 'No se pudo consultar el historial de usos.' : 'Consultando los usos registrados…';
