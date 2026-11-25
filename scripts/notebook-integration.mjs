@@ -459,7 +459,20 @@ window.addEventListener('atl-view', () => {
         confirmed.append(chip);
     }
     if (!confirmed.childElementCount) confirmed.append(el('span', 'small muted', 'Sin etiquetas confirmadas'));
-    grammarSection.append(el('h3', '', 'Etiquetas gramaticales'), confirmed);
+    const grammarHeading = el('div', 'atl-edit-section-heading atl-edit-grammar-heading');
+    const editTags = button('Editar etiquetas', () => {
+        if (save.disabled) return;
+        if (dirty()) {
+            if (!window.confirm('Hay cambios sin guardar. ¿Guardarlos antes de editar las etiquetas?')) return;
+            tagDestination = source.id;
+            save.click();
+        } else {
+            tagDestination = source.id;
+            close();
+        }
+    }, 'hbtn atl-edit-tags');
+    grammarHeading.append(el('h3', '', 'Etiquetas gramaticales'), editTags);
+    grammarSection.append(grammarHeading, confirmed);
     const automatic = el('div', 'grammar-chips atl-reader-tags atl-reader-automatic');
     for (const id of new Set(bankAutomaticTags(source.id))) {
         const item = grammar.find(tag => tag.id === id);
@@ -514,7 +527,7 @@ window.addEventListener('atl-view', () => {
     const position = el('span', 'atl-edit-position');
     const ordered = navigation?.results() ?? [source];
     const index = ordered.findIndex(item => item.id === source.id);
-    let destination = null, bypassClose = false;
+    let destination = null, tagDestination = null, bypassClose = false;
     const move = offset => {
         if (save.disabled || index < 0) return;
         const target = ordered[index + offset];
@@ -537,6 +550,22 @@ window.addEventListener('atl-view', () => {
     const guard = () => bypassClose || (!save.disabled && (!dirty() || window.confirm('¿Cerrar la ficha sin guardar los cambios?')));
     const afterClose = () => {
         latinSizeObserver.disconnect();
+        const tagId = tagDestination;
+        tagDestination = null;
+        if (tagId) {
+            queueMicrotask(() => {
+                const current = corpus.texts.find(item => item.id === tagId);
+                if (!current) { onClose?.(); M.toast('El texto ya no está en el banco.'); return; }
+                tagBankText(current, returnedId => {
+                    queueMicrotask(() => {
+                        const updated = corpus.texts.find(item => item.id === (returnedId ?? tagId));
+                        if (updated) openBankTextEditor(updated, onClose, navigation);
+                        else onClose?.();
+                    });
+                }, navigation);
+            });
+            return;
+        }
         const id = destination;
         destination = null;
         if (!id) { onClose?.(); return; }
@@ -583,10 +612,14 @@ window.addEventListener('atl-view', () => {
     throw Error('Revisar inicio del guardado del editor.');
   editorSave = editorSave.replace(existingTry, '').replace(saveBegin,
     saveBegin + '\n        if (save.disabled) return;\n        save.disabled = true;\n        form.inert = true;\n        try {');
+  // If saving a protected text creates a copy, edit tags on the actual saved copy.
+  const tagSaveAnchor = '            await reload();';
+  if (editorSave.split(tagSaveAnchor).length !== 2) throw Error('Revisar destino del editor de etiquetas.');
+  editorSave = editorSave.replace(tagSaveAnchor, tagSaveAnchor + '\n            if (tagDestination) tagDestination = id;');
   const saveFinally = /finally\s*\{\s*save\.disabled = false;\s*\}/gu;
   if ([...editorSave.matchAll(saveFinally)].length !== 1) throw Error('Revisar fin de guardado de ficha.');
   source = source.slice(0, editorSaveStart) + editorSave.replace(saveFinally,
-    'finally { save.disabled = false; form.inert = false; destination = null; }') + source.slice(editorSaveEnd);
+    'finally { save.disabled = false; form.inert = false; destination = null; tagDestination = null; }') + source.slice(editorSaveEnd);
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");
