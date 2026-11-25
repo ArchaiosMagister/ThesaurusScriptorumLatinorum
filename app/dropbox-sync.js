@@ -1,10 +1,11 @@
 import { applySyncData, protectLocal, isEmptySyncEditor, maxBackupSize, readSyncData, syncFingerprint, syncTargetRows, validateSyncData } from './backup-store.js';
-import { fingerprintEditorParts, isRecoverableSync, mergeEditorParts, mergeUsages, selectEditor, SyncConflict } from './dropbox-plan.js';
+import { fingerprintEditorParts, isRecoverableSync, mergeEditorParts, mergeUsages, selectEditor, SyncConflict, unchangedCheckpoint, withWorkspaceLock } from './dropbox-plan.js';
 
 const key = 'atl-v1:dropbox';
 const file = '/thesaurus-sync-v1.json';
 const redirect = new URL('./', location.href).href;
 const format = 'thesaurus-dropbox-v1';
+class RevisionConflict extends Error {}
 const tokenEndpoint = 'https://api.dropboxapi.com/oauth2/token';
 
 function randomCode() {
@@ -132,9 +133,33 @@ async function content(expected, route, args, body, retry = true) {
     const detail = await response.json().catch(() => null);
     if (route === 'download' && detail?.error?.path?.['.tag'] === 'not_found') return null;
     if (route === 'upload' && detail?.error?.path?.reason?.['.tag'] === 'conflict')
-      throw new Error('Otro dispositivo actualizó Dropbox durante la sincronización. Vuelve a intentarlo.');
+      throw new RevisionConflict('Otro dispositivo actualizó Dropbox durante la sincronización. Vuelve a intentarlo.');
   }
   throw new Error('Dropbox rechazó la operación (' + response.status + '). Comprueba los permisos y el espacio de la cuenta.');
+}
+
+// No se necesita ampliar los permisos de una conexión existente: si no dispone
+// de files.metadata.read, se mantiene el camino completo de descarga y verificación.
+let metadataUnavailableFor;
+async function remoteRevision(expected, retry = true) {
+  if (metadataUnavailableFor === expected.id) return undefined;
+  const session = await activeSession(expected);
+  const response = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
+    method: 'POST', signal: AbortSignal.timeout(30000),
+    headers: { Authorization: 'Bearer ' + session.token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: file })
+  });
+  if (response.status === 401 && retry) {
+    remove(sessionStorage, 'session');
+    return remoteRevision(expected, false);
+  }
+  if (response.status === 403 || response.status === 400) {
+    metadataUnavailableFor = expected.id;
+    return undefined;
+  }
+  if (!response.ok) return undefined;
+  const metadata = await response.json();
+  return metadata['.tag'] === 'file' && typeof metadata.rev === 'string' ? metadata.rev : undefined;
 }
 
 async function readRemote(session, path = file) {
@@ -159,28 +184,47 @@ async function publish(session, data, revision, hash) {
 }
 
 async function archiveRemote(session, remote) {
-  const path = '/thesaurus-recovery-' + crypto.randomUUID() + '.json';
-  await content(session, 'upload', {
-    path, mode: 'add', autorename: false, strict_conflict: true, mute: true
-  }, new Blob([JSON.stringify(remote.envelope)]));
-  const copy = await readRemote(session, path);
+  // Deduplicación por contenido: dos dispositivos o un reintento no generan
+  // varias copias de la misma versión. Nunca se sobrescribe una recuperación.
+  const path = '/thesaurus-recovery-' + remote.hash + '.json';
+  let copy = await readRemote(session, path);
+  if (!copy) {
+    try {
+      await content(session, 'upload', {
+        path, mode: 'add', autorename: false, strict_conflict: true, mute: true
+      }, new Blob([JSON.stringify(remote.envelope)]));
+    } catch (error) {
+      if (!(error instanceof RevisionConflict)) throw error;
+    }
+    copy = await readRemote(session, path);
+  }
   if (copy?.hash !== remote.hash) throw Error('No se pudo verificar la copia anterior de Dropbox.');
 }
 
-async function synchronize(session, prepareReload, report, resolution, restoreFromCloud = false, lockLocal = () => {}) {
+async function synchronize(session, prepareReload, report, resolution, restoreFromCloud = false, lockLocal = () => {}, automatic = false) {
   const scope = session.appKey + ':' + session.account;
   const checkpointKey = 'checkpoint:' + scope;
   const pendingKey = 'checkpoint-pending:' + scope;
   const checkpoint = read(localStorage, checkpointKey);
-  const remote = await readRemote(session);
-  if (!remote && checkpoint) throw new Error('El archivo de sincronización ya no está en Dropbox. Recupéralo desde Dropbox antes de continuar.');
+  let pending = read(localStorage, pendingKey);
   await prepareReload();
   const local = await readSyncData();
+  const localHash = await syncFingerprint(local.data);
+  if (automatic && checkpoint?.revision && !pending && !restoreFromCloud && !resolution) {
+    const revision = await remoteRevision(session);
+    if (unchangedCheckpoint(checkpoint, localHash, revision, pending)) {
+      report('Sincronización con Dropbox completada.', false);
+      return;
+    }
+  }
+  const remote = await readRemote(session);
+  if (!remote && checkpoint) throw new Error('El archivo de sincronización ya no está en Dropbox. Recupéralo desde Dropbox antes de continuar.');
   const names = Object.keys(local.rows);
   const fingerprints = async rows => Object.fromEntries(await Promise.all(
     names.map(async name => [name, await syncFingerprint(rows[name])])));
-  async function saveCheckpoint(data) {
+  async function saveCheckpoint(data, revision) {
     save(localStorage, checkpointKey, {
+      revision, hash: await syncFingerprint(data),
       editor: await syncFingerprint(data.editor),
       editorParts: await fingerprintEditorParts(data.editor, syncFingerprint),
       bankReviews: await Promise.all((data.bankReviews ?? []).map(async ([id, row]) => [id, await syncFingerprint(row)])),
@@ -209,7 +253,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       before, after: target
     });
     await applySyncData(remote.data, current.rows);
-    await saveCheckpoint(remote.data);
+    await saveCheckpoint(remote.data, remote.revision);
     remove(localStorage, pendingKey);
     report('Sincronización con Dropbox completada.');
     save(sessionStorage, 'completed', true);
@@ -218,7 +262,6 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   }
   // Recupera una aplicación interrumpida entre transacciones de IndexedDB.
   // Rechaza cambios ajenos y no sobrescribe una revisión nueva de Dropbox.
-  let pending = read(localStorage, pendingKey);
   if (pending && Object.hasOwn(pending, 'revision') && pending.hash !== remote?.hash &&
       pending.revision === (remote?.revision ?? null) && pending.previousHash === (remote?.hash ?? null)) {
     // Dropbox conserva el estado anterior. Volvemos a comparar antes de publicar.
@@ -245,7 +288,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       await prepareReload();
       await applySyncData(remote.data, local.rows);
     }
-    await saveCheckpoint(remote.data);
+    await saveCheckpoint(remote.data, remote.revision);
     remove(localStorage, pendingKey);
     report('Sincronización con Dropbox completada.');
     if (pending.applyLocal !== false) {
@@ -254,7 +297,11 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
     }
     return;
   }
-  const localHash = await syncFingerprint(local.data);
+  if (!resolution && remote?.hash === localHash && await syncFingerprint(remote.data) === localHash) {
+    if (!unchangedCheckpoint(checkpoint, localHash, remote.revision, pending)) await saveCheckpoint(local.data, remote.revision);
+    report('Sincronización con Dropbox completada.', false);
+    return;
+  }
   const comparison = { connection: session.id, localHash, revision: remote?.revision, remoteHash: remote?.hash };
   const sameComparison = resolution && Object.keys(comparison).every(name => comparison[name] === resolution[name]);
   const choices = sameComparison ? resolution.choices : {};
@@ -318,6 +365,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   const remoteChanges = hash !== remote?.hash;
   if (localChanges) await protectLocal('Antes de sincronizar con Dropbox');
   if (remoteChanges && remote) await archiveRemote(session, remote);
+  let verifiedRevision = remote?.revision;
   if (localChanges || remoteChanges) {
     if (localChanges) lockLocal();
     await prepareReload();
@@ -330,13 +378,24 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
       hash, applyLocal: localChanges, revision: remote?.revision ?? null, previousHash: remote?.hash ?? null,
       before, after: await fingerprints(after)
     });
-    if (remoteChanges) await publish(session, data, remote?.revision, hash);
+    if (remoteChanges) {
+      try { await publish(session, data, remote?.revision, hash); }
+      catch (error) {
+        // Un 409 explícito demuestra que nuestra escritura no se aplicó.
+        // Los fallos de red ambiguos conservan el diario de recuperación.
+        if (error instanceof RevisionConflict) remove(localStorage, pendingKey);
+        throw error;
+      }
+    }
     const saved = await readRemote(session);
-    if (saved?.hash !== hash)
+    if (saved?.hash !== hash) {
+      if (!remoteChanges) remove(localStorage, pendingKey);
       throw Error('Dropbox cambió antes de verificar la sincronización. Se ha conservado la copia local.');
+    }
+    verifiedRevision = saved.revision;
     if (localChanges) await applySyncData(data, local.rows);
   }
-  await saveCheckpoint(data);
+  await saveCheckpoint(data, verifiedRevision);
   remove(localStorage, pendingKey);
   report('Sincronización con Dropbox completada.', localChanges || remoteChanges);
   if (localChanges) {
@@ -479,7 +538,7 @@ export async function setupDropbox(prepareReload, setStatus) {
     paint();
     try { await work(); }
     catch (error) {
-      if (error instanceof AutoDeferred) { scheduleAuto(); return; }
+      if (error instanceof AutoDeferred || (automatic && error instanceof RevisionConflict)) { scheduleAuto(); return; }
       if (!automatic || lastAutoError !== error.message) report(error.message);
       if (automatic) lastAutoError = error.message;
       if (error instanceof SyncConflict && error.comparison) {
@@ -552,9 +611,8 @@ export async function setupDropbox(prepareReload, setStatus) {
         }
       };
       const work = () => synchronize(current, prepare, notify, resolution, restoreFromCloud,
-        automatic ? lockForAutomaticApply : undefined);
-      if (navigator.locks) await navigator.locks.request(key, work);
-      else await work();
+        automatic ? lockForAutomaticApply : undefined, automatic);
+      await withWorkspaceLock(work);
     }, automatic).finally(() => { if (!automatic) scheduleAuto(autoInterval); });
   }
   syncButton.addEventListener('click', () => syncNow());
