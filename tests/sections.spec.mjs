@@ -415,7 +415,13 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const create = dialog.getByRole('button', { name: 'Crear cuaderno', exact: true });
   await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
   const firstPicker = panel.getByRole('group', { name: 'Selección de etiquetas para primer trimestre' });
-  for (const family of ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva', 'Pronombres']) {
+  const finiteFamilies = [
+    'Infectum · indicativo activo', 'Infectum · indicativo pasivo',
+    'Infectum · subjuntivo activo', 'Infectum · subjuntivo pasivo',
+    'Perfectum · indicativo activo', 'Perfectum · indicativo pasivo',
+    'Perfectum · subjuntivo activo', 'Perfectum · subjuntivo pasivo'
+  ];
+  for (const family of [...finiteFamilies, 'Pronombres']) {
     await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia ' + family + ' para primer trimestre' })).toBeVisible();
   }
   const pronouns = firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Pronombres para primer trimestre' });
@@ -430,9 +436,35 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   await pronouns.uncheck();
   await expect(pronouns).not.toBeChecked();
   await firstPicker.getByRole('searchbox').fill('perfectum');
-  await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Perfectum · pasiva para primer trimestre' })).toBeVisible();
+  for (const family of finiteFamilies.slice(4)) {
+    await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia ' + family + ' para primer trimestre' })).toBeVisible();
+  }
+  await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Infectum · indicativo activo para primer trimestre' })).toHaveCount(0);
   await expect(pronouns).toHaveCount(0);
   const first = panel.getByRole('combobox', { name: 'Etiqueta para primer trimestre' });
+  // Verify the group membership and bulk selection against the real catalogue.
+  const finiteOptions = await first.locator('optgroup').evaluateAll(groups => Object.fromEntries(
+    groups.map(group => [group.label, Array.from(group.querySelectorAll('option'), option => option.value)])));
+  for (const family of finiteFamilies) {
+    const [theme, mood, voice] = family.replace(' · ', ' ').split(' ');
+    const ids = finiteOptions[family];
+    expect(ids.length).toBeGreaterThan(0);
+    for (const id of ids) {
+      expect(id.endsWith('.' + mood + '.' + voice)).toBe(true);
+      const tense = id.slice('gram.verbo.'.length, -('.' + mood + '.' + voice).length);
+      expect(theme === 'Infectum'
+        ? /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense)
+        : /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense)).toBe(true);
+    }
+  }
+  const perfectPassive = firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Perfectum · subjuntivo pasivo para primer trimestre' });
+  const perfectIndicativePassive = firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Perfectum · indicativo pasivo para primer trimestre' });
+  await perfectPassive.check();
+  await expect(perfectPassive).toBeChecked();
+  await expect(perfectIndicativePassive).not.toBeChecked();
+  await expect(panel.locator('.atl-planner-selected:visible li')).toHaveCount(finiteOptions['Perfectum · subjuntivo pasivo'].length);
+  await perfectPassive.uncheck();
+  await expect(panel.locator('.atl-planner-selected:visible li')).toHaveCount(0);
   const infinitiveOptions = first.locator('optgroup[label="Infinitivos"] option');
   await expect(infinitiveOptions).toHaveCount(9);
   await expect(first.locator('option[value="gram.part.forma"], option[value="gram.inf.forma"]')).toHaveCount(0);
