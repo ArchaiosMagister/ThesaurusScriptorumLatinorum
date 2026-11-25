@@ -717,12 +717,36 @@ window.addEventListener('atl-view', () => {
         analysisIndex.set(id, result);
         pendingIndex.set(id, result.pending);
     };
+    // Do not replace interactive cards between pointerdown and click. A
+    // background Collatinus result must not consume a teacher's tap/click.
     let refreshTimer;
+    const activePointers = new Set();
+    let releaseListeners;
+    bank.addEventListener('pointerdown', event => {
+        activePointers.add(event.pointerId);
+        if (releaseListeners) return;
+        releaseListeners = new AbortController();
+        const options = { capture: true, signal: releaseListeners.signal };
+        const clear = () => {
+            activePointers.clear();
+            releaseListeners?.abort();
+            releaseListeners = undefined;
+        };
+        const endPointer = event => {
+            activePointers.delete(event.pointerId);
+            if (!activePointers.size) clear();
+        };
+        document.addEventListener('pointerup', endPointer, options);
+        document.addEventListener('pointercancel', endPointer, options);
+        window.addEventListener('blur', clear, options);
+    }, true);
     const refreshResults = () => {
         if (refreshTimer) return;
         refreshTimer = setTimeout(() => {
             refreshTimer = undefined;
-            if (bank.isConnected) populate();
+            if (!bank.isConnected) return;
+            if (activePointers.size) { refreshResults(); return; }
+            populate();
         }, 100);
     };
     function openPlanner() {
@@ -764,7 +788,7 @@ window.addEventListener('atl-view', () => {
         analysisIndex.clear();
         pendingIndex.clear();
         for (const [id, result] of saved) setAnalysis(id, result);
-        populate();
+        if (activePointers.size) refreshResults(); else populate();
         scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current), (text, review) => {
             if (!bank.isConnected) return;
             const live = currentBankText(text.id);
