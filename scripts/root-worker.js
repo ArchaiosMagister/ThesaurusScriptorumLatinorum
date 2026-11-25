@@ -107,7 +107,20 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   if (event.data === 'activate') {
-    event.waitUntil(self.skipWaiting());
+    event.waitUntil((async () => {
+      // An explicit activation changes the controller of all clients. Do not
+      // switch another editing window to a new runtime behind its back.
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const otherWindow = windows.some(client => client.id !== event.source?.id &&
+        client.url.startsWith(self.registration.scope) && client.frameType !== 'nested' &&
+        client.frameType !== 'none');
+      if (otherWindow) {
+        event.ports[0]?.postMessage({ ok: false, message: 'Cierra las otras ventanas de Thesaurus antes de actualizar.' });
+        return;
+      }
+      await self.skipWaiting();
+      event.ports[0]?.postMessage({ ok: true });
+    })().catch(error => event.ports[0]?.postMessage({ ok: false, message: error.message })));
     return;
   }
   if (event.data === 'prepare-offline') {
