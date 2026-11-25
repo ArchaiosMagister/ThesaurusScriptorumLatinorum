@@ -1341,3 +1341,57 @@
   #editor .atl-bank .atl-filter-family-options .atl-tag-option { min-height: 44px; font-size: .79rem; }
   #editor .atl-bank .atl-bank-card-actions { margin-inline: 0; }
 }
+
+/* Banco: filtros avanzados y familias gramaticales, con el mismo lenguaje visual
+   en los tres temas y sin recuadros de desplazamiento anidados. */
+@media screen {
+  #editor .atl-bank .atl-bank-search-panel { gap: .75rem; border-radius: 14px; }
+  #editor .atl-bank .atl-filter-tools { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  #editor .atl-bank .atl-bank-more { display: grid; gap: .7rem; padding: .65rem; border-radius: 10px; background: var(--paper); }
+  #editor .atl-bank .atl-bank-more[hidden] { display: none; }
+  #editor .atl-bank .atl-advanced-top { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .6rem; align-items: start; }
+  #editor .atl-bank .atl-advanced-section, #editor .atl-bank .atl-advanced-grammar { min-width: 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel, var(--paper-2)); overflow: hidden; }
+  #editor .atl-bank .atl-advanced-summary, #editor .atl-bank .atl-filter-family-heading { display: flex; align-items: center; gap: .55rem; min-height: 44px; padding: .6rem .7rem; cursor: pointer; list-style: none; font: 650 .88rem/1.3 var(--ui-font); color: var(--ink); }
+  #editor .atl-bank :is(.atl-advanced-summary,.atl-filter-family-heading)::-webkit-details-marker { display: none; }
+  #editor .atl-bank :is(.atl-advanced-summary,.atl-filter-family-heading)::before { content: ''; width: .42rem; height: .42rem; flex: none; border-inline-end: 2px solid currentColor; border-block-end: 2px solid currentColor; transform: rotate(-45deg); margin-inline-end: .15rem; }
+  #editor .atl-bank details[open] > :is(.atl-advanced-summary,.atl-filter-family-heading)::before { transform: rotate(45deg); }
+  #editor .atl-bank details[open] > :is(.atl-advanced-summary,.atl-filter-family-heading) { border-bottom: 1px solid var(--rule); }
+  #editor .atl-bank :is(.atl-advanced-summary,.atl-filter-family-heading):focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+  #editor .atl-bank .atl-advanced-section > .atl-bank-more-fields { padding: .65rem; gap: .55rem; grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #editor .atl-bank .atl-advanced-grammar { padding: .65rem; }
+  #editor .atl-bank .atl-advanced-grammar > .atl-facet-heading { font-size: 1rem; margin: 0 0 .55rem; color: var(--ink); }
+  #editor .atl-bank .atl-advanced-grammar .atl-grammar-filters { border: 0; padding: 0; margin: 0; }
+  #editor .atl-bank .atl-bank-tag-controls { grid-template-columns: minmax(0,1.3fr) minmax(0,1fr); align-items: end; gap: .55rem; }
+  #editor .atl-bank .atl-bank-tag-controls :is(input[type="search"],select) { box-sizing: border-box; width: 100%; min-height: 44px; font-size: 16px; padding: .45rem .55rem; border: 1px solid var(--rule); border-radius: 8px; background: var(--paper); color: var(--ink); }
+  #editor .atl-bank .atl-grammar-match-field { display: grid; gap: .2rem; font-size: .8rem; }
+  #editor .atl-bank .atl-bank-tag-controls > .atl-tag-option { grid-column: 1/-1; display: grid; grid-template-columns: 18px minmax(0,1fr); padding: .35rem 0; }
+  #editor .atl-bank .atl-bank-tag-controls > .atl-tag-option input { width: 17px; height: 17px; }
+  #editor .atl-bank .atl-grammar-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin-block: .6rem; }
+  #editor .atl-bank .atl-grammar-count { margin-inline-end: auto; font-size: .8rem; font-weight: 650; color: var(--ink-2); }
+  #editor .atl-bank .atl-grammar-actions button { font-size: .79rem; min-height: 40px; padding: .35rem .6rem; white-space: normal; }
+  #editor .atl-bank .atl-filter-family { background: var(--paper); padding: 0; border-radius: 8px; overflow: hidden; }
+  #editor .atl-bank .atl-filter-family-heading > span:first-child { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  #editor .atl-bank .atl-family-count { flex: none; font-size: .75rem; font-variant-numeric: tabular-nums; color: var(--ink-2); background: var(--panel); border-radius: 1rem; padding: .18rem .5rem; }
+  #editor .atl-bank .atl-family-count[data-selected="true"] { background: #315c49; color: #fff; }
+  #editor .atl-bank .atl-filter-family[data-selected="true"] { border-color: var(--accent); }
+  #editor .atl-bank .atl-filter-family-options { padding: .45rem; gap: .35rem; grid-template-columns: repeat(auto-fit,minmax(min(100%,12rem),1fr)); }
+  #editor .atl-bank .atl-filter-family-options .atl-tag-option { box-sizing: border-box; min-height: 44px; align-items: center; padding: .45rem; border: 1px solid var(--rule); border-radius: 7px; background: var(--panel,var(--paper-2)); font-size: .84rem; line-height: 1.3; }
+  #editor .atl-bank .atl-filter-family-options .atl-tag-option:has(input:checked) { border-color: #315c49; box-shadow: none; background: #315c49; color: #fff; }
+  #editor .atl-bank .atl-filter-family-options .atl-tag-option input { margin: 0; accent-color: #315c49; }
+  #editor .atl-bank .atl-grammar-filters .atl-infinitive-filters { padding: .35rem; border-style: dashed; border-radius: 8px; }
+  #editor .atl-bank .atl-infinitive-filters select { font-size: 16px; }
+  #editor .atl-bank .atl-show-results { min-height: 44px; width: 100%; border-radius: 8px; background: #315c49; color: #fff; }
+}
+@media screen and (max-width: 760px) {
+  #editor .atl-bank .atl-filter-tools { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  #editor .atl-bank .atl-advanced-top { grid-template-columns: minmax(0,1fr); }
+}
+@media screen and (max-width: 550px) {
+  #editor .atl-bank .atl-bank-more { padding: .4rem; gap: .45rem; }
+  #editor .atl-bank .atl-advanced-grammar { padding: .45rem; }
+  #editor .atl-bank .atl-bank-tag-controls { grid-template-columns: minmax(0,1fr); }
+  #editor .atl-bank .atl-grammar-count { flex-basis: 100%; }
+  #editor .atl-bank .atl-grammar-actions button { flex: 1 1 0; min-width: 0; min-height: 44px; }
+  #editor .atl-bank .atl-filter-family-options { grid-template-columns: repeat(2,minmax(0,1fr)); padding: .35rem; }
+  #editor .atl-bank .atl-filter-family-options .atl-tag-option { font-size: .79rem; padding: .35rem; gap: .25rem; }
+}

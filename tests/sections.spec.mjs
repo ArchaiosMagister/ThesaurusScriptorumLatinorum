@@ -333,7 +333,7 @@ test('agrupa los infinitivos y aplica tiempo y voz sobre la misma forma', async 
   await modal.getByRole('button', { name: 'Guardar etiquetas' }).click();
   await bank.getByRole('button', { name: 'Más filtros' }).click();
   await expect(bank.getByRole('checkbox', { name: 'Forma de infinitivo', exact: true })).toHaveCount(1);
-  const forms = bank.locator('.atl-filter-family').filter({ has: bank.getByRole('heading', { name: 'Formas verbales y voz', exact: true }) });
+  const forms = bank.locator('.atl-filter-family[data-family="gram.formas"]');
   await expect(forms.getByRole('checkbox', { name: 'Forma de infinitivo', exact: true })).toBeVisible();
   await expect(bank.getByRole('checkbox', { name: 'Oración de infinitivo', exact: true })).toBeVisible();
   const tagSearch = bank.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' });

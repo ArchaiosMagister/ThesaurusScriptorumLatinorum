@@ -213,3 +213,32 @@ test('los filtros gramaticales se ajustan a la pantalla estrecha sin desbordar',
   await panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true }).check();
   await expect(panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true })).toBeChecked();
 });
+
+
+test('en iPhone los grupos se pliegan, buscar abre coincidencias y limpiar etiquetas mantiene otros filtros', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const bank = page.frameLocator('#panel-cuaderno iframe').getByRole('region', { name: 'Banco de textos propios' });
+  await bank.getByRole('combobox', { name: 'Filtrar textos por curso' }).selectOption('1bach');
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  const panel = bank.locator('.atl-grammar-filters');
+  const forms = panel.locator('[data-family="gram.formas"]');
+  await expect(forms.locator('summary')).toBeVisible();
+  await expect(forms).not.toHaveAttribute('open', '');
+  await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('infinitivo de presente');
+  await expect(forms).toHaveAttribute('open', '');
+  await forms.getByRole('checkbox', { name: 'Forma de infinitivo' }).check();
+  await forms.getByRole('combobox', { name: 'Tiempo del infinitivo' }).selectOption('presente');
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('1 etiqueta activa');
+  await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('');
+  await panel.getByRole('button', { name: 'Desplegar todas' }).click();
+  await expect(forms.getByRole('checkbox', { name: 'Forma de infinitivo' })).toBeChecked();
+  await panel.getByRole('button', { name: 'Plegar todas' }).click();
+  await expect(forms).not.toHaveAttribute('open', '');
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('1 etiqueta activa');
+  await panel.getByRole('button', { name: 'Limpiar etiquetas' }).click();
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('Ninguna etiqueta activa');
+  await expect(bank.getByRole('combobox', { name: 'Filtrar textos por curso' })).toHaveValue('1bach');
+  await bank.getByRole('button', { name: 'Ver resultados' }).click();
+  await expect(bank.getByRole('button', { name: 'Más filtros' })).toHaveAttribute('aria-expanded', 'false');
+});
