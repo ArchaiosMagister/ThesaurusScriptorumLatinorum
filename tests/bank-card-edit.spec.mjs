@@ -174,7 +174,10 @@ test('Selectividad: marcar hecho, filtrar, conservar al recargar y reiniciar tod
   await expect(bank.getByRole('checkbox', { name: 'Hecho: C ordinario' })).toHaveCount(0);
   await first.check();
   await expect(first).toBeChecked();
+  await expect(first).toBeEnabled();
   await second.check();
+  await expect(second).toBeChecked();
+  await expect(second).toBeEnabled();
   await page.reload();
   await expect(first).toBeChecked();
   await expect(second).toBeChecked();
