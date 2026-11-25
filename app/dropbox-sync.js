@@ -145,11 +145,17 @@ let metadataUnavailableFor;
 async function remoteRevision(expected, retry = true) {
   if (metadataUnavailableFor === expected.id) return undefined;
   const session = await activeSession(expected);
-  const response = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
-    method: 'POST', signal: AbortSignal.timeout(30000),
-    headers: { Authorization: 'Bearer ' + session.token, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ path: file })
-  });
+  let response;
+  try {
+    response = await fetch('https://api.dropboxapi.com/2/files/get_metadata', {
+      method: 'POST', signal: AbortSignal.timeout(30000),
+      headers: { Authorization: 'Bearer ' + session.token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: file })
+    });
+  } catch {
+    // Fall back to the existing verified download path (also reports network errors).
+    return undefined;
+  }
   if (response.status === 401 && retry) {
     remove(sessionStorage, 'session');
     return remoteRevision(expected, false);
@@ -159,8 +165,8 @@ async function remoteRevision(expected, retry = true) {
     return undefined;
   }
   if (!response.ok) return undefined;
-  const metadata = await response.json();
-  return metadata['.tag'] === 'file' && typeof metadata.rev === 'string' ? metadata.rev : undefined;
+  const metadata = await response.json().catch(() => null);
+  return metadata?.['.tag'] === 'file' && typeof metadata.rev === 'string' ? metadata.rev : undefined;
 }
 
 async function readRemote(session, path = file) {
@@ -211,7 +217,7 @@ async function synchronize(session, prepareReload, report, resolution, restoreFr
   await prepareReload();
   const local = await readSyncData();
   const localHash = await syncFingerprint(local.data);
-  if (automatic && checkpoint?.revision && !pending && !restoreFromCloud && !resolution) {
+  if (automatic && checkpoint?.revision && checkpoint.hash === localHash && !pending && !restoreFromCloud && !resolution) {
     const revision = await remoteRevision(session);
     if (unchangedCheckpoint(checkpoint, localHash, revision, pending)) {
       report('Sincronización con Dropbox completada.', false);
