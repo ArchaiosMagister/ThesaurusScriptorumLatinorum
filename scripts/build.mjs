@@ -1,6 +1,6 @@
 import { publishBuild } from './publish-build.mjs';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, rename, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, stat } from 'node:fs/promises';
 import { assertVendoredSources } from './vendor-upstreams.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
