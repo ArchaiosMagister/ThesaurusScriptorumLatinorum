@@ -182,9 +182,9 @@ export function lexicalValuesForDocument(option) {
     let apply = await readFile(applyFile, 'utf8');
     const anchor = 'questions, vocabulary: vocab';
     if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
-    apply = apply.replace(anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})');
+    apply = requiredPatch(apply, anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})', 'Metadatos PAU CV');
     // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
-    apply = apply.replace("...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),");
+    apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
     await writeFile(applyFile, apply);
     const integrated = requiredPatches(requiredReplaceAll(
       composeNotebookSource(await readFile(file, 'utf8')), './pwa-controls.js', './atl-pwa.js'), [
@@ -221,10 +221,10 @@ export function lexicalValuesForDocument(option) {
     const repetitionStart = pauControls.indexOf('function inspectRepetitions(');
     const repetitionEnd = pauControls.indexOf('function repetitionNotice(', repetitionStart);
     if (repetitionStart < 0 || repetitionEnd < 0) throw Error('Revisar repeticiones PAU CV.');
-    const repetition = pauControls.slice(repetitionStart, repetitionEnd)
-      .replace("if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;")
-      .replace('for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;");
-    if (repetition === pauControls.slice(repetitionStart, repetitionEnd)) throw Error('Revisar filtros de repeticiones PAU CV.');
+    const repetition = requiredPatches(pauControls.slice(repetitionStart, repetitionEnd), [
+      ["if (option.kind === 'preverb') {", "if (option.kind === 'preverb') {\n                if (placement.pauCv && option.statement.locked && option.statement.origin === 'manual') continue;"],
+      ['for (const slot of option.slots) {', "for (const slot of option.slots) {\n                if (placement.pauCv && slot.locked && slot.origin === 'manual') continue;"]
+    ], 'Filtros de repeticiones PAU CV');
     pauControls = pauControls.slice(0, repetitionStart) + repetition + pauControls.slice(repetitionEnd);
     const sourceUi = "        const picked = preverbBasesFor(o, p);";
     const sourceStart = pauControls.indexOf('function setSourcesUi(');
@@ -487,19 +487,22 @@ export function lexicalValuesForDocument(option) {
     const stylesheet = page === notebookPage || module === 'examinator' ? 'atl-style.css' : 'integracion.css';
     let html = embeddedHtml(await readFile(path, 'utf8')).replace('./integracion.css', './' + stylesheet);
     if (module === 'examinator') {
-      html = html.replace('js/exam.js', 'js/atl-exam-editor.js').replace('js/start.js', 'js/atl-exam-start.js')
-        .replace('<script src="js/pwa.js"></script>', '')
-        .replace('<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>')
-        .replace('<script src="lib/jszip.min.js"></script>', '<script src="js/atl-word-loader.js"></script>')
-        .replace('js/lists.js', 'js/atl-exam-lists.js')
-        .replace('js/library.js', 'js/atl-exam-library.js')
-        .replace('js/lexico-filtros.js', 'js/atl-exam-filters.js')
-        .replace('js/propose.js', 'js/atl-exam-propose.js')
-        .replace('<script src="js/bancos-datos.js"></script>', '<script src="../academic/teacher-bank.js"></script>\n<script src="js/bancos-datos.js"></script>')
-        .replace('</body>', '<script type="module" src="./atl-exam-bank.js"></script>\n</body>');
+      html = requiredPatches(html, [
+        ['js/exam.js', 'js/atl-exam-editor.js'],
+        ['js/start.js', 'js/atl-exam-start.js'],
+        ['<script src="js/pwa.js"></script>', ''],
+        ['<script src="lib/html2pdf.bundle.min.js"></script>', '<script src="js/atl-pdf-loader.js"></script>'],
+        ['<script src="lib/jszip.min.js"></script>', '<script src="js/atl-word-loader.js"></script>'],
+        ['js/lists.js', 'js/atl-exam-lists.js'],
+        ['js/library.js', 'js/atl-exam-library.js'],
+        ['js/lexico-filtros.js', 'js/atl-exam-filters.js'],
+        ['js/propose.js', 'js/atl-exam-propose.js'],
+        ['<script src="js/bancos-datos.js"></script>', '<script src="../academic/teacher-bank.js"></script>\n<script src="js/bancos-datos.js"></script>'],
+        ['</body>', '<script type="module" src="./atl-exam-bank.js"></script>\n</body>']
+      ], 'HTML de Examinator');
     }
     if (page === notebookPage) {
-      html = html.replace('../ui/examinator-notebook-app.js', '../ui/atl-repertorios.js');
+      html = requiredPatch(html, '../ui/examinator-notebook-app.js', '../ui/atl-repertorios.js', 'HTML de Cuadernos');
       await writeFile(join(directory, page, 'atl-index.html'), html);
       await writeFile(join(directory, page, 'atl-cuadernos.html'), html);
       await writeFile(join(directory, page, 'atl-repertorios.html'), html);
