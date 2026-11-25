@@ -915,8 +915,18 @@ window.addEventListener('atl-view', () => {
             (corpus.texts.length === 1 ? ' texto' : ' textos');`);
   replace("    passage.append(el('summary', '', 'Texto latino'), el('p', '', text.latin));",
     "    const fullPassage = el('p', '', text.latin);\n    passage.append(el('summary', '', 'Texto latino'), fullPassage);");
+  replace('    function renderProposals() {\n        result.replaceChildren();', `    function renderProposals({ preserveOpen = false } = {}) {
+        const openKeys = new Set(preserveOpen
+            ? [...result.querySelectorAll('.grammar-proposal-card[open]')].map(row => row.dataset.proposal)
+            : []);
+        result.replaceChildren();
+        delete fullPassage.dataset.proposal;
+        fullPassage.textContent = text.latin;`);
   replace("            row.append(proposalContext(text.latin, proposal));", `            row.append(proposalContext(text.latin, proposal));
+            row.dataset.proposal = key;
+            row.open = openKeys.has(key);
             row.addEventListener('toggle', () => {
+                if (!row.isConnected) return;
                 if (!row.open) {
                     if (fullPassage.dataset.proposal === key) {
                         delete fullPassage.dataset.proposal;
@@ -994,7 +1004,7 @@ window.addEventListener('atl-view', () => {
             () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin));
         if (current && panel.isConnected) {
             pending = current.pending;
-            renderProposals();
+            renderProposals({ preserveOpen: true });
         }
     }).catch(() => { status.textContent = 'No se pudo completar el análisis del pasaje.'; });
     M.modal('Etiquetas de «' + text.title + '»', panel, [{ label: 'Cancelar' },`);
