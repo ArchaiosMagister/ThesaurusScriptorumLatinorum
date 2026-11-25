@@ -1,5 +1,5 @@
 import { localTemplates, templatePrefix, validateTemplate } from '../../../curriculum-templates.js';
-import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum, plannerFiniteFamilies, plannerFiniteFamily, plannerTagVisible } from './atl-bank-curriculum.js';
+import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum, plannerFiniteFeatures, plannerTagTree } from './atl-bank-curriculum.js';
 import { findPossibleDuplicates, normalizedLatinKey } from '../core/text-duplicates.js';
 import { assessBankDifficulty, difficultyText } from './atl-bank-difficulty.js';
 
@@ -84,15 +84,185 @@ function move(items, from, to) {
   [items[from], items[to]] = [items[to], items[from]];
 }
 
-// Presentation-only groups: stored templates retain the original ordered tag IDs.
-export function plannerTagGroup(tag, catalogue) {
-  const finiteFamily = plannerFiniteFamily(tag.id);
-  if (finiteFamily) return finiteFamily;
-  if (tag.id.startsWith('gram.pron.')) return 'Pronombres';
-  if (tag.id.startsWith('gram.part.')) return 'Participios';
-  if (isInfinitiveTag(tag.id)) return 'Infinitivos';
-  return tag.kind === 'custom' ? 'Etiquetas propias' :
-    catalogue.find(parent => parent.id === tag.parentId)?.label ?? tag.category ?? 'Otras etiquetas';
+function checkState(check, ids, selected) {
+  const total = ids.filter(id => selected.has(id)).length;
+  check.checked = ids.length > 0 && total === ids.length;
+  check.indeterminate = total > 0 && total < ids.length;
+  check.disabled = !ids.length;
+  return total;
+}
+
+const normalize = value => value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es');
+
+function tagPicker(label, tags, setTags) {
+  const picker = node('div');
+  picker.className = 'atl-planner-picker';
+  picker.setAttribute('role', 'group');
+  picker.setAttribute('aria-label', 'Selección de etiquetas para ' + label.toLowerCase());
+  const search = node('input');
+  search.type = 'search';
+  search.placeholder = 'Buscar etiqueta';
+  search.setAttribute('aria-label', 'Buscar etiquetas para ' + label.toLowerCase());
+  const groups = node('div');
+  groups.className = 'atl-planner-tag-groups';
+  const message = node('p', 'Cargando etiquetas…');
+  const controls = node('div');
+  controls.className = 'atl-bank-action-group atl-picker-tools';
+  const expand = action('Expandir todo', () => setExpanded(true));
+  const collapse = action('Plegar todo', () => setExpanded(false));
+  const clear = action('Limpiar etiquetas', () => {
+    setTags([...tags], false);
+    search.focus();
+  });
+  controls.append(expand, collapse, clear);
+
+  const quick = node('details');
+  quick.className = 'atl-picker-quick';
+  const criteria = node('div');
+  criteria.className = 'atl-planner-counts';
+  const theme = options([['', 'Todos'], ['Infectum', 'Infectum'], ['Perfectum', 'Perfectum']]);
+  const mood = options([['', 'Todos'], ['indicativo', 'Indicativo'], ['subjuntivo', 'Subjuntivo'], ['imperativo', 'Imperativo']]);
+  const voice = options([['', 'Todas'], ['activo', 'Activa'], ['pasivo', 'Pasiva'], ['deponente', 'Deponente']]);
+  criteria.append(field('Tema', theme), field('Modo', mood), field('Voz o deponentes', voice));
+  const quickCheck = node('input');
+  quickCheck.type = 'checkbox';
+  const quickLabel = node('span');
+  const quickField = node('label');
+  quickField.className = 'field';
+  quickField.append(quickLabel, quickCheck);
+  quick.append(node('summary', 'Selección rápida de formas personales'), criteria, quickField);
+  picker.append(search, controls, quick, groups, message);
+
+  let source, branches = [], finite = [], quickIds = [], beforeSearch;
+  function allBranches(items = branches) {
+    return items.flatMap(branch => [branch, ...allBranches(branch.children)]);
+  }
+  function setExpanded(open) {
+    for (const branch of allBranches()) branch.details.open = open && !branch.row.hidden;
+    if (beforeSearch) beforeSearch = new Map(allBranches().map(branch => [branch.path, open]));
+  }
+
+  function renderBranch(section, ancestors = '') {
+    const { label: name, historical, children, tags: members } = section;
+    const row = node('div');
+    row.className = 'atl-planner-branch';
+    const details = node('details');
+    details.dataset.group = name;
+    const summary = node('summary');
+    summary.append(node('span', name), ' ');
+    const counter = node('span');
+    counter.className = 'atl-picker-count';
+    summary.append(counter);
+    const path = ancestors + ' ' + name;
+    const branch = { row, details, counter, path, shown: [], children: [], leaves: [], historical };
+    if (!historical && (members.length || children.some(child => !child.historical))) {
+      const bulk = node('input');
+      bulk.type = 'checkbox';
+      const category = ancestors ? name + ' en ' + ancestors.trim() : name;
+      bulk.setAttribute('aria-label', 'Seleccionar ' + category + ' para ' + label.toLowerCase());
+      bulk.addEventListener('change', () => setTags(branch.shown, bulk.checked));
+      const bulkLabel = node('label');
+      bulkLabel.className = 'atl-picker-bulk';
+      bulkLabel.append(bulk);
+      row.append(bulkLabel);
+      branch.bulk = bulk;
+    }
+    const body = node('div');
+    body.className = 'atl-picker-branch-body';
+    if (historical) body.append(node('small', 'Estos filtros se seleccionan de uno en uno.'));
+    if (!members.length && !children.length) body.append(node('small', 'No hay etiquetas disponibles.'));
+    for (const tag of members) {
+      const check = node('input');
+      check.type = 'checkbox';
+      check.dataset.tagId = tag.id;
+      check.addEventListener('change', () => setTags([tag.id], check.checked));
+      const entry = field(tag.label, check);
+      body.append(entry);
+      branch.leaves.push({ id: tag.id, check, entry, searchable: normalize(path + ' ' + tag.label + ' ' + tag.id) });
+      const form = plannerFiniteFeatures(tag.id);
+      if (form && tag.kind !== 'custom') finite.push({ id: tag.id, ...form });
+    }
+    branch.children = children.map(child => renderBranch(child, path));
+    body.append(...branch.children.map(child => child.row));
+    details.append(summary, body);
+    row.append(details);
+    return branch;
+  }
+
+  function updateBranch(branch, selected, query) {
+    const visible = [];
+    for (const leaf of branch.leaves) {
+      leaf.entry.hidden = Boolean(query && !leaf.searchable.includes(query));
+      leaf.check.checked = selected.has(leaf.id);
+      if (!leaf.entry.hidden) visible.push(leaf.id);
+    }
+    for (const child of branch.children) {
+      updateBranch(child, selected, query);
+      if (!child.historical) visible.push(...child.shown);
+    }
+    branch.shown = visible;
+    branch.row.hidden = Boolean(query && !visible.length && branch.children.every(child => child.row.hidden));
+    const total = branch.bulk ? checkState(branch.bulk, visible, selected) : visible.filter(id => selected.has(id)).length;
+    branch.counter.textContent = visible.length ? total + '/' + visible.length : '';
+  }
+
+  function updateQuick(selected) {
+    quickIds = finite.filter(form => (!theme.value || form.theme === theme.value) &&
+      (!mood.value || form.mood === mood.value) && (!voice.value || form.voice === voice.value)).map(form => form.id);
+    const total = checkState(quickCheck, quickIds, selected);
+    quickLabel.textContent = quickIds.length
+      ? 'Seleccionar formas coincidentes (' + total + '/' + quickIds.length + ')'
+      : 'No hay formas coincidentes';
+  }
+
+  function update() {
+    const selected = new Set(tags);
+    const query = normalize(search.value.trim());
+    for (const branch of branches) updateBranch(branch, selected, query);
+    clear.disabled = !tags.length;
+    expand.disabled = collapse.disabled = !branches.some(branch => !branch.row.hidden);
+    quick.hidden = !finite.length;
+    updateQuick(selected);
+    message.hidden = !expand.disabled;
+    message.textContent = source ? 'No hay etiquetas que coincidan.' : 'Cargando etiquetas…';
+  }
+  for (const select of [theme, mood, voice]) select.addEventListener('change', () => updateQuick(new Set(tags)));
+  quickCheck.addEventListener('change', () => setTags(quickIds, quickCheck.checked));
+  search.addEventListener('input', () => {
+    const query = search.value.trim();
+    const items = allBranches();
+    if (query) {
+      beforeSearch ??= new Map(items.map(branch => [branch.path, branch.details.open]));
+      update();
+      for (const branch of items) branch.details.open = !branch.row.hidden;
+    } else {
+      if (beforeSearch) for (const branch of items) branch.details.open = beforeSearch.get(branch.path) ?? false;
+      beforeSearch = undefined;
+      update();
+    }
+  });
+
+  update();
+  return {
+    picker, search,
+    render(tree) {
+      if (tree !== source) {
+        source = tree;
+        const expanded = beforeSearch ?? new Map(allBranches().map(branch => [branch.path, branch.details.open]));
+        finite = [];
+        branches = tree.map(section => renderBranch(section));
+        groups.replaceChildren(...branches.map(branch => branch.row));
+        if (search.value.trim()) {
+          beforeSearch = expanded;
+          update();
+          for (const branch of allBranches()) branch.details.open = !branch.row.hidden;
+        } else {
+          for (const branch of allBranches()) branch.details.open = expanded.get(branch.path) ?? false;
+        }
+      }
+      update();
+    }
+  };
 }
 
 export function showBankPlanner({ read, match, create, modal, returnFocus }) {
@@ -125,9 +295,9 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
   const createButton = action('Crear cuaderno', confirm, true);
   const refresh = action('Actualizar previsualización', generate);
   const termControls = [];
-  let sourceCatalogue, catalogue = [], families = [], plan, sequence = 0, saving = false, hasWarnings = false;
+  let sourceCatalogue, catalogue = [], tree = [], plan, sequence = 0, saving = false, hasWarnings = false;
   const tagLabels = ids => ids.map(id => id === infinitiveId ? 'Cualquier infinitivo' :
-    id === 'gram.part.forma' ? 'Cualquier participio' : catalogue.find(tag => tag.id === id)?.label ?? id).join(', ');
+    id === 'gram.part.forma' ? 'Cualquier participio' : sourceCatalogue?.find(tag => tag.id === id)?.label ?? id).join(', ');
   const settings = node('div');
   settings.className = 'atl-planner-counts';
   settings.append(field('Progresión gramatical', progression), field('Selectividad', exam));
@@ -228,96 +398,21 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
     const tags = [];
     const summary = node('summary', label);
     const list = node('ol');
-    const select = node('select');
-    select.setAttribute('aria-label', 'Etiqueta para ' + label.toLowerCase());
-    const picker = node('div');
-    picker.className = 'atl-planner-picker';
-    picker.setAttribute('role', 'group');
-    picker.setAttribute('aria-label', 'Selección de etiquetas para ' + label.toLowerCase());
-    const search = node('input');
-    search.type = 'search';
-    search.placeholder = 'Buscar etiqueta o familia…';
-    search.setAttribute('aria-label', 'Buscar etiquetas para ' + label.toLowerCase());
-    const groups = node('div');
-    groups.className = 'atl-planner-tag-groups';
     const selectedDetails = node('details');
     selectedDetails.className = 'atl-planner-selected';
     const selectedSummary = node('summary', 'Orden de las etiquetas seleccionadas');
     selectedDetails.append(selectedSummary, list);
-    // Keep the individual quick-add control and the ordered selection for existing workflows.
-    selectedDetails.open = true;
-    picker.append(search, groups);
-    const setTags = (ids, checked) => {
-      if (checked) {
-        tags.push(...ids.filter(id => !tags.includes(id)));
-      } else {
-        tags.splice(0, tags.length, ...tags.filter(id => !ids.includes(id)));
-      }
+    const selector = tagPicker(label, tags, (ids, checked) => {
+      const changed = new Set(ids);
+      const next = checked ? [...new Set([...tags, ...ids])] : tags.filter(id => !changed.has(id));
+      tags.splice(0, tags.length, ...next);
       render();
       void generate();
-    };
-    const normalize = value => value.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es');
-    function renderGroups() {
-      const expanded = new Set([...groups.querySelectorAll('details[open]')].map(row => row.dataset.family));
-      const focused = document.activeElement?.dataset?.pickerKey;
-      groups.replaceChildren();
-      const query = normalize(search.value.trim());
-      for (const [family, members] of families) {
-        const visible = members.filter(tag => !query || normalize(family + ' ' + tag.label).includes(query));
-        if (!visible.length) continue;
-        const ids = members.map(tag => tag.id);
-        const total = ids.filter(id => tags.includes(id)).length;
-        const row = node('div');
-        row.className = 'atl-planner-family';
-        const head = node('div');
-        head.className = 'atl-planner-family-head';
-        const groupCheck = node('input');
-        groupCheck.type = 'checkbox';
-        groupCheck.checked = total === ids.length;
-        groupCheck.indeterminate = total > 0 && total < ids.length;
-        groupCheck.dataset.pickerKey = 'group:' + family;
-        groupCheck.setAttribute('aria-label', 'Seleccionar familia ' + family + ' para ' + label.toLowerCase());
-        groupCheck.addEventListener('change', () => setTags(ids, groupCheck.checked));
-        head.append(field(family + ' (' + total + '/' + ids.length + ')', groupCheck));
-        const detail = node('details');
-        detail.dataset.family = family;
-        detail.open = expanded.has(family) || Boolean(query);
-        detail.append(node('summary', 'Ver etiquetas'));
-        const choices = node('div');
-        choices.className = 'atl-planner-family-choices';
-        for (const tag of visible) {
-          const check = node('input');
-          check.type = 'checkbox';
-          check.checked = tags.includes(tag.id);
-          check.dataset.pickerKey = 'tag:' + tag.id;
-          check.setAttribute('aria-label', tag.label + ' para ' + label.toLowerCase());
-          check.addEventListener('change', () => setTags([tag.id], check.checked));
-          choices.append(field(tag.label, check));
-        }
-        detail.append(choices);
-        row.append(head, detail);
-        groups.append(row);
-      }
-      if (focused) [...groups.querySelectorAll('input')]
-        .find(input => input.dataset.pickerKey === focused)?.focus({ preventScroll: true });
-      if (!groups.childElementCount) groups.append(node('p', query ? 'No hay etiquetas que coincidan.' : 'Cargando etiquetas…'));
-    }
-    search.addEventListener('input', renderGroups);
+    });
     const counts = node('div');
     counts.className = 'atl-planner-counts';
     counts.append(field('Textos ordinarios', count), field('Textos de refuerzo', review));
     const render = () => {
-      const selected = select.value;
-      select.replaceChildren(new Option('Añadir etiqueta…', ''));
-      for (const [family, members] of families) {
-        const available = members.filter(tag => !tags.includes(tag.id));
-        if (!available.length) continue;
-        const group = node('optgroup');
-        group.label = family;
-        for (const tag of available) group.append(new Option(tag.label, tag.id));
-        select.append(group);
-      }
-      if ([...select.options].some(option => option.value === selected)) select.value = selected;
       list.replaceChildren();
       tags.forEach((id, position) => {
         const row = node('li');
@@ -340,7 +435,8 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
         const remove = action('Quitar', () => {
           tags.splice(position, 1);
           render();
-          select.focus();
+          const next = list.children[Math.min(position, tags.length - 1)];
+          (next?.querySelector('button:last-child') ?? selector.search).focus();
           void generate();
         });
         remove.setAttribute('aria-label', 'Quitar ' + tagLabels([id]));
@@ -350,15 +446,9 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
       });
       selectedSummary.textContent = 'Orden de las etiquetas seleccionadas (' + tags.length + ')';
       selectedDetails.hidden = !tags.length;
-      renderGroups();
+      selector.render(tree);
       summary.textContent = label + (tags.length ? ' · ' + tags.length + (tags.length === 1 ? ' etiqueta' : ' etiquetas') : '');
     };
-    select.addEventListener('change', () => {
-      if (!select.value) return;
-      tags.push(select.value);
-      render();
-      void generate();
-    });
     for (const input of [count, review]) {
       input.addEventListener('input', () => {
         sequence++;
@@ -368,8 +458,9 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
       input.addEventListener('change', generate);
     }
     termControls.push({ count, review, tags, render });
-    section.append(summary, counts, selectedDetails, field('Añadir una etiqueta', select), picker);
+    section.append(summary, counts, selector.picker, selectedDetails);
     terms.append(section);
+    render();
   });
   const results = node('section');
   results.className = 'atl-planner-preview';
@@ -475,16 +566,7 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
       if (result.catalogue !== sourceCatalogue) {
         sourceCatalogue = result.catalogue;
         catalogue = sourceCatalogue.filter(tag => !isRetiredTag(tag.id));
-        const byFamily = new Map();
-        for (const tag of catalogue.filter(({ id }) => plannerTagVisible(id))) {
-          const family = plannerTagGroup(tag, catalogue);
-          if (!byFamily.has(family)) byFamily.set(family, []);
-          byFamily.get(family).push(tag);
-        }
-        const preferred = [...plannerFiniteFamilies,
-          'Pronombres', 'Participios', 'Infinitivos', 'Verbos deponentes'];
-        const rank = name => preferred.includes(name) ? preferred.indexOf(name) : preferred.length;
-        families = [...byFamily].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b, 'es'));
+        tree = plannerTagTree(sourceCatalogue);
         termControls.forEach(control => control.render());
       }
       const requested = [...new Set(settings.terms.flatMap(term => term.tags))];
