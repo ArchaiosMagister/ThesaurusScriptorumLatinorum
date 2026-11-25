@@ -144,3 +144,19 @@ function keyTitle(key, local, remote) {
   const row = local.find(([id]) => id === key)?.[1] ?? remote.find(([id]) => id === key)?.[1];
   return row?.row?.edition?.title ?? row?.title ?? row?.label ?? JSON.parse(key)[2];
 }
+
+/** Solo se omite la descarga sobre una revisión y huella previamente verificadas. */
+export function unchangedCheckpoint(checkpoint, localHash, remoteRevision, pending) {
+  return !pending && typeof remoteRevision === 'string' && remoteRevision.length > 0 &&
+    checkpoint?.revision === remoteRevision && checkpoint?.hash === localHash;
+}
+
+/** Todas las restauraciones y sincronizaciones comparten este bloqueo del origen. */
+let workspaceQueue = Promise.resolve();
+export function withWorkspaceLock(work, locks = globalThis.navigator?.locks) {
+  if (locks) return locks.request('atl-v1:dropbox', work);
+  // Sin Web Locks, al menos serializa las operaciones del mismo documento.
+  const next = workspaceQueue.then(work);
+  workspaceQueue = next.catch(() => {});
+  return next;
+}
