@@ -58,6 +58,25 @@ export const bankTagAssignable = id => !isGrammarGrouping(id) && (bankTagVisible
 // El planificador ofrece las formas completas. Las etiquetas generales de
 // infinitivo conservan sus IDs y su alcance en las plantillas ya guardadas.
 const plannerHeadings = new Set(['gram.oracion', 'gram.formas', 'gram.pronombres', 'gram.funciones', 'gram.verbo', 'gram.part.forma']);
+// Presentation families only: templates and stored text tags retain their original IDs.
+export const plannerFiniteFamilies = [
+  'Infectum · indicativo activo', 'Infectum · indicativo pasivo',
+  'Infectum · subjuntivo activo', 'Infectum · subjuntivo pasivo',
+  'Perfectum · indicativo activo', 'Perfectum · indicativo pasivo',
+  'Perfectum · subjuntivo activo', 'Perfectum · subjuntivo pasivo',
+  'Imperativo'
+];
+export function plannerFiniteFamily(id) {
+  const finite = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(id);
+  if (!finite) return null;
+  const [, tense, mood, voice] = finite;
+  if (voice === 'deponente') return 'Verbos deponentes';
+  if (mood === 'imperativo') return 'Imperativo';
+  const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
+    /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
+  return theme ? theme + ' · ' + mood + ' ' + voice : null;
+}
+
 export const plannerTagVisible = id => !isRetiredTag(id) && !plannerHeadings.has(id) &&
   (!isInfinitiveTag(id) || Boolean(infinitiveForm.exec(id)?.[2]));
 export const curriculumTags = catalogue => catalogue.filter(tag => tag.kind === 'catalogue' &&

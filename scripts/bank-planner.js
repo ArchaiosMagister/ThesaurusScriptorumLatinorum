@@ -1,5 +1,5 @@
 import { localTemplates, templatePrefix, validateTemplate } from '../../../curriculum-templates.js';
-import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum, plannerTagVisible } from './atl-bank-curriculum.js';
+import { communities, infinitiveId, isInfinitiveTag, isRetiredTag, periods, planCurriculum, plannerFiniteFamilies, plannerFiniteFamily, plannerTagVisible } from './atl-bank-curriculum.js';
 import { findPossibleDuplicates, normalizedLatinKey } from '../core/text-duplicates.js';
 import { assessBankDifficulty, difficultyText } from './atl-bank-difficulty.js';
 
@@ -86,14 +86,8 @@ function move(items, from, to) {
 
 // Presentation-only groups: stored templates retain the original ordered tag IDs.
 export function plannerTagGroup(tag, catalogue) {
-  const finite = /^gram\.verbo\.(.+?)\.(indicativo|subjuntivo|imperativo)\.(activo|pasivo|deponente)$/u.exec(tag.id);
-  if (finite) {
-    const [, tense, , voice] = finite;
-    const theme = /^(presente|imperfecto|futuro|futuro-imperfecto|futuro\.imperfecto)$/u.test(tense) ? 'Infectum' :
-      /^(perfecto|pluscuamperfecto|futuro-anterior|futuro-perfecto|futuroperfecto|futuro\.perfecto)$/u.test(tense) ? 'Perfectum' : '';
-    if (theme && voice !== 'deponente') return theme + ' · ' + (voice === 'activo' ? 'activa' : 'pasiva');
-    if (voice === 'deponente') return 'Verbos deponentes';
-  }
+  const finiteFamily = plannerFiniteFamily(tag.id);
+  if (finiteFamily) return finiteFamily;
   if (tag.id.startsWith('gram.pron.')) return 'Pronombres';
   if (tag.id.startsWith('gram.part.')) return 'Participios';
   if (isInfinitiveTag(tag.id)) return 'Infinitivos';
@@ -487,7 +481,7 @@ export function showBankPlanner({ read, match, create, modal, returnFocus }) {
           if (!byFamily.has(family)) byFamily.set(family, []);
           byFamily.get(family).push(tag);
         }
-        const preferred = ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva',
+        const preferred = [...plannerFiniteFamilies,
           'Pronombres', 'Participios', 'Infinitivos', 'Verbos deponentes'];
         const rank = name => preferred.includes(name) ? preferred.indexOf(name) : preferred.length;
         families = [...byFamily].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b, 'es'));
