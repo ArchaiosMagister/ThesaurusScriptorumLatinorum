@@ -2099,6 +2099,7 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
   let remote;
   const recovery = new Map();
   let loseUploadResponse = false;
+  let rejectUpload = false;
   let uploads = 0;
   let renewals = 0;
   const destination = await browser.newContext({ serviceWorkers: 'block' });
@@ -2145,6 +2146,10 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
             : { status: 409, json: { error: { '.tag': 'path', path: { '.tag': 'not_found' } } } };
         }
         expect(args.mode).toEqual(remote ? { '.tag': 'update', update: 'rev-' + uploads } : 'add');
+        if (rejectUpload) {
+          rejectUpload = false;
+          return { status: 409, json: { error: { '.tag': 'path', path: { reason: { '.tag': 'conflict' } } } } };
+        }
         uploads++;
         remote = JSON.parse(body);
         if (loseUploadResponse) {
@@ -2323,11 +2328,21 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     const previousRemote = remote;
     const beforeInterruptedUpload = uploads;
     await changeReview(page, 'gram.participio');
+    rejectUpload = true;
+    await sourceSync.click();
+    await expect(page.locator('#app-status')).toContainText('Otro dispositivo actualizó Dropbox');
+    expect(uploads).toBe(beforeInterruptedUpload);
+    expect(await page.evaluate(async () => {
+      const {readSyncState} = await import(new URL('./recovery-history.js', location.href));
+      return readSyncState('checkpoint-pending:claveprueba:cuenta-prueba');
+    })).toBeNull();
+    const archivedBeforeRetry = recovery.size;
     loseUploadResponse = true;
     await sourceSync.click();
     await expect(page.locator('#app-status')).toContainText('No se pudo conectar con Dropbox');
     expect(uploads).toBe(beforeInterruptedUpload + 1);
     expect([...recovery.values()]).toContainEqual(previousRemote);
+    expect(recovery.size).toBe(archivedBeforeRetry);
     await sourceSync.click();
     await expect(page.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
     expect(uploads).toBe(beforeInterruptedUpload + 1);
