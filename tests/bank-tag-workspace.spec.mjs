@@ -86,3 +86,34 @@ test('una edición concurrente de etiquetas no se sobrescribe',async({page})=>{
  });
  expect(tags).toEqual(['gram.participio']);
 });
+
+
+test('editar etiquetas desde la ficha guarda cambios y vuelve a la ficha actualizada', async ({page}) => {
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', {name:'Banco de textos propios'});
+  const modal = frame.locator('.modal').last();
+  await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+  await modal.getByRole('textbox',{name:'Título',exact:true}).fill('Ficha de etiquetas');
+  await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Caesar, acceptis litteris, profectus est.');
+  await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+  await bank.locator('.atl-bank-card').click();
+  await modal.getByRole('textbox',{name:'Título didáctico'}).fill('Ficha corregida');
+  page.once('dialog', d => d.dismiss());
+  await modal.getByRole('button',{name:'Editar etiquetas',exact:true}).click();
+  await expect(modal.getByRole('textbox',{name:'Título didáctico'})).toHaveValue('Ficha corregida');
+  page.once('dialog', d => d.accept());
+  await modal.getByRole('button',{name:'Editar etiquetas',exact:true}).click();
+  await expect(modal).toHaveClass(/atl-bank-tag-modal/);
+  await expect(modal.locator('.mh')).toContainText('Ficha corregida');
+  await modal.getByRole('searchbox',{name:'Buscar etiqueta en el catálogo'}).fill('ablativo absoluto');
+  await modal.locator('.cuaderno-bank-tag-options').getByRole('checkbox',{name:/Ablativo absoluto/i}).first().check();
+  await modal.getByRole('button',{name:'Guardar etiquetas',exact:true}).click();
+  await expect(modal).toHaveClass(/atl-bank-editor-modal/);
+  await expect(modal.getByRole('textbox',{name:'Título didáctico'})).toHaveValue('Ficha corregida');
+  await expect(modal.locator('.atl-text-grammar .atl-reader-tags').first()).toContainText('Ablativo absoluto');
+  await modal.getByRole('button',{name:'Editar etiquetas',exact:true}).click();
+  await expect(modal).toHaveClass(/atl-bank-tag-modal/);
+  await modal.getByRole('button',{name:'Cancelar',exact:true}).click();
+  await expect(modal).toHaveClass(/atl-bank-editor-modal/);
+});

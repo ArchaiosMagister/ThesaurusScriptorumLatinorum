@@ -408,13 +408,13 @@ export function modernizeBank(source) {
     nav.append(previous, position, next);
     const guard = () => allowClose || (!saving && (!dirty() || window.confirm('¿Cerrar sin guardar los cambios de etiquetas?')));
     const afterClose = () => {
-        if (!destination) { onClose?.(); return; }
+        if (!destination) { onClose?.(text.id); return; }
         const id = destination;
         destination = null;
         queueMicrotask(() => {
             const target = (navigation?.results() ?? []).find(item => item.id === id);
             if (target) tagBankText(target, onClose, navigation);
-            else { onClose?.(); M.toast('El texto ya no coincide con los filtros activos.'); }
+            else { onClose?.(text.id); M.toast('El texto ya no coincide con los filtros activos.'); }
         });
     };
     const dialog = M.modal('Etiquetas de «' + text.title + '»', panel, [
