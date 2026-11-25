@@ -233,7 +233,7 @@ test('en iPhone los grupos se pliegan, buscar abre coincidencias y limpiar etiqu
   await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('');
   await panel.getByRole('button', { name: 'Desplegar todas' }).click();
   await expect(forms.getByRole('checkbox', { name: 'Forma de infinitivo' })).toBeChecked();
-  await panel.getByRole('button', { name: 'Plegar todas' }).click();
+  await panel.getByRole('button', { name: 'Plegar todas', exact: true }).click();
   await expect(forms).not.toHaveAttribute('open', '');
   await expect(panel.locator('.atl-grammar-count')).toHaveText('1 etiqueta activa');
   await panel.getByRole('button', { name: 'Limpiar etiquetas' }).click();
@@ -270,4 +270,32 @@ test('la ficha conserva navegación y guardado accesibles durante la lectura de 
   await expect(modal.locator('.atl-edit-citation')).toHaveText('Julio César');
   await footer.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(modal).toBeHidden();
+});
+
+
+test('el año PAU se destaca en la tarjeta sin afectar a textos ordinarios', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame=page.frameLocator('#panel-cuaderno iframe');
+  const bank=frame.getByRole('region',{name:'Banco de textos propios'});
+  const modal=frame.locator('.modal').last();
+  for(const [title,latin,pau] of [['A examen','Roma magna est.',true],['B ordinario','Gallia clara est.',false]]){
+    await bank.getByRole('button',{name:'Pegar en el banco'}).click();
+    await modal.getByRole('textbox',{name:'Título',exact:true}).fill(title);
+    await modal.getByRole('textbox',{name:'Texto latino',exact:true}).fill(latin);
+    await modal.getByRole('button',{name:'Guardar en el banco'}).click();
+    if(pau){
+      await bank.locator('.atl-bank-card').filter({hasText:title}).click();
+      await modal.getByRole('checkbox',{name:'Selectividad',exact:true}).check();
+      await modal.getByRole('spinbutton',{name:'Año de Selectividad'}).fill('2025');
+      await modal.getByRole('button',{name:'Guardar cambios'}).click();
+    }
+  }
+  const card=bank.locator('.atl-bank-card').filter({hasText:'A examen'});
+  const year=card.locator('.atl-card-pau-year');
+  await expect(year).toBeVisible();
+  await expect(year).toHaveText('2025');
+  await expect(year).toHaveAttribute('aria-label','Año de Selectividad: 2025');
+  await expect(card.locator('.atl-card-difficulty')).toBeVisible();
+  await expect(bank.locator('.atl-bank-card').filter({hasText:'B ordinario'}).locator('.atl-card-pau-year')).toHaveCount(0);
 });

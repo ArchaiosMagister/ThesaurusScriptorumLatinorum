@@ -373,7 +373,7 @@ test('Selectividad combina año y comunidad, y el Banco ofrece etiquetas gramati
   await page.reload();
   await bank.getByRole('button', { name: 'Más filtros' }).click();
   await bank.getByRole('checkbox', { name: 'Solo Selectividad' }).check();
-  const listing = bank.locator('.cuaderno-home-bank-list');
+  const listing = bank.getByRole('region', { name: 'Selectividad', exact: true });
   await expect(listing.locator('article')).toHaveCount(2);
   await bank.getByRole('combobox', { name: 'Filtrar por año de Selectividad' }).selectOption('2025');
   await bank.getByRole('combobox', { name: 'Filtrar por comunidad autónoma' }).selectOption('Andalucía');
@@ -1336,7 +1336,7 @@ test('la auditoría agrupa fichas por coincidencia y permite eliminar desde el e
     let corpus = saved.corpus;
     for (const draft of [
       { id: 'doc.copia-a', title: 'Copia A', latin: 'Secunda lux orta est.', reference: '22' },
-      { id: 'doc.copia-b', title: 'Copia B', latin: 'Secunda lux orta est.', reference: '23' },
+      { id: 'doc.copia-b', title: 'Copia B', latin: 'Secunda lux orta est.', reference: '23', selectividad: { year: 2026, community: 'Galicia' } },
       { id: 'doc.referencia-2', title: 'Otra versión', latin: 'Roma clara erat.', reference: '2' }
     ]) {
       corpus = upsertText(corpus, { ...draft, author: 'César', work: 'Bellum Gallicum' }, draft.id, new Date().toISOString());
@@ -1344,8 +1344,17 @@ test('la auditoría agrupa fichas por coincidencia y permite eliminar desde el e
     await repository.save({ ...corpus, notebooks: [...corpus.notebooks, { id: 'hist.protegido', title: 'Cuaderno protegido', textIds: ['doc.dos'] }] }, saved.revision);
   });
   await page.reload();
-  await frame.getByRole('button', { name: 'Auditar textos repetidos' }).click();
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const chosen = bank.getByRole('region', { name: 'Textos elegidos', exact: true });
+  const exams = bank.getByRole('region', { name: 'Selectividad', exact: true });
+  await expect(chosen.locator('.atl-bank-card')).toHaveCount(6);
+  await expect(exams.locator('.atl-bank-card')).toHaveCount(1);
+  await expect(exams.locator('.atl-bank-card')).toContainText('Copia B');
+  await bank.getByRole('button', { name: 'Excluir Selectividad', exact: true }).click();
+  await expect(exams).toHaveCount(0);
+  await bank.getByRole('button', { name: 'Auditar textos repetidos' }).click();
   const audit = frame.locator('.cuaderno-duplicate-audit');
+  await expect(audit.getByText(/7 textos revisados/)).toBeVisible();
   const identical = audit.locator('.atl-duplicate-group').filter({ hasText: 'Textos idénticos' });
   await expect(identical.locator('.atl-duplicate-card')).toHaveCount(3);
   await expect(audit.getByRole('heading', { name: 'Misma referencia bibliográfica' })).toBeVisible();
