@@ -63,3 +63,54 @@ test('Dropbox automático espera hasta cerrar el formulario del banco', async ({
   await modal.getByRole('button', {name: 'Cancelar', exact: true}).click();
   await expect.poll(() => attempts(page), {timeout: 20000}).toBeGreaterThan(0);
 });
+
+test('Dropbox omite la descarga cuando coinciden las revisiones y migra el diario antiguo', async ({page}) => {
+  await page.addInitScript(() => {
+    if (window.top !== window) return;
+    const prefix = 'atl-v1:dropbox:';
+    localStorage.setItem(prefix + 'connection', JSON.stringify({
+      id: 'fast-test', refresh: 'test', account: 'account', appKey: 'key'
+    }));
+    localStorage.setItem(prefix + 'auto', 'false');
+    window.cloud = { metadata: 0, downloads: 0, revision: 'rev1' };
+    const original = window.fetch.bind(window);
+    window.fetch = async (resource, options) => {
+      const url = typeof resource === 'string' ? resource : resource.url;
+      if (url === 'https://api.dropboxapi.com/oauth2/token')
+        return new Response(JSON.stringify({access_token: 'test', expires_in: 3600}));
+      if (url.endsWith('/files/get_metadata')) {
+        window.cloud.metadata++;
+        return new Response(JSON.stringify({'.tag': 'file', rev: window.cloud.revision}));
+      }
+      if (url.endsWith('/files/download')) {
+        window.cloud.downloads++;
+        return new Response(JSON.stringify(window.cloud.envelope), {
+          headers: {'Dropbox-API-Result': JSON.stringify({rev: window.cloud.revision})}
+        });
+      }
+      return original(resource, options);
+    };
+  });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  await expect(page.frameLocator('#panel-cuaderno iframe').getByRole('region', {name: 'Banco de textos propios'})).toBeVisible();
+  await page.evaluate(async () => {
+    const {readSyncData, syncFingerprint} = await import(new URL('./backup-store.js', location.href));
+    const {data} = await readSyncData();
+    const hash = await syncFingerprint(data);
+    window.cloud.envelope = {format: 'thesaurus-dropbox-v1', hash, data};
+    localStorage.setItem('atl-v1:dropbox:checkpoint:key:account', JSON.stringify({revision: 'rev1', hash}));
+  });
+  const dialog = await settings(page);
+  await dialog.locator('#dropbox-auto').check();
+  await dialog.getByRole('button', {name: 'Cerrar', exact: true}).click();
+  await expect.poll(() => page.evaluate(() => window.cloud.metadata), {timeout: 20000}).toBeGreaterThan(0);
+  expect(await page.evaluate(() => window.cloud.downloads)).toBe(0);
+  expect(await page.evaluate(() => localStorage.getItem('atl-v1:dropbox:checkpoint:key:account'))).toBeNull();
+  const migrated = await page.evaluate(async () => {
+    const {readSyncState} = await import(new URL('./recovery-history.js', location.href));
+    return readSyncState('checkpoint:key:account');
+  });
+  expect(migrated.revision).toBe('rev1');
+  await page.evaluate(() => { window.cloud.revision = 'rev2'; window.dispatchEvent(new Event('online')); });
+  await expect.poll(() => page.evaluate(() => window.cloud.downloads), {timeout: 20000}).toBeGreaterThan(0);
+});
