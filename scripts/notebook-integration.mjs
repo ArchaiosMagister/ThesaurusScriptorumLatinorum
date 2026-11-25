@@ -684,6 +684,15 @@ window.addEventListener('atl-view', () => {
         difficultyCache.set(text, { automatic, result });
         return result;
     };
+    // One catalogue per bank view. Cache the existing matcher, including
+    // historical groupings and descendants, rather than duplicating its rules.
+    const grammarMatches = new Map();
+    function matchesCached(tag, filter) {
+        let cache = grammarMatches.get(filter);
+        if (!cache) grammarMatches.set(filter, cache = new Map());
+        if (!cache.has(tag)) cache.set(tag, matchesGrammarTag(tag, filter, catalogue));
+        return cache.get(tag);
+    }
     const searchable = new WeakMap();
     function searchText(text) {
         let result = searchable.get(text);
@@ -795,7 +804,7 @@ window.addEventListener('atl-view', () => {
             if (tags.length) {
                 const effectiveTags = [...t.tagIds, ...automaticFor(t.id), ...pendingFor(t.id)];
                 const matches = id => id === infinitiveId ? matchesInfinitive(effectiveTags, infTime, infVoice) :
-                    matchesGrammarFilters(effectiveTags, [id], catalogue);
+                    effectiveTags.some(tag => matchesCached(tag, id));
                 if (!(mode === 'any' ? tags.some(matches) : tags.every(matches))) return false;
             }`);
   replace("            if (sortSelect.value === 'work-asc')\n                return workOrder || authorOrder || titleOrder || compare(a.id, b.id);",
@@ -890,7 +899,7 @@ window.addEventListener('atl-view', () => {
             const pendingPriority = id => bankState.tags.includes(id) ? 2 :
                 bankState.tags.some(filter => filter === infinitiveId
                     ? matchesInfinitive([id], bankState.infTime, bankState.infVoice)
-                    : matchesGrammarTag(id, filter, catalogue)) ? 1 : 0;
+                    : matchesCached(id, filter)) ? 1 : 0;
             const pendingChips = pendingFor(text.id).filter(bankTagAssignable)
                 .sort((a, b) => pendingPriority(b) - pendingPriority(a));
             for (const id of pendingChips.filter((id, index) => index === 0 || pendingPriority(id) > 0)) {
@@ -945,6 +954,7 @@ window.addEventListener('atl-view', () => {
   replace("    const sourceTags = new Map(corpus.texts.map(text => [text.id, text.tagIds]));\n    const idsFor = (id) => sourceTags.get(id) ?? [];\n", '');
   replace("    search.addEventListener('input', populate);", `    let searchFrame;
     search.addEventListener('input', () => {
+        bankState.query = search.value;
         if (searchFrame !== undefined) cancelAnimationFrame(searchFrame);
         searchFrame = requestAnimationFrame(() => {
             searchFrame = undefined;
