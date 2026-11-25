@@ -225,3 +225,47 @@ test('el selector audita el catálogo integrado completo sin repetir etiquetas',
   assert.ok(branchIds('Infinitivos', 'Filtros históricos').includes('gram.inf.forma'));
   assert.ok(branchIds('Participios', 'Filtros históricos').includes('gram.part.forma'));
 });
+
+
+test('las huellas de revisión se reutilizan solo para el mismo texto e identificador', async () => {
+  const {bankReviewKey} = await import('../dist/modulos/cuaderno-integrado/ui/atl-bank-review.js');
+  const text = {id: 'cache-test', latin: 'Suas copias.'};
+  const first = bankReviewKey(text);
+  assert.equal(bankReviewKey(text), first, 'reutiliza incluso una huella todavía pendiente');
+  const before = await first;
+  text.latin = 'Suam copiam.';
+  assert.notEqual(await bankReviewKey(text), before);
+  text.latin = 'Suas copias.';
+  assert.equal(await bankReviewKey(text), before);
+  text.id = 'cache-test-2';
+  assert.notEqual(await bankReviewKey(text), before);
+});
+
+test('la importación indexada conserva las decisiones del detector de duplicados', async () => {
+  const {mergeBank} = await import('../dist/partial-backup.js');
+  const {emptyCorpus} = await import('../dist/modulos/cuaderno-integrado/core/model.js');
+  const {validateCorpus} = await import('../dist/modulos/cuaderno-integrado/core/validation.js');
+  const {upsertText} = await import('../dist/modulos/cuaderno-integrado/core/editor-operations.js');
+  const {findPossibleDuplicates, normalizedLatinKey} = await import('../dist/modulos/cuaderno-integrado/core/text-duplicates.js');
+  const base = emptyCorpus();
+  const date = '2026-01-01T00:00:00.000Z';
+  const insert = (corpus, id, latin, reference) => upsertText(corpus, {
+    id, title: id, latin, author: 'Caesar', work: 'Bellum Gallicum', reference
+  }, id, date);
+  const passage = 'Omnes homines qui sese student praestare ceteris animalibus summa ope niti decet.';
+  const local = insert(base, 'local.1', passage, '1');
+  let incoming = insert(base, 'in.1', 'omnes homines qui sese student praestare ceteris animalibus', '2');
+  incoming = insert(incoming, 'in.2', 'Puella rosas pulchras in horto videt et legit.', '1');
+  incoming = insert(incoming, 'in.3', 'Puella rosas pulchras in horto videt et legit.', '3');
+  incoming = insert(incoming, 'in.4', 'Vltra montes exercitus procedit et castra magna ponit.', '4');
+  const added = [], conflicts = [];
+  for (const text of incoming.texts) {
+    const deposits = [...local.texts, ...added];
+    if (deposits.some(old => old.id === text.id || normalizedLatinKey(old.latin) === normalizedLatinKey(text.latin)) ||
+        findPossibleDuplicates(deposits, {latin: text.latin, ...text.source}).some(item => item.kind === 'overlap')) conflicts.push(text.id);
+    else added.push(text);
+  }
+  const result = mergeBank(validateCorpus(local), local.texts, validateCorpus(incoming), (a,b) => JSON.stringify(a) === JSON.stringify(b));
+  assert.deepEqual(result.added.map(text => text.id), added.map(text => text.id));
+  assert.deepEqual(result.conflicts.map(value => value.split(' · ')[0]), conflicts);
+});

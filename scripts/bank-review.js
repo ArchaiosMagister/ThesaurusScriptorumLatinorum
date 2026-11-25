@@ -6,10 +6,22 @@ const prefix = 'atl-v1:cuaderno-banco-review-v1:';
 const possessiveId = 'gram.pron.posesivo';
 const normalizeKey = key => key.replace(/:gram\.pronombres$/u, ':' + possessiveId);
 
-export async function bankReviewKey(text) {
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text.latin));
-  const hash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
-  return prefix + text.id + ':' + hash;
+// Cache only the exact text's digest, not the teacher's decisions. A text
+// edited in place or replaced by a new revision always receives its own key.
+const reviewKeys = new WeakMap();
+export function bankReviewKey(text) {
+  const previous = reviewKeys.get(text);
+  if (previous?.latin === text.latin && previous.id === text.id) return previous.promise;
+  const { id, latin } = text;
+  const promise = crypto.subtle.digest('SHA-256', new TextEncoder().encode(latin)).then(digest => {
+    const hash = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    return prefix + id + ':' + hash;
+  });
+  const entry = { id, latin, promise };
+  reviewKeys.set(text, entry);
+  // A transient hashing failure must not poison future reads.
+  promise.catch(() => { if (reviewKeys.get(text) === entry) reviewKeys.delete(text); });
+  return promise;
 }
 
 export const proposalKeyFor = proposal => [proposal.start, proposal.end, proposal.tagId].join(':');
@@ -51,10 +63,17 @@ export function visibleBankAnalysis(text, review, catalogue, isRejected) {
 export async function bankAnalysisIndex(texts, catalogue, isRejected) {
   const stored = new Set(Object.keys(localStorage).filter(key => key.startsWith(prefix))
     .map(key => key.slice(prefix.length, -65)));
-  const rows = await Promise.all(texts.filter(text => stored.has(text.id)).map(async text => [
-    text.id, visibleBankAnalysis(text, readBankReview(await bankReviewKey(text), text.latin), catalogue, isRejected)
-  ]));
-  return new Map(rows);
+  const candidates = texts.filter(text => stored.has(text.id));
+  const rows = new Map();
+  // Bound simultaneous digest work and yield between batches on large banks.
+  for (let offset = 0; offset < candidates.length; offset += 32) {
+    const batch = await Promise.all(candidates.slice(offset, offset + 32).map(async text => [
+      text.id, visibleBankAnalysis(text, readBankReview(await bankReviewKey(text), text.latin), catalogue, isRejected)
+    ]));
+    for (const [id, result] of batch) rows.set(id, result);
+    if (offset + 32 < candidates.length) await new Promise(resolve => setTimeout(resolve, 0));
+  }
+  return rows;
 }
 
 export async function analyzeBankText(text, analyze, classify, isCurrent) {

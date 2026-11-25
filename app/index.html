@@ -95,6 +95,11 @@
       <label for="dropbox-app-key">Clave pública de la aplicación de Dropbox</label>
       <input type="text" id="dropbox-app-key" spellcheck="false" autocomplete="off">
     </div>
+    <div id="dropbox-auto-settings" hidden>
+      <label><input type="checkbox" id="dropbox-auto"> Sincronización automática</label>
+      <p class="dropbox-description">Sincroniza al abrir la aplicación, al volver a ella y después de los cambios. La descarga se aplaza mientras editas.</p>
+      <p id="dropbox-auto-status" role="status" aria-live="polite"></p>
+    </div>
     <div class="dropbox-actions">
       <button type="button" id="dropbox-connect" class="dropbox-primary">Vincular Dropbox</button>
       <button type="button" id="dropbox-sync" class="dropbox-primary" hidden disabled>Sincronizar ahora</button>

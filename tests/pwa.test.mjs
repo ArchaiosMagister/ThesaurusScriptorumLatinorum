@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { createHash } from 'node:crypto';
+import { createHash, webcrypto } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -38,19 +38,22 @@ function memoryCaches(network) {
   };
 }
 
-function simulatedWorker(source, caches, scope) {
+function simulatedWorker(source, caches, scope, network, windows = []) {
   const handlers = new Map();
   const self = {
     registration: { scope },
-    clients: { async claim() {} },
+    clients: { async claim() {}, async matchAll() { return windows; } },
     async skipWaiting() {},
     addEventListener(name, listener) { handlers.set(name, listener); }
   };
-  runInNewContext(source, { self, caches, Response, Request, URL });
+  runInNewContext(source, { self, caches, Response, Request, URL, crypto: webcrypto, fetch: network });
   return async (type, data = null) => {
     const tasks = [], messages = [];
     const event = {
       data,
+      source: { id: 'current' },
+      request: type === 'fetch' ? new Request(data) : undefined,
+      respondWith(task) { tasks.push(task.then(value => messages.push(value))); },
       ports: [{ postMessage(message) { messages.push(message); } }],
       waitUntil(task) { tasks.push(task); }
     };
@@ -71,11 +74,13 @@ test('la PWA reanuda un paquete incompleto y migra solo recursos con igual SHA-2
       await writeFile(join(root, path), 'contenido de ' + path);
     }
     let deny = 'modulos/examinator/asset-09.js';
+    let corrupt = null;
     const requests = [];
     const network = async request => {
       const path = new URL(request.url).pathname.slice(new URL(scope).pathname.length);
       requests.push(path);
       if (path === deny) return new Response('bloqueado', { status: 503 });
+      if (path === corrupt) return new Response('bytes de otra versión');
       return new Response(await readFile(join(root, path || 'index.html')));
     };
     const caches = memoryCaches(network);
@@ -89,7 +94,7 @@ test('la PWA reanuda un paquete incompleto y migra solo recursos con igual SHA-2
     assert.equal(hashes['./modulos/examinator/sw.js'], undefined,
       'no se añade un segundo Service Worker al paquete');
 
-    const first = simulatedWorker(oldSource, caches, scope);
+    const first = simulatedWorker(oldSource, caches, scope, network);
     await first('install');
     assert.equal((await caches.keys()).length, 1);
     const interrupted = await first('message', 'prepare-offline');
@@ -99,6 +104,14 @@ test('la PWA reanuda un paquete incompleto y migra solo recursos con igual SHA-2
       'no debe darse por completo el paquete si falla un lote');
 
     deny = null;
+    corrupt = assets[9];
+    const invalid = await first('message', 'prepare-offline');
+    assert.equal(invalid.ok, false, 'una respuesta HTTP 200 con contenido diferente se rechaza');
+    assert.equal(await oldCache.match(new URL('offline-disponible', scope).href), undefined);
+    await assert.rejects(first('fetch', new URL(assets[9] + '?v=1', scope).href), /no válido/);
+    corrupt = null;
+    const online = await first('fetch', new URL(assets[9], scope).href);
+    assert.equal(await online.text(), 'contenido de ' + assets[9]);
     const resumed = await first('message', 'prepare-offline');
     assert.deepEqual({ ok: resumed.ok, downloaded: resumed.downloaded, reused: resumed.reused },
       { ok: true, downloaded: 2, reused: 8 });
@@ -113,7 +126,7 @@ test('la PWA reanuda un paquete incompleto y migra solo recursos con igual SHA-2
     const newSource = await readFile(join(root, 'sw.js'), 'utf8');
     assert.notEqual(oldSource, newSource, 'cambiar un recurso cambia la revisión');
     deny = unchanged; // La migración debe funcionar sin acceder al servidor para este archivo.
-    const next = simulatedWorker(newSource, caches, scope);
+    const next = simulatedWorker(newSource, caches, scope, network);
     await next('install');
     assert.equal(requests.filter(path => path === unchanged).length, originalRequests);
     assert.equal(requests.filter(path => path === assets[0]).length, 2,
@@ -123,6 +136,12 @@ test('la PWA reanuda un paquete incompleto y migra solo recursos con igual SHA-2
     const newCache = await caches.open(names[1]);
     assert.equal(await (await newCache.match(new URL(unchanged, scope).href)).text(),
       'contenido de ' + unchanged);
+    const otherWindows = [{ id: 'other', url: scope, frameType: 'top-level' }];
+    const guarded = simulatedWorker(newSource, caches, scope, network, otherWindows);
+    const blocked = await guarded('message', 'activate');
+    assert.equal(blocked.ok, false);
+    otherWindows[0].frameType = 'nested';
+    assert.equal((await guarded('message', 'activate')).ok, true);
     await next('activate');
     assert.deepEqual(await caches.keys(), [names[1]], 'al activar se limpia solo la caché antigua');
     const ready = JSON.parse(await (await newCache.match(new URL('offline-disponible', scope).href)).text());

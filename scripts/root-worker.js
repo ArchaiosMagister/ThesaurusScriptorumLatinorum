@@ -7,6 +7,29 @@ const marker = new URL('./offline-disponible', self.registration.scope).href;
 const urls = new Set([...shell, ...files].map(path => new URL(path, self.registration.scope).href));
 const assetUrl = path => new URL(path, self.registration.scope).href;
 let preparing;
+const paths = new Map([...shell, ...files].map(path => [assetUrl(path), path]));
+const digestFor = path => digests[path === './' ? './index.html' : path];
+
+async function matchesDigest(response, path) {
+  if (!response?.ok || !digestFor(path)) return false;
+  const bytes = await response.clone().arrayBuffer();
+  const hash = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(hash), value => value.toString(16).padStart(2, '0')).join('') === digestFor(path);
+}
+
+async function verifiedFetch(path) {
+  const response = await fetch(new Request(assetUrl(path), { cache: 'reload' }));
+  if (!await matchesDigest(response, path))
+    throw new Error('Recurso no válido para esta versión: ' + path);
+  return response;
+}
+
+// Verify the entire batch before writing: an interrupted batch is retried.
+async function addVerified(cache, paths) {
+  const responses = await Promise.all(paths.map(path => verifiedFetch(path)));
+  for (let index = 0; index < paths.length; index++)
+    await cache.put(assetUrl(paths[index]), responses[index]);
+}
 
 /**
  * A completed pack from the previous worker can donate unchanged responses.
@@ -42,21 +65,21 @@ async function downloadPack(previous = null) {
         if (await cache.match(url)) { reused++; continue; }
         if (previous?.hashes?.[path] === digests[path]) {
           const retained = await previous.cache.match(url);
-          if (retained) {
+          if (retained && await matchesDigest(retained, path)) {
             await cache.put(url, retained);
             reused++;
             continue;
           }
         }
-        missing.push(new Request(url, { cache: 'reload' }));
+        missing.push(path);
       }
       if (missing.length) {
-        await cache.addAll(missing);
+        await addVerified(cache, missing);
         downloaded += missing.length;
       }
     }
     // Never mark a partial download as complete. A retry uses cached progress.
-    await cache.put(marker, new Response(JSON.stringify({ digests }), {
+    await cache.put(marker, new Response(JSON.stringify({ digests, verified: true }), {
       headers: { 'Content-Type': 'application/json' }
     }));
     return { reused, downloaded, total: files.length };
@@ -67,7 +90,7 @@ async function downloadPack(previous = null) {
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(cacheName);
-    await cache.addAll(shell.map(path => new Request(assetUrl(path), { cache: 'reload' })));
+    await addVerified(cache, shell);
     const previous = await previousPack();
     if (previous) await downloadPack(previous);
   })());
@@ -84,7 +107,27 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('message', event => {
   if (event.data === 'activate') {
-    event.waitUntil(self.skipWaiting());
+    event.waitUntil((async () => {
+      // An explicit activation changes the controller of all clients. Do not
+      // switch another editing window to a new runtime behind its back.
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const rootPaths = new Set([new URL('./', self.registration.scope).pathname,
+        new URL('./index.html', self.registration.scope).pathname]);
+      const otherWindow = windows.some(client => {
+        if (client.id === event.source?.id || !client.url.startsWith(self.registration.scope)) return false;
+        if (client.frameType === 'nested' || client.frameType === 'none') return false;
+        // Some WebKit versions do not expose frameType. Only the root shell
+        // represents a separate editing window in that case.
+        return client.frameType === 'top-level' || client.frameType === 'auxiliary' ||
+          rootPaths.has(new URL(client.url).pathname);
+      });
+      if (otherWindow) {
+        event.ports[0]?.postMessage({ ok: false, message: 'Cierra las otras ventanas de Thesaurus antes de actualizar.' });
+        return;
+      }
+      await self.skipWaiting();
+      event.ports[0]?.postMessage({ ok: true });
+    })().catch(error => event.ports[0]?.postMessage({ ok: false, message: error.message })));
     return;
   }
   if (event.data === 'prepare-offline') {
@@ -98,9 +141,18 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   url.hash = '';
-  if (event.request.method !== 'GET' || url.search || !urls.has(url.href)) return;
+  if (event.request.method !== 'GET') return;
+  // OAuth and other root navigations with parameters retain their original path.
+  if (url.search && (url.pathname === new URL('./', self.registration.scope).pathname ||
+      url.pathname === new URL('./index.html', self.registration.scope).pathname)) return;
+  url.search = '';
+  if (!urls.has(url.href)) return;
   event.respondWith((async () => {
     const cache = await caches.open(cacheName);
-    return await cache.match(url.href) || fetch(event.request);
+    const saved = await cache.match(url.href);
+    if (saved) return saved;
+    // Never mix an old application with a newer deployment's uncached files.
+    // Online loading is still available as long as the bytes match this worker.
+    return verifiedFetch(paths.get(url.href));
   })());
 });

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { fingerprintEditorParts, mergeEditorParts, isRecoverableSync, mergeUsages, selectEditor, applyBankReviewDecision } from '../app/dropbox-plan.js';
+import { fingerprintEditorParts, mergeEditorParts, isRecoverableSync, mergeUsages, selectEditor, applyBankReviewDecision, unchangedCheckpoint, withWorkspaceLock } from '../app/dropbox-plan.js';
 
 test('Dropbox solo sustituye el espacio editorial si sigue la revisión conocida o está vacío', () => {
   assert.equal(selectEditor('a', 'a', null, false), 'same');
@@ -77,4 +77,37 @@ test('Dropbox combina fichas independientes y solicita elección para una baja i
   await assert.rejects(mergeEditorParts(editor([b], 2), editor([localA, remoteB], 3), baseline, hash), /A local/);
   assert.deepEqual(await mergeEditorParts(editor([b], 2), editor([localA, remoteB], 3), baseline, hash, () => 'local'),
     editor([remoteB], 3));
+});
+
+test('solo omite la descarga cuando la revisión remota y la huella local coinciden y no hay diario pendiente', () => {
+  const checkpoint = { revision: 'rev1', hash: 'a' };
+  assert.equal(unchangedCheckpoint(checkpoint, 'a', 'rev1', null), true);
+  assert.equal(unchangedCheckpoint(checkpoint, 'b', 'rev1', null), false);
+  assert.equal(unchangedCheckpoint(checkpoint, 'a', 'rev2', null), false);
+  assert.equal(unchangedCheckpoint(checkpoint, 'a', undefined, null), false);
+  assert.equal(unchangedCheckpoint(checkpoint, 'a', 'rev1', {}), false);
+  assert.equal(unchangedCheckpoint(null, 'a', 'rev1', null), false);
+});
+
+test('restauración y sincronización comparten la cola y la liberan incluso ante errores', async () => {
+  const log = [];
+  let release;
+  const barrier = new Promise(resolve => { release = resolve; });
+  const first = withWorkspaceLock(async () => {
+    log.push('restauración');
+    await barrier;
+    throw Error('interrumpida');
+  }, null);
+  const second = withWorkspaceLock(async () => { log.push('sincronización'); }, null);
+  await Promise.resolve();
+  assert.deepEqual(log, ['restauración']);
+  release();
+  await assert.rejects(first, /interrumpida/);
+  await second;
+  assert.deepEqual(log, ['restauración', 'sincronización']);
+  const names = [];
+  const locks = { request: (name, work) => { names.push(name); return work(); } };
+  await withWorkspaceLock(() => {}, locks);
+  await withWorkspaceLock(() => {}, locks);
+  assert.deepEqual(names, ['atl-v1:dropbox', 'atl-v1:dropbox']);
 });

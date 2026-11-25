@@ -153,17 +153,29 @@ let bankAutomaticTags = () => [];
 let refreshBankUses = () => {};
 const bankAnalysisQueue = new Map();
 let bankAnalysisRunning = false;
+let bankTextIndexSource;
+let bankTextIndex;
+function currentBankText(id) {
+    if (bankTextIndexSource !== corpus.texts) {
+        bankTextIndexSource = corpus.texts;
+        bankTextIndex = new Map(corpus.texts.map(text => [text.id, text]));
+    }
+    return bankTextIndex.get(id);
+}
 
 function scheduleBankAnalysis(texts, onResult = () => {}) {
-    for (const text of texts) bankAnalysisQueue.set(text.id, { text, onResult });
+    for (const text of texts) {
+        const previous = bankAnalysisQueue.get(text.id);
+        bankAnalysisQueue.set(text.id, { text, onResult, attempts: previous?.text.latin === text.latin ? previous.attempts : 0 });
+    }
     if (bankAnalysisRunning) return;
     bankAnalysisRunning = true;
     setTimeout(async () => {
         try {
             while (bankAnalysisQueue.size) {
-                const [id, { text, onResult }] = bankAnalysisQueue.entries().next().value;
+                const [id, { text, onResult, attempts }] = bankAnalysisQueue.entries().next().value;
                 bankAnalysisQueue.delete(id);
-                const isCurrent = () => corpus.texts.some(item => item.id === text.id && item.latin === text.latin);
+                const isCurrent = () => currentBankText(text.id)?.latin === text.latin;
                 if (!isCurrent()) continue;
                 try {
                     const saved = await analyzeBankText(text, analyzeLatin,
@@ -171,7 +183,10 @@ function scheduleBankAnalysis(texts, onResult = () => {}) {
                     if (saved && isCurrent()) onResult(text, saved);
                 } catch (error) {
                     console.warn('Análisis del Banco', error);
-                    break;
+                    // A single failing text must not strand the rest of the queue.
+                    // Retry once, after the other pending texts, without replacing newer work.
+                    if (attempts < 1 && isCurrent() && !bankAnalysisQueue.has(id))
+                        bankAnalysisQueue.set(id, { text, onResult, attempts: attempts + 1 });
                 }
                 await new Promise(resolve => setTimeout(resolve, 0));
             }
@@ -659,7 +674,34 @@ window.addEventListener('atl-view', () => {
     const pendingIndex = new Map();
     const automaticFor = id => analysisIndex.get(id)?.automatic ?? [];
     bankAutomaticTags = automaticFor;
-    const difficultyFor = text => assessBankDifficulty(text, automaticFor(text.id));
+    const difficultyCache = new WeakMap();
+    const emptyTags = [];
+    const difficultyFor = text => {
+        const automatic = analysisIndex.get(text.id)?.automatic ?? emptyTags;
+        const previous = difficultyCache.get(text);
+        if (previous?.automatic === automatic) return previous.result;
+        const result = assessBankDifficulty(text, automatic);
+        difficultyCache.set(text, { automatic, result });
+        return result;
+    };
+    // One catalogue per bank view. Cache the existing matcher, including
+    // historical groupings and descendants, rather than duplicating its rules.
+    const grammarMatches = new Map();
+    function matchesCached(tag, filter) {
+        let cache = grammarMatches.get(filter);
+        if (!cache) grammarMatches.set(filter, cache = new Map());
+        if (!cache.has(tag)) cache.set(tag, matchesGrammarTag(tag, filter, catalogue));
+        return cache.get(tag);
+    }
+    const searchable = new WeakMap();
+    function searchText(text) {
+        let result = searchable.get(text);
+        if (result === undefined) {
+            result = foldLatin([text.title, text.latin, text.source.author ?? '', text.source.work ?? '', text.source.reference ?? ''].join(' '));
+            searchable.set(text, result);
+        }
+        return result;
+    }
     const difficultySelect = el('select');
     difficultySelect.setAttribute('aria-label', 'Filtrar textos por dificultad');
     difficultySelect.append(new Option('Cualquier nivel', ''));
@@ -675,12 +717,36 @@ window.addEventListener('atl-view', () => {
         analysisIndex.set(id, result);
         pendingIndex.set(id, result.pending);
     };
+    // Do not replace interactive cards between pointerdown and click. A
+    // background Collatinus result must not consume a teacher's tap/click.
     let refreshTimer;
+    const activePointers = new Set();
+    let releaseListeners;
+    bank.addEventListener('pointerdown', event => {
+        activePointers.add(event.pointerId);
+        if (releaseListeners) return;
+        releaseListeners = new AbortController();
+        const options = { capture: true, signal: releaseListeners.signal };
+        const clear = () => {
+            activePointers.clear();
+            releaseListeners?.abort();
+            releaseListeners = undefined;
+        };
+        const endPointer = event => {
+            activePointers.delete(event.pointerId);
+            if (!activePointers.size) clear();
+        };
+        document.addEventListener('pointerup', endPointer, options);
+        document.addEventListener('pointercancel', endPointer, options);
+        window.addEventListener('blur', clear, options);
+    }, true);
     const refreshResults = () => {
         if (refreshTimer) return;
         refreshTimer = setTimeout(() => {
             refreshTimer = undefined;
-            if (bank.isConnected) populate();
+            if (!bank.isConnected) return;
+            if (activePointers.size) { refreshResults(); return; }
+            populate();
         }, 100);
     };
     function openPlanner() {
@@ -711,19 +777,22 @@ window.addEventListener('atl-view', () => {
     }
     const plannerButton = button('Crear cuaderno por trimestres', openPlanner, 'hbtn');
     bankActions.append(plannerButton);
+    let analysisRequest = 0;
     const loadAnalysis = async () => {
-        const saved = await bankAnalysisIndex(corpus.texts, catalogue, isRejectedProposal);
-        if (!bank.isConnected) return;
+        const request = ++analysisRequest;
+        const texts = corpus.texts;
+        const saved = await bankAnalysisIndex(texts, catalogue, isRejectedProposal);
+        if (!bank.isConnected || request !== analysisRequest || texts !== corpus.texts) return;
         // Rebuild the index: a deleted cache or a changed text must not keep
         // stale automatic tags visible from the previous refresh.
         analysisIndex.clear();
         pendingIndex.clear();
         for (const [id, result] of saved) setAnalysis(id, result);
-        populate();
+        if (activePointers.size) refreshResults(); else populate();
         scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current), (text, review) => {
             if (!bank.isConnected) return;
-            const live = corpus.texts.find(item => item.id === text.id && item.latin === text.latin);
-            if (!live) return;
+            const live = currentBankText(text.id);
+            if (!live || live.latin !== text.latin) return;
             const next = visibleBankAnalysis(live, review, catalogue, isRejectedProposal);
             const previous = analysisIndex.get(text.id);
             setAnalysis(text.id, next);
@@ -742,6 +811,7 @@ window.addEventListener('atl-view', () => {
   replace('    const catalogue = allGrammarTags(corpus);\n    // Los filtros', '    // Los filtros');
   replace('    bank.append(bankToolbar);', '    bank.append(bankToolbar, filters.panel);');
   replace("        viewSelect.value = 'all';\n        populate();", "        difficultySelect.value = '';\n        filters.reset();\n        populate();");
+  replace("return !needle || foldLatin([t.title, t.latin, t.source.author ?? '', t.source.work ?? '', t.source.reference ?? ''].join(' ')).includes(needle);", "return !needle || searchText(t).includes(needle);");
   replace('    function currentResults() {', `    function currentResults() {
         const { work, reference, origin, course, usage, mode, tags, exam, excludeExam, examYear, examCommunity, examProgress, infTime, infVoice } = filters.read();
         const referenceNeedle = foldLatin(reference);`);
@@ -758,7 +828,7 @@ window.addEventListener('atl-view', () => {
             if (tags.length) {
                 const effectiveTags = [...t.tagIds, ...automaticFor(t.id), ...pendingFor(t.id)];
                 const matches = id => id === infinitiveId ? matchesInfinitive(effectiveTags, infTime, infVoice) :
-                    matchesGrammarFilters(effectiveTags, [id], catalogue);
+                    effectiveTags.some(tag => matchesCached(tag, id));
                 if (!(mode === 'any' ? tags.some(matches) : tags.every(matches))) return false;
             }`);
   replace("            if (sortSelect.value === 'work-asc')\n                return workOrder || authorOrder || titleOrder || compare(a.id, b.id);",
@@ -853,7 +923,7 @@ window.addEventListener('atl-view', () => {
             const pendingPriority = id => bankState.tags.includes(id) ? 2 :
                 bankState.tags.some(filter => filter === infinitiveId
                     ? matchesInfinitive([id], bankState.infTime, bankState.infVoice)
-                    : matchesGrammarTag(id, filter, catalogue)) ? 1 : 0;
+                    : matchesCached(id, filter)) ? 1 : 0;
             const pendingChips = pendingFor(text.id).filter(bankTagAssignable)
                 .sort((a, b) => pendingPriority(b) - pendingPriority(a));
             for (const id of pendingChips.filter((id, index) => index === 0 || pendingPriority(id) > 0)) {
@@ -906,6 +976,15 @@ window.addEventListener('atl-view', () => {
   replace("    const listing = el('div', 'cuaderno-home-bank-list');",
     "    const listing = el('div', 'atl-bank-list');\n    const pageSize = 36;\n    const visibleBySection = new Map();");
   replace("    const sourceTags = new Map(corpus.texts.map(text => [text.id, text.tagIds]));\n    const idsFor = (id) => sourceTags.get(id) ?? [];\n", '');
+  replace("    search.addEventListener('input', populate);", `    let searchFrame;
+    search.addEventListener('input', () => {
+        bankState.query = search.value;
+        if (searchFrame !== undefined) cancelAnimationFrame(searchFrame);
+        searchFrame = requestAnimationFrame(() => {
+            searchFrame = undefined;
+            if (bank.isConnected) populate();
+        });
+    });`);
   replace("    viewSelect.addEventListener('change', populate);", '');
   const viewStart = source.indexOf("    const viewSelect = el('select');");
   const viewEnd = source.indexOf("    const bankToolbar =", viewStart);

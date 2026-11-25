@@ -1,3 +1,5 @@
+import { withWorkspaceLock } from './dropbox-plan.js';
+
 export function setupBackup(prepare, status, pauseAutosave) {
   const dialog = document.getElementById('backup-dialog');
   const select = document.getElementById('backup-file');
@@ -316,12 +318,14 @@ export function setupBackup(prepare, status, pauseAutosave) {
       if (apply.disabled || !window.confirm('¿Recuperar en este dispositivo los datos de la copia de Dropbox?')) return;
       apply.disabled = select.disabled = download.disabled = true;
       try {
-        await prepare();
-        pauseAutosave(true);
-        const { restoreDropboxBackup } = await import('./backup-store.js');
-        await restoreDropboxBackup(dropboxData, dropboxPreview.baseline);
-        sessionStorage.setItem('atl-v1:restore-result', 'Copia de Dropbox recuperada en este dispositivo.');
-        location.reload();
+        await withWorkspaceLock(async () => {
+          await prepare();
+          pauseAutosave(true);
+          const { restoreDropboxBackup } = await import('./backup-store.js');
+          await restoreDropboxBackup(dropboxData, dropboxPreview.baseline);
+          sessionStorage.setItem('atl-v1:restore-result', 'Copia de Dropbox recuperada en este dispositivo.');
+          location.reload();
+        });
       } catch (error) {
         pauseAutosave(false);
         summary(error.message);
@@ -333,12 +337,14 @@ export function setupBackup(prepare, status, pauseAutosave) {
       if (apply.disabled || !window.confirm('¿' + labels[partial.type] + '?')) return;
       apply.disabled = select.disabled = download.disabled = true;
       try {
-        await prepare();
-        pauseAutosave(true);
-        const { restorePartial } = await import('./backup-store.js');
-        await restorePartial(partial, partialPlan, partialOptions);
-        sessionStorage.setItem('atl-v1:restore-result', 'Importación parcial aplicada y verificada.');
-        location.reload();
+        await withWorkspaceLock(async () => {
+          await prepare();
+          pauseAutosave(true);
+          const { restorePartial } = await import('./backup-store.js');
+          await restorePartial(partial, partialPlan, partialOptions);
+          sessionStorage.setItem('atl-v1:restore-result', 'Importación parcial aplicada y verificada.');
+          location.reload();
+        });
       } catch (error) {
         pauseAutosave(false);
         summary(error.message);
@@ -355,13 +361,15 @@ export function setupBackup(prepare, status, pauseAutosave) {
     select.disabled = true;
     download.disabled = true;
     try {
-      await prepare();
-      pauseAutosave(true);
-      const { restoreBackup, restoreExact } = await import('./backup-store.js');
-      if (exact.checked) await restoreExact(payload, exactBaseline);
-      else await restoreBackup(payload, plan);
-      sessionStorage.setItem('atl-v1:restore-result', 'Copia recuperada y verificada.');
-      location.reload();
+      await withWorkspaceLock(async () => {
+        await prepare();
+        pauseAutosave(true);
+        const { restoreBackup, restoreExact } = await import('./backup-store.js');
+        if (exact.checked) await restoreExact(payload, exactBaseline);
+        else await restoreBackup(payload, plan);
+        sessionStorage.setItem('atl-v1:restore-result', 'Copia recuperada y verificada.');
+        location.reload();
+      });
     } catch (error) {
       pauseAutosave(false);
       summary(error.message);

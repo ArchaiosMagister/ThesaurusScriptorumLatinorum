@@ -1,5 +1,6 @@
+import { publishBuild } from './publish-build.mjs';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, rename, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, stat } from 'node:fs/promises';
 import { assertVendoredSources } from './vendor-upstreams.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -64,6 +65,6 @@ await adaptModule(notebook, 'cuaderno', ['', 'examinator-cuadernos'], academicRe
 await adaptModule(exam, 'examinator', [''], academicRevision);
 await buildRootWorker(staging);
 
-await rm(output, { force: true, recursive: true });
-await rename(staging, output);
+// Preserve the last working build if the final filesystem operation fails.
+await publishBuild(staging, output);
 console.log('Compilación integrada disponible en dist/.');
