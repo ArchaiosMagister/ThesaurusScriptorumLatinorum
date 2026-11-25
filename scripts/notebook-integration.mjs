@@ -399,6 +399,22 @@ window.addEventListener('atl-view', () => {
     titleField.classList.add('atl-edit-title-field');
     const latinField = latin.closest('label');
     latinField.classList.add('atl-edit-latin-field');
+    // Measure the actual wrapped lines, not a character-count approximation.
+    const fitLatin = () => {
+        if (!latin.isConnected || !latin.clientWidth) return;
+        latin.style.height = '0px';
+        const border = latin.offsetHeight - latin.clientHeight;
+        latin.style.height = Math.ceil(latin.scrollHeight + border) + 'px';
+    };
+    let latinWidth = 0;
+    const latinSizeObserver = new ResizeObserver(() => {
+        const width = latin.clientWidth;
+        if (width && width !== latinWidth) {
+            latinWidth = width;
+            fitLatin();
+        }
+    });
+    latin.addEventListener('input', fitLatin);
     const notes = inputs.get('notes').closest('label');
     const notesPanel = el('details', 'atl-edit-notes');
     notesPanel.append(el('summary', '', 'Notas y contexto'), notes);
@@ -477,6 +493,7 @@ window.addEventListener('atl-view', () => {
     nav.append(previous, position, next);
     const guard = () => bypassClose || (!save.disabled && (!dirty() || window.confirm('¿Cerrar la ficha sin guardar los cambios?')));
     const afterClose = () => {
+        latinSizeObserver.disconnect();
         const id = destination;
         destination = null;
         if (!id) { onClose?.(); return; }
@@ -495,6 +512,9 @@ window.addEventListener('atl-view', () => {
         width: 'min(1440px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
     });
     modal.el.classList.add('atl-bank-editor-modal');
+    fitLatin();
+    latinSizeObserver.observe(latinField);
+    document.fonts?.ready.then(fitLatin);
     modal.el.querySelector('.mh').insertBefore(nav, modal.el.querySelector('.xbtn'));
     const cancel = modal.el.querySelector('.mf button');
     cancel.type = 'button';
