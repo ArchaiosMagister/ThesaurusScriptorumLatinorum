@@ -96,7 +96,18 @@ export function modernizeBank(source) {
     const filterFields = el('div', 'atl-bank-more-fields');
     filterFields.append(bankField('Obra', filters.work, ''), bankField('Referencia', filters.reference, ''),
         bankField('Procedencia', filters.origin, ''), bankField('Uso', filters.usage, ''));
-    moreFilters.append(el('h5', 'atl-facet-heading', 'Procedencia y uso'));
+    const advancedTop = el('div', 'atl-advanced-top');
+    const advancedSection = (title, id, content, active) => {
+        const details = el('details', 'atl-advanced-section');
+        details.dataset.section = id;
+        const summary = el('summary', 'atl-advanced-summary');
+        summary.append(el('span', '', title));
+        details.append(summary, content);
+        bankState.advancedOpen ??= {};
+        details.open = bankState.advancedOpen[id] ?? (!matchMedia('(max-width: 550px)').matches || active);
+        details.addEventListener('toggle', () => { bankState.advancedOpen[id] = details.open; });
+        return details;
+    };
     const examFields = el('div', 'atl-bank-more-fields');
     examFields.append(filters.examLabel, filters.excludeExamLabel, bankField('Año de Selectividad', filters.examYear, ''),
         bankField('Comunidad autónoma', filters.examCommunity, ''), bankField('Estado', filters.examProgress, ''));
@@ -115,7 +126,9 @@ export function modernizeBank(source) {
     resetDone.disabled = !doneCount;
     progressBar.append(progressSummary, resetDone);
     examFields.append(progressBar);
-    moreFilters.append(filterFields, el('h5', 'atl-facet-heading', 'Selectividad'), examFields);
+    advancedTop.append(advancedSection('Selectividad', 'pau', examFields, Boolean(bankState.exam || bankState.excludeExam || bankState.examYear || bankState.examCommunity || bankState.examProgress)),
+        advancedSection('Obra, procedencia y uso', 'origin', filterFields, Boolean(bankState.work || bankState.reference || bankState.origin || bankState.usage)));
+    moreFilters.append(advancedTop);
     const filterChips = el('div', 'grammar-chips atl-bank-active-tags');
     filterChips.setAttribute('aria-label', 'Etiquetas de filtro activas');
 ` + source.slice(to);
@@ -137,7 +150,18 @@ export function modernizeBank(source) {
     const quick = el('div', 'atl-bank-quick-tags');
     quick.hidden = !frequent.length;
     quick.append(el('span', 'atl-quick-label', 'Etiquetas frecuentes'), shortcuts);
-    moreFilters.append(el('h5', 'atl-facet-heading', 'Gramática'), filters.panel);
+    const grammarBlock = el('section', 'atl-advanced-grammar');
+    const grammarTitle = el('h5', 'atl-facet-heading', 'Gramática');
+    grammarBlock.append(grammarTitle, filters.panel);
+    moreFilters.append(grammarBlock);
+    const showResults = button('Ver resultados', () => {
+        moreFilters.hidden = true;
+        bankState.moreFilters = false;
+        filterToggle.setAttribute('aria-expanded', 'false');
+        filterToggle.focus({ preventScroll: true });
+        resultsHeader.scrollIntoView({ block: 'nearest' });
+    }, 'hbtn atl-show-results');
+    moreFilters.append(showResults);
     const searchPanel = el('div', 'atl-bank-search-panel');
     searchPanel.append(bankToolbar);
     bank.append(searchPanel);`);
@@ -225,7 +249,8 @@ export function modernizeBank(source) {
                     chips.append(chip);
                 }`);
   replace('            row.append(chips);', '            footer.prepend(chips);\n            row.append(footer);');
-  replace('        const isFiltered = Boolean(search.value.trim()', `        filterChips.replaceChildren();
+  replace('        const isFiltered = Boolean(search.value.trim()', `        filters.refresh();
+        filterChips.replaceChildren();
         examShortcut.setAttribute('aria-pressed', String(criteria.exam));
         excludeExamShortcut.setAttribute('aria-pressed', String(criteria.excludeExam));
         searchClear.hidden = !search.value;
@@ -272,7 +297,7 @@ export function modernizeBank(source) {
         for (const id of criteria.tags) {
             const item = catalogue.find(tag => tag.id === id);
             if (!item) continue;
-            const label = id === infinitiveId ? ['Infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
+            const label = id === infinitiveId ? ['Forma de infinitivo', criteria.infTime, criteria.infVoice].filter(Boolean).join(' ') : item.label;
             const chip = button(label + ' ×', () => filters.toggleTag(id), 'grammar-chip atl-bank-tag-chip atl-facet-chip');
             chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
             chip.setAttribute('aria-label', 'Quitar filtro «' + label + '»');

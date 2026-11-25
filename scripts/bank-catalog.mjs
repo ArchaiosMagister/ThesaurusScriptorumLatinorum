@@ -99,20 +99,31 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const pending = element('input', { type: 'checkbox', checked: state.includePending });
   pending.addEventListener('change', onChange);
   const pendingLabel = element('label', { className: 'atl-tag-option' });
-  pendingLabel.append(pending, ' Incluir propuestas pendientes de Collatinus');
+  pendingLabel.append(pending, element('span', { textContent: 'Incluir propuestas pendientes de Collatinus' }));
   const tagQuery = element('input', { type: 'search', placeholder: 'Buscar etiquetas' });
   tagQuery.setAttribute('aria-label', 'Buscar etiquetas gramaticales');
   const list = element('div', { className: 'atl-tag-groups' });
   list.setAttribute('aria-label', 'Etiquetas gramaticales');
   const selections = new Map();
   const groups = new Map();
+  const narrow = matchMedia('(max-width: 550px)').matches;
+  state.grammarOpen ??= {};
+  let beforeSearch = null;
   const groupIds = [...GRAMMAR_GROUP_IDS, 'custom'];
   for (const id of groupIds) {
-    const section = element('section', { className: 'atl-filter-family' });
-    const heading = element('h6', { textContent: catalogue.find(tag => tag.id === id)?.label ?? 'Otras etiquetas y personalizadas' });
+    const section = element('details', { className: 'atl-filter-family' });
+    section.dataset.family = id;
+    const heading = element('summary', { className: 'atl-filter-family-heading' });
+    const name = element('span', { textContent: catalogue.find(tag => tag.id === id)?.label ?? 'Otras etiquetas y personalizadas' });
+    const counter = element('span', { className: 'atl-family-count' });
+    heading.append(name, counter);
     const options = element('div', { className: 'atl-filter-family-options' });
     section.append(heading, options);
-    groups.set(id, { section, options });
+    section.open = state.grammarOpen[id] ?? (!narrow || state.tags.some(tag => id === 'gram.formas' && isInfinitiveTag(tag) || (GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(tag, group, catalogue)) ?? 'custom') === id));
+    section.addEventListener('toggle', () => {
+      if (!tagQuery.value.trim() && !beforeSearch) state.grammarOpen[id] = section.open;
+    });
+    groups.set(id, { section, options, counter });
     list.append(section);
   }
   const compareLabels = (a, b) => compare(a.label, b.label);
@@ -128,7 +139,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   }
   const infinitive = element('input', { type: 'checkbox', checked: state.tags.includes(infinitiveId) });
   const infinitiveLabel = element('label', { className: 'atl-tag-option' });
-  infinitiveLabel.append(infinitive, element('span', { textContent: 'Infinitivo' }));
+  infinitiveLabel.append(infinitive, element('span', { textContent: 'Forma de infinitivo' }));
   const facet = (label, values, value) => {
     const control = element('select');
     control.setAttribute('aria-label', label);
@@ -140,7 +151,13 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   const infTime = facet('Tiempo del infinitivo', infinitiveTenses, state.infTime);
   const infVoice = facet('Voz del infinitivo', infinitiveVoices, state.infVoice);
   const infGroup = element('fieldset', { className: 'atl-infinitive-filters' });
-  infGroup.append(infinitiveLabel, infTime, infVoice);
+  const facetLabel = (text, control) => {
+    const label = element('label', { className: 'atl-infinitive-facet' });
+    label.append(element('span', { textContent: text }), control);
+    return label;
+  };
+  infGroup.append(infinitiveLabel, facetLabel('Tiempo', infTime), facetLabel('Voz', infVoice));
+  groups.get('gram.formas').options.prepend(infGroup);
   function updateInfinitive() {
     infTime.disabled = infVoice.disabled = !infinitive.checked;
     if (!infinitive.checked) infTime.value = infVoice.value = '';
@@ -151,19 +168,54 @@ export function createBankFilters(texts, catalogue, state, onChange) {
   list.append(noTags);
   const findTags = () => {
     const query = foldLatin(tagQuery.value.trim());
-    infGroup.hidden = !foldLatin('infinitivo tiempo voz ' + infinitiveTenses.join(' ') + ' ' + infinitiveVoices.join(' ')).includes(query);
+    if (query && !beforeSearch) beforeSearch = new Map([...groups].map(([id, {section}]) => [id, section.open]));
+    const infTerms = foldLatin('forma de infinitivo tiempo voz ' + infinitiveTenses.join(' ') + ' ' + infinitiveVoices.join(' '));
+    infGroup.hidden = !query.split(/\s+/u).every(term => infTerms.includes(term));
     let found = !infGroup.hidden;
     for (const { row, terms } of selections.values()) {
       row.hidden = !terms.includes(query);
       found ||= !row.hidden;
     }
-    for (const { section, options } of groups.values()) section.hidden = !options.querySelector('.atl-tag-option:not([hidden])');
+    for (const [id, { section, options }] of groups) {
+      section.hidden = !(id === 'gram.formas' && !infGroup.hidden) && !Array.from(options.children).some(row => row.matches('.atl-tag-option:not([hidden])'));
+      if (query && !section.hidden) section.open = true;
+      else if (!query && beforeSearch) section.open = beforeSearch.get(id);
+    }
+    if (!query) beforeSearch = null;
     noTags.hidden = found;
   };
   tagQuery.addEventListener('input', findTags);
   const toolbar = element('div', { className: 'atl-bank-tag-controls' });
+  modeLabel.className = 'atl-grammar-match-field';
+  const grammarActions = element('div', { className: 'atl-grammar-actions' });
+  const selectedCount = element('span', { className: 'atl-grammar-count' });
+  const expand = element('button', { type: 'button', className: 'hbtn', textContent: 'Desplegar todas' });
+  const collapse = element('button', { type: 'button', className: 'hbtn', textContent: 'Plegar todas' });
+  const clear = element('button', { type: 'button', className: 'hbtn', textContent: 'Limpiar etiquetas' });
+  expand.addEventListener('click', () => { for (const {section} of groups.values()) if (!section.hidden) section.open = true; });
+  collapse.addEventListener('click', () => { for (const {section} of groups.values()) section.open = false; });
+  clear.addEventListener('click', () => {
+    for (const {check} of selections.values()) check.checked = false;
+    infinitive.checked = false;
+    updateInfinitive();
+    onChange();
+  });
+  function refresh() {
+    const selected = [...selections.values()].filter(({check}) => check.checked).length + Number(infinitive.checked);
+    selectedCount.textContent = selected ? selected + (selected === 1 ? ' etiqueta activa' : ' etiquetas activas') : 'Ninguna etiqueta activa';
+    clear.disabled = !selected;
+    for (const [id, {section, options, counter}] of groups) {
+      const controls = [...options.querySelectorAll('input[type="checkbox"]')];
+      const count = controls.filter(check => check.checked).length;
+      counter.textContent = count ? count + ' / ' + controls.length : String(controls.length);
+      counter.dataset.selected = String(Boolean(count));
+      section.dataset.selected = String(Boolean(count));
+    }
+  }
+  grammarActions.append(selectedCount, expand, collapse, clear);
   toolbar.append(tagQuery, modeLabel, pendingLabel);
-  panel.append(toolbar, infGroup, list);
+  panel.append(toolbar, grammarActions, list);
+  refresh();
   findTags();
   function read() {
     const tags = [...selections.values()].flatMap(({ check }) => check.checked ? [check.value] : []);
@@ -215,7 +267,7 @@ export function createBankFilters(texts, catalogue, state, onChange) {
     const voice = second || (infinitiveVoices.includes(first) ? first : '');
     return infinitive.checked && infTime.value === tense && infVoice.value === voice;
   }
-  return { panel, work, reference, origin, course, usage, examLabel, excludeExamLabel, examYear, examCommunity, examProgress, setExamMode, read, reset, toggleTag, isActive };
+  return { panel, work, reference, origin, course, usage, examLabel, excludeExamLabel, examYear, examCommunity, examProgress, setExamMode, read, reset, toggleTag, isActive, refresh };
 }
 
 export function appendDuplicateCards(target, pairs, sources, { kindLabel, sourceReference, referencedIn, passage, edit }) {

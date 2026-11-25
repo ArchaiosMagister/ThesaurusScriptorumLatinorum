@@ -213,3 +213,61 @@ test('los filtros gramaticales se ajustan a la pantalla estrecha sin desbordar',
   await panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true }).check();
   await expect(panel.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true })).toBeChecked();
 });
+
+
+test('en iPhone los grupos se pliegan, buscar abre coincidencias y limpiar etiquetas mantiene otros filtros', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const bank = page.frameLocator('#panel-cuaderno iframe').getByRole('region', { name: 'Banco de textos propios' });
+  await bank.getByRole('combobox', { name: 'Filtrar textos por curso' }).selectOption('1bach');
+  await bank.getByRole('button', { name: 'Más filtros' }).click();
+  const panel = bank.locator('.atl-grammar-filters');
+  const forms = panel.locator('[data-family="gram.formas"]');
+  await expect(forms.locator('summary')).toBeVisible();
+  await expect(forms).not.toHaveAttribute('open', '');
+  await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('infinitivo de presente');
+  await expect(forms).toHaveAttribute('open', '');
+  await forms.getByRole('checkbox', { name: 'Forma de infinitivo' }).check();
+  await forms.getByRole('combobox', { name: 'Tiempo del infinitivo' }).selectOption('presente');
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('1 etiqueta activa');
+  await panel.getByRole('searchbox', { name: 'Buscar etiquetas gramaticales' }).fill('');
+  await panel.getByRole('button', { name: 'Desplegar todas' }).click();
+  await expect(forms.getByRole('checkbox', { name: 'Forma de infinitivo' })).toBeChecked();
+  await panel.getByRole('button', { name: 'Plegar todas' }).click();
+  await expect(forms).not.toHaveAttribute('open', '');
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('1 etiqueta activa');
+  await panel.getByRole('button', { name: 'Limpiar etiquetas' }).click();
+  await expect(panel.locator('.atl-grammar-count')).toHaveText('Ninguna etiqueta activa');
+  await expect(bank.getByRole('combobox', { name: 'Filtrar textos por curso' })).toHaveValue('1bach');
+  await bank.getByRole('button', { name: 'Ver resultados' }).click();
+  await expect(bank.getByRole('button', { name: 'Más filtros' })).toHaveAttribute('aria-expanded', 'false');
+});
+
+
+test('la ficha conserva navegación y guardado accesibles durante la lectura de un texto largo en iPhone', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+  await modal.getByRole('textbox', { name: 'Título', exact: true }).fill('Pasaje extenso');
+  await modal.getByRole('textbox', { name: 'Autor', exact: true }).fill('César');
+  await modal.getByRole('textbox', { name: 'Texto latino', exact: true }).fill(Array(30).fill('Gallia est omnis divisa in partes tres.').join('\n'));
+  await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  await bank.locator('.atl-bank-card').click();
+  const body = modal.locator('.mb');
+  await expect(modal.locator('.atl-edit-citation')).toContainText('César');
+  expect(await body.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(2);
+  const footer = modal.locator('.atl-edit-footer');
+  await expect(footer.getByRole('button', { name: 'Guardar cambios' })).toBeInViewport();
+  const initial = await footer.boundingBox();
+  await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await expect(footer.getByRole('button', { name: 'Guardar cambios' })).toBeInViewport();
+  const after = await footer.boundingBox();
+  expect(Math.abs(initial.y - after.y)).toBeLessThan(2);
+  await modal.getByRole('textbox', { name: 'Autor', exact: true }).fill('Julio César');
+  await expect(modal.locator('.atl-edit-citation')).toHaveText('Julio César');
+  await footer.getByRole('button', { name: 'Guardar cambios' }).click();
+  await expect(modal).toBeHidden();
+});

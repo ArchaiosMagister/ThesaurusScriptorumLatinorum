@@ -425,6 +425,7 @@ window.addEventListener('atl-view', () => {
     titleField.classList.add('atl-edit-title-field');
     const latinField = latin.closest('label');
     latinField.classList.add('atl-edit-latin-field');
+    latin.rows = 1;
     // Measure the actual wrapped lines, not a character-count approximation.
     const fitLatin = () => {
         if (!latin.isConnected || !latin.clientWidth) return;
@@ -470,11 +471,27 @@ window.addEventListener('atl-view', () => {
     staleTags.hidden = true;
     latin.addEventListener('input', () => { staleTags.hidden = latin.value === source.latin; });
     grammarSection.append(staleTags);
-    main.append(titleField, latinHeading, latinField, grammarSection, notesPanel, glossary.section);
+    const identity = el('section', 'atl-edit-identity');
+    const citation = el('p', 'atl-edit-citation');
+    const updateCitation = () => {
+        citation.textContent = ['author', 'work', 'reference'].map(key => inputs.get(key).value.trim()).filter(Boolean).join(' · ') || 'Sin referencia bibliográfica';
+    };
+    for (const key of ['author', 'work', 'reference']) inputs.get(key).addEventListener('input', updateCitation);
+    updateCitation();
+    const classification = el('div', 'atl-edit-classification');
+    if (source.selectividad) classification.append(el('span', 'atl-edit-class-chip', selectividadLabel(source)));
+    for (const course of source.courseIds ?? []) classification.append(el('span', 'atl-edit-class-chip', course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato'));
+    identity.append(titleField, citation, classification);
+    const passage = el('section', 'atl-edit-passage');
+    passage.append(latinHeading, latinField);
+    const supplementary = el('div', 'atl-edit-supplementary');
+    supplementary.append(notesPanel, glossary.section);
+    main.append(identity, passage, grammarSection, supplementary);
     const bibliographic = el('div', 'atl-edit-bibliography');
     bibliographic.append(el('h3', '', 'Referencia bibliográfica'),
         inputs.get('author').closest('label'), inputs.get('work').closest('label'),
         inputs.get('reference').closest('label'));
+    exam.container.classList.add('atl-edit-exam');
     const teaching = el('div', 'atl-edit-teaching');
     teaching.append(el('h3', '', 'Clasificación docente'), courseField, difficultyField, exam.container);
     metadata.append(bibliographic, teaching);
@@ -535,7 +552,7 @@ window.addEventListener('atl-view', () => {
     for (const notice of [...form.children].filter(child => child.matches('p.small.muted'))) { notice.classList.add('atl-edit-import-notice'); main.append(notice); }
     form.addEventListener('submit', event => { event.preventDefault(); save.click(); });
     const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], {
-        width: 'min(1440px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
+        width: 'min(1200px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
     });
     modal.el.classList.add('atl-bank-editor-modal');
     fitLatin();
@@ -546,7 +563,9 @@ window.addEventListener('atl-view', () => {
     cancel.type = 'button';
     cancel.classList.add('atl-edit-cancel');
     actions.insertBefore(cancel, save);
-    modal.el.querySelector('.mf').remove();
+    const footer = modal.el.querySelector('.mf');
+    footer.classList.add('atl-edit-footer');
+    footer.replaceChildren(actions);
     const rawClose = modal.close;
     const finish = () => { bypassClose = true; try { rawClose(); } finally { bypassClose = false; } };
     // Existing callers assign close = modal.close after this block.
