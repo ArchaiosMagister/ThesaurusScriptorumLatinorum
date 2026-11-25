@@ -804,7 +804,14 @@ window.addEventListener('atl-view', () => {
             difficulty.setAttribute('aria-label', 'Dificultad ' + difficultyText(assessment.level) +
                 (assessment.manual ? ' · Docente' : ' · Estimada'));
             difficulty.title = difficulty.getAttribute('aria-label');
-            read.append(difficulty);
+            const cardMeta = el('span', 'atl-card-meta');
+            if (Number.isInteger(text.selectividad?.year)) {
+                const year = el('span', 'atl-card-pau-year', String(text.selectividad.year));
+                year.setAttribute('aria-label', 'Año de Selectividad: ' + text.selectividad.year);
+                cardMeta.append(year);
+            }
+            cardMeta.append(difficulty);
+            read.append(cardMeta);
             read.title = 'Editar ficha';
             read.dataset.sourceId = text.id;
             const restoreFocus = () => {

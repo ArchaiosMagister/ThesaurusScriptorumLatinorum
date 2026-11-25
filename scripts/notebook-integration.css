@@ -1460,3 +1460,10 @@
   .atl-bank-editor-modal .atl-edit-grammar-heading { align-items: center; flex-wrap: wrap; }
   .atl-bank-editor-modal .atl-edit-tags { min-height: 44px; flex: none; padding: .35rem .65rem; border-radius: 8px; font-size: .83rem; color: var(--accent); }
 }
+
+/* El año PAU permanece legible incluso cuando se recorta la referencia. */
+@media screen {
+  #editor .atl-bank .atl-card-meta { display: grid; justify-items: end; align-content: start; gap: .25rem; min-width: 0; }
+  #editor .atl-bank .atl-card-pau-year { display: inline-block; padding: .2rem .5rem; border-radius: 6px; background: #315c49; color: #fff; font: 750 1.08rem/1.2 var(--ui-font); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  #editor .atl-bank .atl-card-meta .atl-card-difficulty { justify-self: end; }
+}
