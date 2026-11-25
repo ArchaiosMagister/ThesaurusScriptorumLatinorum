@@ -418,6 +418,23 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const personal = firstPicker.locator('details[data-group="Tiempos personales"]');
   await expect(personal).not.toHaveAttribute('open');
   await personal.locator(':scope > summary').click();
+  const present = personal.getByRole('button', { name: 'Presente de indicativo activo', exact: true });
+  await expect(present).toHaveText('Presente');
+  const familyPositions = await personal.locator('.atl-picker-families > .atl-picker-family').evaluateAll(cards =>
+    cards.slice(0, 2).map(card => ({ x: card.offsetLeft, y: card.offsetTop })));
+  expect(familyPositions[0].y).toBe(familyPositions[1].y);
+  expect(familyPositions[1].x).toBeGreaterThan(familyPositions[0].x);
+  const activeForms = personal.locator('[data-tag-id^="gram.verbo."][data-tag-id$=".indicativo.activo"]').filter({ visible: true });
+  const infectumForms = activeForms.filter({ hasText: /^(Presente|Imperfecto|Futuro)$/u });
+  await expect(infectumForms).toHaveCount(3);
+  const rows = await infectumForms.evaluateAll(buttons => buttons.map(button => Math.round(button.getBoundingClientRect().top)));
+  expect(new Set(rows).size).toBe(1);
+  await present.focus();
+  await present.press('Space');
+  await expect(present).toBeFocused();
+  await expect(present).toHaveAttribute('aria-pressed', 'true');
+  await present.press('Space');
+  await expect(present).toHaveAttribute('aria-pressed', 'false');
   const perfectPassive = firstPicker.getByRole('checkbox', { name: 'Seleccionar Perfectum · subjuntivo pasivo en Tiempos personales para primer trimestre' });
   const perfectIndicativePassive = firstPicker.getByRole('checkbox', { name: 'Seleccionar Perfectum · indicativo pasivo en Tiempos personales para primer trimestre' });
   await perfectPassive.check();
@@ -429,8 +446,8 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const pronouns = firstPicker.getByRole('checkbox', { name: 'Seleccionar Pronombres para primer trimestre' });
   await pronouns.check();
   await firstPicker.locator('details[data-group="Pronombres"] > summary').click();
-  await firstPicker.locator('details[data-group="Demostrativos"] > summary').click();
-  await firstPicker.getByRole('checkbox', { name: 'Demostrativo hic', exact: true }).uncheck();
+  const hic = firstPicker.getByRole('button', { name: 'Demostrativo hic', exact: true, pressed: true });
+  await hic.click();
   await expect(pronouns).toHaveJSProperty('indeterminate', true);
   await expect(firstPicker.locator('details[data-group="Pronombres"] > summary')).toHaveText('Pronombres 8/9');
   await firstPicker.getByRole('button', { name: 'Limpiar etiquetas' }).click();
@@ -439,17 +456,17 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   const search = firstPicker.getByRole('searchbox');
   await search.fill('infinitivos');
   const infinitives = firstPicker.locator('details[data-group="Infinitivos"]');
-  const formsAndConstruction = infinitives.locator('input[data-tag-id]:visible');
+  const formsAndConstruction = infinitives.locator('button[data-tag-id]:visible');
   const wholeFamily = firstPicker.getByRole('checkbox', { name: 'Seleccionar Infinitivos para primer trimestre' });
   await wholeFamily.check();
-  await expect(formsAndConstruction.and(infinitives.locator('input:checked'))).toHaveCount(10);
-  await expect(infinitives.locator('input[data-tag-id="gram.inf.forma"]')).not.toBeChecked();
+  await expect(formsAndConstruction.and(infinitives.locator('[aria-pressed="true"]'))).toHaveCount(10);
+  await expect(infinitives.locator('[data-tag-id="gram.inf.forma"]')).toHaveAttribute('aria-pressed', 'false');
   await wholeFamily.uncheck();
 
   await search.fill('Ablativo absoluto');
-  await firstPicker.getByRole('checkbox', { name: 'Ablativo absoluto', exact: true }).check();
+  await firstPicker.getByRole('button', { name: 'Ablativo absoluto', exact: true, pressed: false }).click();
   await search.fill('gram.subjuntivo');
-  await firstPicker.getByRole('checkbox', { name: 'Subjuntivo', exact: true }).check();
+  await firstPicker.getByRole('button', { name: 'Subjuntivo', exact: true, pressed: false }).click();
   const ordered = panel.locator('.atl-planner-term').first().locator('.atl-planner-selected');
   await ordered.locator('summary').click();
   await ordered.getByRole('button', { name: 'Subir Subjuntivo' }).click();
@@ -458,7 +475,7 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   await panel.getByText('Segundo trimestre', { exact: true }).click();
   const secondPicker = panel.getByRole('group', { name: 'Selección de etiquetas para segundo trimestre' });
   await secondPicker.getByRole('searchbox').fill('gram.subjuntivo');
-  await secondPicker.getByRole('checkbox', { name: 'Subjuntivo', exact: true }).check();
+  await secondPicker.getByRole('button', { name: 'Subjuntivo', exact: true, pressed: false }).click();
   await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
   await expect(panel.getByText('Refuerzo del primer trimestre · 2/2 · 25 candidatos')).toBeVisible();
   await panel.getByText('Plantillas de programación', { exact: true }).click();
@@ -541,7 +558,7 @@ test('el selector trimestral en móvil combina accesos rápidos y conserva una p
   await expect(picker.locator('.atl-planner-tag-groups > div')).toHaveCount(8);
   await expect(picker.locator('.atl-planner-tag-groups details[open]')).toHaveCount(0);
   await picker.getByRole('button', { name: 'Expandir todo' }).click();
-  await expect(picker.getByRole('checkbox', { name: 'Etiqueta docente de móvil' })).toBeVisible();
+  await expect(picker.getByRole('button', { name: 'Etiqueta docente de móvil' })).toBeVisible();
   const groups = picker.locator('.atl-planner-tag-groups');
   expect(await groups.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
   expect(await panel.evaluate(el => {
@@ -558,10 +575,14 @@ test('el selector trimestral en móvil combina accesos rápidos y conserva una p
   const quick = picker.getByRole('checkbox', { name: /Seleccionar formas coincidentes/ });
   await quick.check();
   const deponents = picker.locator('details[data-group="Deponentes"]');
-  await expect(deponents.locator('input[data-tag-id]:checked')).toHaveCount(2);
-  await expect(picker.locator('input[data-tag-id]:checked')).toHaveCount(2);
+  await expect(deponents.locator('[data-tag-id][aria-pressed="true"]')).toHaveCount(2);
+  await expect(picker.locator('[data-tag-id][aria-pressed="true"]')).toHaveCount(2);
   await picker.getByRole('searchbox').fill('gram.verbo.perfecto.subjuntivo.deponente');
-  await picker.locator('input[data-tag-id="gram.verbo.perfecto.subjuntivo.deponente"]').uncheck();
+  const chip = picker.getByRole('button', { name: 'Perfecto de subjuntivo deponente', exact: true });
+  expect((await chip.boundingBox()).height).toBeGreaterThanOrEqual(44);
+  if (test.info().project.use.hasTouch) await chip.tap();
+  else await chip.click();
+  await expect(chip).toHaveAttribute('aria-pressed', 'false');
   await expect(quick).toHaveJSProperty('indeterminate', true);
   await picker.getByRole('searchbox').fill('');
   await expect(groups.locator('details[open]')).toHaveCount(0);
@@ -575,8 +596,8 @@ test('el selector trimestral en móvil combina accesos rápidos y conserva una p
   await expect(first).toContainText('Cobertura insuficiente: Oración de infinitivo, custom.ausente');
   const second = panel.locator('[data-period="trimestre-2"]');
   await expect(second.locator('summary')).toContainText('1/1 · 1 candidatos');
-  await expect(picker.locator('input[data-tag-id="gram.inf.forma"]')).toBeChecked();
-  await expect(picker.locator('input[data-tag-id="gram.inf.presente.activo"]')).not.toBeChecked();
+  await expect(picker.locator('[data-tag-id="gram.inf.forma"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(picker.locator('[data-tag-id="gram.inf.presente.activo"]')).toHaveAttribute('aria-pressed', 'false');
   const ordered = panel.locator('.atl-planner-term').first().locator('.atl-planner-selected');
   await ordered.locator('summary').click();
   await expect(ordered.locator('li > span:first-child')).toHaveText([
@@ -587,8 +608,8 @@ test('el selector trimestral en móvil combina accesos rápidos y conserva una p
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('atl-v1:curriculum-template:994637a3-ec84-412d-b35c-92fe772a0002')));
   expect(stored.settings.terms[0].tags).toEqual(history);
   await picker.getByRole('button', { name: 'Limpiar etiquetas' }).click();
-  await expect(picker.locator('input[data-tag-id]:checked')).toHaveCount(0);
-  await expect(panel.locator('.atl-planner-term').nth(1).locator('input[data-tag-id="gram.infinitivo"]')).toBeChecked();
+  await expect(picker.locator('[data-tag-id][aria-pressed="true"]')).toHaveCount(0);
+  await expect(panel.locator('.atl-planner-term').nth(1).locator('[data-tag-id="gram.infinitivo"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('Examinator importa una copia del texto y mantiene el acceso a Perseus', async ({ page }) => {
