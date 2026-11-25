@@ -410,8 +410,9 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   });
   await page.reload();
   await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
+  const dialog = frame.getByRole('dialog', { name: 'Crear cuaderno por trimestres' });
   const panel = frame.locator('.atl-bank-planner');
-  const create = panel.getByRole('button', { name: 'Crear cuaderno', exact: true });
+  const create = dialog.getByRole('button', { name: 'Crear cuaderno', exact: true });
   await expect(panel.getByText('Tercer trimestre · 15/15 · 50 candidatos')).toBeVisible();
   const firstPicker = panel.getByRole('group', { name: 'Selección de etiquetas para primer trimestre' });
   for (const family of ['Infectum · activa', 'Infectum · pasiva', 'Perfectum · activa', 'Perfectum · pasiva', 'Pronombres']) {
@@ -431,8 +432,21 @@ test('planifica 50 lecturas con etiquetas trimestrales y refuerzo independiente'
   await firstPicker.getByRole('searchbox').fill('perfectum');
   await expect(firstPicker.getByRole('checkbox', { name: 'Seleccionar familia Perfectum · pasiva para primer trimestre' })).toBeVisible();
   await expect(pronouns).toHaveCount(0);
-  await firstPicker.getByRole('searchbox').fill('');
   const first = panel.getByRole('combobox', { name: 'Etiqueta para primer trimestre' });
+  const infinitiveOptions = first.locator('optgroup[label="Infinitivos"] option');
+  await expect(infinitiveOptions).toHaveCount(9);
+  await expect(first.locator('option[value="gram.part.forma"], option[value="gram.inf.forma"]')).toHaveCount(0);
+  await expect(first.locator('option[value="gram.infinitivo"]')).toHaveText('Oración de infinitivo');
+  await firstPicker.getByRole('searchbox').fill('infinitivos');
+  const infinitives = firstPicker.locator('.atl-planner-family').filter({ hasText: /^Infinitivos \(/u });
+  await expect(infinitives.locator('.atl-planner-family-choices input')).toHaveCount(9);
+  const wholeFamily = infinitives.getByRole('checkbox', { name: 'Seleccionar familia Infinitivos para primer trimestre' });
+  await wholeFamily.check();
+  await expect(panel.locator('.atl-planner-selected:visible li')).toHaveCount(9);
+  await expect(infinitiveOptions).toHaveCount(0);
+  await wholeFamily.uncheck();
+  await expect(panel.locator('.atl-planner-selected:visible li')).toHaveCount(0);
+  await firstPicker.getByRole('searchbox').fill('');
   await first.selectOption('gram.ablativo.absoluto');
   await first.selectOption('gram.subjuntivo');
   await panel.getByRole('button', { name: /^Subir Subjuntivo/i }).click();
@@ -2428,7 +2442,8 @@ test('exporta una selección y reimporta las etiquetas filológicas sin tocar el
   await bank.getByRole('button', { name: 'Crear cuaderno por trimestres' }).click();
   const planner = frame.locator('.atl-bank-planner');
   await planner.getByRole('checkbox', { name: 'Aceptar advertencias y crear el cuaderno con esta selección' }).check();
-  await planner.getByRole('button', { name: 'Crear cuaderno', exact: true }).click();
+  await frame.getByRole('dialog', { name: 'Crear cuaderno por trimestres' })
+    .getByRole('button', { name: 'Crear cuaderno', exact: true }).click();
   await frame.locator('.atl-organize-main').waitFor();
   const beforeNotebook = await notebookSnapshot(frame, 'Lecturas por trimestres');
 
