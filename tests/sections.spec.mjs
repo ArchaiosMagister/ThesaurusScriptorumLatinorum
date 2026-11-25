@@ -2184,6 +2184,40 @@ test('Dropbox sincroniza el banco, los cuadernos y el uso de exámenes sin compa
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
     await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await expect(reopened.locator('#dropbox-connection')).toHaveText('Vinculado');
+    // Una restauración explícita descarta incluso cambios locales sin conflicto
+    // y permite recuperar un diario pendiente obsoleto, sin ninguna subida.
+    const cloudRestore = reopened.getByRole('button', { name: 'Sustituir este dispositivo por Dropbox' });
+    await changeReview(reopened, 'gram.gerundio');
+    await reopened.evaluate(templateId => {
+      localStorage.setItem(templateId, JSON.stringify({ name: 'Solo local', settings: {
+        terms: [{ tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }, { tags: [], count: 0, review: 0 }],
+        progression: 'specific', exam: 'exclude', excludedCourses: [], filtered: false
+      } }));
+      localStorage.setItem('atl-v1:dropbox:checkpoint-pending:claveprueba:cuenta-prueba',
+        JSON.stringify({ hash: 'obsoleto', before: {}, after: {} }));
+    }, templateId);
+    const remoteBeforeRestore = JSON.stringify(remote);
+    const uploadsBeforeRestore = uploads;
+    const archivesBeforeRestore = recovery.size;
+    reopened.once('dialog', prompt => prompt.dismiss());
+    await cloudRestore.click();
+    expect(await reopened.evaluate(key => JSON.parse(localStorage.getItem(key)).rejected, conflictKey))
+      .toEqual(['0:4:gram.gerundio']);
+    reopened.once('dialog', prompt => prompt.accept());
+    const cloudReload = reopened.waitForEvent('load');
+    await cloudRestore.click();
+    await cloudReload;
+    await expect(reopened.locator('#app-status')).toHaveText('Sincronización con Dropbox completada.');
+    expect(await reopened.evaluate(({ key, templateId }) => ({
+      rejected: JSON.parse(localStorage.getItem(key)).rejected,
+      template: localStorage.getItem(templateId),
+      pending: localStorage.getItem('atl-v1:dropbox:checkpoint-pending:claveprueba:cuenta-prueba')
+    }), { key: conflictKey, templateId })).toEqual({ rejected: ['0:4:gram.participio'], template: null, pending: null });
+    expect(JSON.stringify(remote)).toBe(remoteBeforeRestore);
+    expect(uploads).toBe(uploadsBeforeRestore);
+    expect(recovery.size).toBe(archivesBeforeRestore);
+    await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();
+    await reopened.getByRole('button', { name: 'Sincronizar con Dropbox' }).click();
     await reopened.getByRole('button', { name: 'Cerrar sesión de Dropbox' }).click();
     await reopened.reload();
     await reopened.getByRole('button', { name: 'Copias de seguridad' }).click();

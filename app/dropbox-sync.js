@@ -167,7 +167,7 @@ async function archiveRemote(session, remote) {
   if (copy?.hash !== remote.hash) throw Error('No se pudo verificar la copia anterior de Dropbox.');
 }
 
-async function synchronize(session, prepareReload, report, resolution) {
+async function synchronize(session, prepareReload, report, resolution, restoreFromCloud = false) {
   const scope = session.appKey + ':' + session.account;
   const checkpointKey = 'checkpoint:' + scope;
   const pendingKey = 'checkpoint-pending:' + scope;
@@ -187,6 +187,34 @@ async function synchronize(session, prepareReload, report, resolution) {
       templates: await Promise.all((data.templates ?? []).map(async ([id, row]) => [id, await syncFingerprint(row)])),
       usages: await Promise.all(data.usages.map(async ([id, row]) => [id, await syncFingerprint(row)]))
     });
+  }
+  // Una restauración explícita es unidireccional: nunca publica ni combina datos.
+  // También permite salir de una sincronización interrumpida, conservando una copia local.
+  if (restoreFromCloud) {
+    if (!remote) throw new Error('No existe una copia de Thesaurus en Dropbox. No se han modificado los datos locales.');
+    const before = await fingerprints(local.rows);
+    const after = syncTargetRows(remote.data, local.rows);
+    await protectLocal('Antes de sustituir este dispositivo por la copia de Dropbox');
+    await prepareReload();
+    const current = await readSyncData();
+    if (!isRecoverableSync(await fingerprints(current.rows), before, before))
+      throw new Error('Los datos locales cambiaron durante la preparación. Vuelve a intentar la restauración.');
+    const latest = await readRemote(session);
+    if (latest?.revision !== remote.revision || latest?.hash !== remote.hash)
+      throw new Error('La copia de Dropbox cambió durante la preparación. Vuelve a intentar la restauración.');
+    const target = await fingerprints(after);
+    // Conserva el diario hasta verificar la aplicación y actualizar el punto de control.
+    save(localStorage, pendingKey, {
+      hash: remote.hash, applyLocal: true, revision: remote.revision, previousHash: remote.hash,
+      before, after: target
+    });
+    await applySyncData(remote.data, current.rows);
+    await saveCheckpoint(remote.data);
+    remove(localStorage, pendingKey);
+    report('Sincronización con Dropbox completada.');
+    save(sessionStorage, 'completed', true);
+    location.reload();
+    return;
   }
   // Recupera una aplicación interrumpida entre transacciones de IndexedDB.
   // Rechaza cambios ajenos y no sobrescribe una revisión nueva de Dropbox.
@@ -320,6 +348,7 @@ export async function setupDropbox(prepareReload, setStatus) {
   const connectButton = document.getElementById('dropbox-connect');
   const syncButton = document.getElementById('dropbox-sync');
   const quickSync = document.getElementById('app-dropbox-sync');
+  const restoreRemote = document.getElementById('dropbox-restore-remote');
   const disconnect = document.getElementById('dropbox-disconnect');
   const appKey = document.getElementById('dropbox-app-key');
   const message = document.getElementById('dropbox-status');
@@ -347,7 +376,8 @@ export async function setupDropbox(prepareReload, setStatus) {
     dialog.dataset.connected = String(connected);
     connection.textContent = connected ? 'Vinculado' : 'Sin vincular';
     setup.hidden = connectButton.hidden = connected;
-    syncButton.hidden = disconnect.hidden = !connected;
+    syncButton.hidden = disconnect.hidden = restoreRemote.hidden = !connected;
+    restoreRemote.disabled = busy;
     connectButton.disabled = syncButton.disabled = disconnect.disabled = appKey.disabled = busy;
     back.disabled = quickSync.disabled = keepRemote.disabled = keepLocal.disabled = busy;
     conflictPanel.hidden = !connected || !comparison;
@@ -397,7 +427,7 @@ export async function setupDropbox(prepareReload, setStatus) {
     paint();
     report('Sesión de Dropbox cerrada en este navegador.');
   });
-  function syncNow(preference) {
+  function syncNow(preference, restoreFromCloud = false) {
     if (busy || (preference && !comparison)) return;
     const resolution = preference ? {
       ...comparison, choices: { ...comparison.choices, [comparison.item]: preference }
@@ -406,13 +436,18 @@ export async function setupDropbox(prepareReload, setStatus) {
     void run(async () => {
       const current = read(localStorage, 'connection');
       if (!current) throw new Error('Vuelve a vincular la cuenta de Dropbox.');
-      report('Comparando los datos con Dropbox…');
-      const work = () => synchronize(current, prepareReload, report, resolution);
+      report(restoreFromCloud ? 'Verificando la copia de Dropbox…' : 'Comparando los datos con Dropbox…');
+      const work = () => synchronize(current, prepareReload, report, resolution, restoreFromCloud);
       if (navigator.locks) await navigator.locks.request(key, work);
       else await work();
     });
   }
   syncButton.addEventListener('click', () => syncNow());
+  restoreRemote.addEventListener('click', () => {
+    if (busy || !read(localStorage, 'connection')) return;
+    if (!confirm('¿Sustituir el banco, los cuadernos, las etiquetas, las plantillas y el registro compartido de exámenes de este dispositivo por los de Dropbox? Se guardará una copia de seguridad local. No se modificará Dropbox ni se borrarán los exámenes completos locales.')) return;
+    syncNow(undefined, true);
+  });
   keepRemote.addEventListener('click', () => syncNow('remote'));
   keepLocal.addEventListener('click', () => syncNow('local'));
   quickSync.addEventListener('click', () => {
