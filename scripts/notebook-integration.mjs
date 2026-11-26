@@ -114,7 +114,7 @@ function renderHome() {`);
   source = "import { bankTagAssignable, bankTagVisible, isGrammarGrouping, isRetiredTag, compactGrammarTags, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
-  source = "import { appendDuplicateCards, createBankFilters, createInfinitiveAssignment, openBankReader } from './atl-bank-catalog.js';\n" + source;
+  source = "import { appendDuplicateCards, bankGrammarChip, createBankFilters, createInfinitiveAssignment, openBankReader } from './atl-bank-catalog.js';\n" + source;
   source = "import { contextualBankAnalysis, rulesVersion } from './atl-bank-context.js';\n" + source;
   source = "import { analyzeBankText, bankAnalysisIndex, bankReviewKey, carryBankReview, readBankReview, visibleBankAnalysis } from './atl-bank-review.js';\n" + source;
   source = "import { vocabularyEditor } from './atl-bank-vocabulary.js';\n" + source;
@@ -481,9 +481,7 @@ window.addEventListener('atl-view', () => {
     for (const id of visible) {
         const item = grammar.find(tag => tag.id === id);
         if (!item) continue;
-        const chip = el('span', 'grammar-chip', item.label);
-        chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, grammar)) ?? 'custom';
-        confirmed.append(chip);
+        confirmed.append(bankGrammarChip(id, item.label, grammar));
     }
     if (!confirmed.childElementCount) confirmed.append(el('span', 'small muted', 'Sin etiquetas confirmadas'));
     const grammarHeading = el('div', 'atl-edit-section-heading atl-edit-grammar-heading');
@@ -504,7 +502,7 @@ window.addEventListener('atl-view', () => {
     for (const id of new Set(bankAutomaticTags(source.id))) {
         const item = grammar.find(tag => tag.id === id);
         if (item && !source.tagIds.includes(id) && bankTagAssignable(id))
-            automatic.append(el('span', 'grammar-chip', item.label + ' · Automática'));
+            automatic.append(bankGrammarChip(id, item.label, grammar));
     }
     if (automatic.childElementCount) grammarSection.append(el('h4', '', 'Etiquetas automáticas'), automatic);
     const staleTags = el('p', 'small muted', 'El texto latino ha cambiado; las etiquetas corresponden a la versión guardada.');

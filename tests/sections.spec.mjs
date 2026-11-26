@@ -1339,7 +1339,17 @@ test('el Banco etiqueta la concordancia sin intervención y respeta su descarte 
   await pronouns.check();
   await expect(card).toBeVisible();
   await pronouns.uncheck();
+  await card.click();
+  const editorTag = modal.locator('.atl-reader-automatic .grammar-chip');
+  await expect(editorTag).toHaveText('Posesivos');
+  await expect(editorTag).toHaveAttribute('data-group', 'gram.pronombres');
+  await expect(editorTag).toHaveCSS('border-top-style', 'none');
+  await modal.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await bank.getByRole('button', { name: 'Leer «Concordancia de prueba»' }).click();
+  const readerTag = modal.locator('.atl-reader-automatic .grammar-chip');
+  await expect(readerTag).toHaveText('Posesivos');
+  await expect(readerTag).toHaveAttribute('data-group', 'gram.pronombres');
+  await expect(readerTag).toHaveCSS('border-top-style', 'none');
   await frame.getByRole('button', { name: 'Etiquetar', exact: true }).click();
   const agreement = modal.locator('.grammar-proposal-card').filter({ hasText: 'Suas copias · Posesivos · Automática' });
   await modal.getByText('Etiquetas automáticas', { exact: true }).click();

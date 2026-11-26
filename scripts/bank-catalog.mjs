@@ -9,6 +9,12 @@ function element(tag, options = {}) {
   return Object.assign(document.createElement(tag), options);
 }
 
+export function bankGrammarChip(id, label, catalogue) {
+  const chip = element('span', { className: 'grammar-chip', textContent: label });
+  chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
+  return chip;
+}
+
 export function createInfinitiveAssignment(setTag) {
   const group = element('fieldset', { className: 'atl-infinitive-filters' });
   group.append(element('legend', { textContent: 'Infinitivo' }));
@@ -430,14 +436,14 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     }
     for (const id of text.tagIds) {
       if (!labels.has(id) || !bankTagAssignable(id)) continue;
-      const chip = element('span', { className: 'grammar-chip', textContent: labels.get(id) });
-      chip.dataset.group = GRAMMAR_GROUP_IDS.find(group => matchesGrammarTag(id, group, catalogue)) ?? 'custom';
-      tags.append(chip);
+      tags.append(bankGrammarChip(id, labels.get(id), catalogue));
     }
     if (!tags.childElementCount) tags.append(element('span', { className: 'small muted', textContent: 'Sin etiquetas confirmadas' }));
     courses.hidden = !courses.childElementCount;
     for (const id of new Set(automaticFor(text.id))) {
-      if (!text.tagIds.includes(id) && labels.has(id) && bankTagAssignable(id)) automaticTags.append(element('span', { className: 'grammar-chip', textContent: labels.get(id) + ' · Automática' }));
+      if (!text.tagIds.includes(id) && labels.has(id) && bankTagAssignable(id)) {
+        automaticTags.append(bankGrammarChip(id, labels.get(id), catalogue));
+      }
     }
     automaticSection.hidden = !automaticTags.childElementCount;
     const proposals = (pendingTags?.get(text.id) ?? []).filter(bankTagAssignable).map(id => labels.get(id)).filter(Boolean);
