@@ -64,3 +64,22 @@ test('model is not treated as an official session, ambiguous lexical bullet is n
  assert.deepEqual(scan.sharedLexical.phonetics,[]);
  assert.ok(scan.warnings.some(x=>x.includes('étimos')));
 });
+
+test('accents, quantity marks, split bullets and merged page footers from 2025 layout',()=>{
+ const variant=pages.map(page=>page.flatMap(x=>{
+   if(x==='APARTADO 1: Traducción y análisis')return ['APARTADO 1','Traducción y análisis'];
+   if(x==='LATÍN II – Ejercicio – Propuesta 1/2025')return ['LATÍN II – Ejercicio – Propuesta 5/2025     1'];
+   if(x==='Página 1 de 2')return ['Página 1'];
+   if(x==='§ noctem')return ['▪','nŭcālĕm'];
+   return [x];
+ }));
+ const scan=scanCastillaLeonRows(variant);
+ assert.equal(scan.year,2025);
+ assert.deepEqual(scan.sharedLexical.phonetics,['nŭcālĕm']);
+ assert.equal(scan.warnings.filter(x=>x.includes('marcas morfológicas')).length,2);
+ assert.ok(!scan.options[1].questions.some(x=>x.includes('Página')||x.includes('Propuesta')));
+});
+test('a community name in a quotation cannot authenticate an unrelated exam',()=>{
+ const variant=pages.map(page=>page.map(x=>x==='Castilla y León'?'Otra comunidad':x==='§ Ejemplo en castellano de in extremis'?'§ Castilla y León aparece en una cita':x));
+ assert.throws(()=>scanCastillaLeonRows(variant),/No se identifica/);
+});

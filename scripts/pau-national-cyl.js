@@ -5,9 +5,9 @@ import { prepareNationalPassage } from './pau-national-parser.js';
 const rowText = row => String(typeof row === 'string' ? row : row?.text ?? '').trim();
 const fold = text => text.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
 const optionHeader = /^TEXTO\s+([AB])\s*:\s*([^,]+),\s*(.+)$/iu;
-const section = /^APARTADO\s+([123])\s*:/iu;
-const footer = /^LAT[IÍ]N\s+II\s*[-–—]\s*Ejercicio\s*[-–—]\s*(?:Propuesta\s+\d+|Modelo\s*[“"«]?0[”"»]?)\s*\/\s*((?:19|20)\d{2})$/iu;
-const pageFooter = /^P[aá]gina\s+\d+\s+de\s+\d+$|^\d+$/iu;
+const section = /^APARTADO\s+([123])(?:\s*:|\s*$)/iu;
+const footer = /^LAT[IÍ]N\s+II\s*[-–—]\s*Ejercicio\s*[-–—]\s*(?:Propuesta\s+\d+|Modelo\s*[“"«]?0[”"»]?)\s*\/\s*((?:19|20)\d{2})(?:\s+\d+)?$/iu;
+const pageFooter = /^P[aá]gina\s+\d+(?:\s+de\s+\d+)?$|^\d+$/iu;
 const authorName = name => /^c[eé]sar$/iu.test(name) ? 'Julio César' : name;
 const bulletWord = /^[§▪•■]\s*([\p{L}\p{M}]+)\s*[.]?$/u;
 
@@ -15,7 +15,8 @@ export function scanCastillaLeonRows(pages) {
   const rows = pages.flatMap((page,index)=>page.map((row,i)=>({
     text:rowText(row),page:index+1,row:i
   }))).filter(r=>r.text);
-  const text = rows.map(r=>r.text).join(' ');
+  const firstSection = rows.findIndex(r=>section.test(r.text));
+  const text = rows.slice(0,firstSection<0?undefined:firstSection).map(r=>r.text).join(' ');
   if (!/\bCastilla y Le[oó]n\b/iu.test(text) || !/\bLat[ií]n\s+II\b/iu.test(text)) {
     throw Error('No se identifica un examen de Latín II de Castilla y León.');
   }
@@ -56,12 +57,20 @@ export function scanCastillaLeonRows(pages) {
     // Do not collect example sentences, answer options or words from instructions.
     if(!/\bevolucion\b/u.test(heading)||!/\bfonetic\w*\b/u.test(heading)) continue;
     if(/\b(?:catalan|valenciano|gallego|portugues|euskera|vasco)\b/u.test(heading)) continue;
-    const terms=question.map(line=>bulletWord.exec(line)?.[1]).filter(Boolean);
+    const terms=[];
+    for(let i=0;i<question.length;i++){
+      const inline=bulletWord.exec(question[i]);
+      if(inline){terms.push(inline[1]);continue;}
+      // Some PDF text layers split the bullet and its etymon onto different rows.
+      if(/^[§▪•■]$/u.test(question[i]) && /^[\p{L}\p{M}]+$/u.test(question[i+1]??'')) {
+        terms.push(question[++i]);
+      }
+    }
     if(terms.length===1) phonetics.push(terms[0]);
     else warnings.push('Revisar los étimos de evolución fonética del apartado común.');
   }
   for(const option of options) {
-    if(/morfolog\w*.*subrayad/iu.test(option.questions.join(' '))) {
+    if(/\bmorfolog\w*\b.*\bsubrayad\w*\b/u.test(fold(option.questions.join(' ')))) {
       warnings.push('Opción '+option.option+': verificar visualmente las marcas morfológicas; pueden coincidir con el fragmento sintáctico.');
     }
   }
