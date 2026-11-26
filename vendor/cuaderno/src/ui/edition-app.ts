@@ -99,11 +99,11 @@ function buildMarkedLatin(p:TextPlacementV1):HTMLElement {
   paragraph.dataset.placementId=p.id;
   const raw=p.text.latin, marks=[...p.text.markup].sort((a,b)=>a.startUtf16-b.startUtf16);
   let position=0;
-  const appendLatin=(text:string,markKind:'morph-underline'|'editorial-roman'|null=null,review=false):void=>{
-    for(const segment of splitLatinOmissions(text)){
+  const appendLatin=(start:number,end:number,markKind:'morph-underline'|'editorial-roman'|null=null,review=false):void=>{
+    for(const segment of splitLatinOmissions(raw,start,end)){
       if(!segment.roman&&!markKind){paragraph.append(document.createTextNode(segment.text));continue;}
       const part=node('span',markKind==='morph-underline'?'edition-underlined':'edition-roman');
-      // Una omisión editorial […] es puntuación, no latín.
+      // Los corchetes y las omisiones editoriales van en redonda.
       if(segment.roman)part.classList.add('edition-roman');
       part.textContent=segment.text;
       if(review){part.classList.add('edition-review');part.title='Revisión del anclaje necesaria';}
@@ -112,11 +112,11 @@ function buildMarkedLatin(p:TextPlacementV1):HTMLElement {
   };
   for(const mark of marks){
     if(mark.startUtf16<position)continue;
-    appendLatin(raw.slice(position,mark.startUtf16));
-    appendLatin(raw.slice(mark.startUtf16,mark.endUtf16),mark.kind,mark.reviewRequired);
+    appendLatin(position,mark.startUtf16);
+    appendLatin(mark.startUtf16,mark.endUtf16,mark.kind,mark.reviewRequired);
     position=mark.endUtf16;
   }
-  appendLatin(raw.slice(position));
+  appendLatin(position,raw.length);
   return paragraph;
 }
 function paperFor(edition:NotebookEditionV1,p:TextPlacementV1,index:number,total:number):HTMLElement {

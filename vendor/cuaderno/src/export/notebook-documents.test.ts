@@ -208,3 +208,17 @@ test('Word imprime […] en redonda, conservando cursiva latina y subrayados',()
   assert.match(xml,/w:u w:val="single"/);
   assert.equal(JSON.stringify(edition),before);
 });
+
+test('Word conserva añadidos latinos en cursiva y sus corchetes en redonda',()=>{
+  const edition=fixture(),p=edition.placements[0]!;
+  p.text.latin='[Afranius Petreiusque] […] milit[es]';
+  p.text.markup=[{id:'mark.1',kind:'morph-underline',startUtf16:1,endUtf16:9,
+    exact:'Afranius',textFingerprint:fingerprintForMark(p.text.latin,1,9),reviewRequired:false}];
+  const xml=files(createNotebookDocx(edition)).get('word/document.xml')!;
+  assert.match(xml,/<w:r><w:t xml:space="preserve">\[<\/w:t><\/w:r>/);
+  assert.match(xml,/<w:r><w:rPr><w:i\/><w:u w:val="single"\/><\/w:rPr><w:t xml:space="preserve">Afranius<\/w:t><\/w:r>/);
+  assert.match(xml,/<w:r><w:rPr><w:i\/><\/w:rPr><w:t xml:space="preserve"> Petreiusque<\/w:t><\/w:r>/);
+  assert.match(xml,/<w:r><w:t xml:space="preserve">\]<\/w:t><\/w:r>/);
+  assert.match(xml,/<w:r><w:t xml:space="preserve">\[…\]<\/w:t><\/w:r>/);
+  assert.match(xml,/<w:r><w:rPr><w:i\/><\/w:rPr><w:t xml:space="preserve">es<\/w:t><\/w:r>/);
+});

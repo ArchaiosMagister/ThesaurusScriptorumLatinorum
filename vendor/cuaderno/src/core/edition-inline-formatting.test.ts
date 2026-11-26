@@ -20,3 +20,14 @@ test('omisiones entre corchetes en redonda sin eliminar, normalizar ni desplazar
   assert.deepEqual(splitLatinOmissions('Caesar Gallicos vicit.'),
     [{text:'Caesar Gallicos vicit.',roman:false}]);
 });
+
+test('corchetes en redonda y restituciones en cursiva, aun con rangos partidos',()=>{
+  const original='[Afranius Petreiusque] milit[es] […]';
+  const parts=splitLatinOmissions(original);
+  assert.deepEqual(parts.filter(part=>part.roman).map(part=>part.text),['[',']','[',']','[…]']);
+  assert.deepEqual(parts.filter(part=>!part.roman).map(part=>part.text),['Afranius Petreiusque',' milit','es',' ']);
+  assert.equal(parts.map(part=>part.text).join(''),original);
+  const omission=original.indexOf('[…]');
+  assert.deepEqual(splitLatinOmissions(original,omission+1,omission+2),[{text:'…',roman:true}]);
+  assert.deepEqual(splitLatinOmissions(original,1,9),[{text:'Afranius',roman:false}]);
+});

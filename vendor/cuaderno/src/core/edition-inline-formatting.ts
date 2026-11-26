@@ -17,19 +17,24 @@ export function splitInlineItalics(input:string):InlineTextSegmentV1[]{
 }
 
 
-/** Las omisiones editoriales entre corchetes no son latín: deben ir en
- * redonda incluso dentro de un pasaje presentado íntegramente en cursiva.
- * No altera los offsets UTF-16 de subrayados ni el texto persistido. */
+/** Corchetes y omisiones editoriales en redonda; las restituciones latinas
+ * conservan su cursiva. Los rangos se recortan después de reconocer las
+ * omisiones en el texto completo, incluso si un subrayado las divide. */
 export interface LatinOmissionSegmentV1 {text:string;roman:boolean}
-export function splitLatinOmissions(input:string):LatinOmissionSegmentV1[]{
+export function splitLatinOmissions(input:string,start=0,end=input.length):LatinOmissionSegmentV1[]{
   const output:LatinOmissionSegmentV1[]=[];
-  const pattern=/\[\s*(?:…|\.{3})\s*\]/gu;
+  const pattern=/\[\s*(?:…|\.{3})\s*\]|[\[\]]/gu;
+  const append=(from:number,to:number,roman:boolean):void=>{
+    const a=Math.max(from,start),b=Math.min(to,end);
+    if(a<b)output.push({text:input.slice(a,b),roman});
+  };
   let pos=0,match:RegExpExecArray|null;
   while((match=pattern.exec(input))!==null){
-    if(match.index>pos)output.push({text:input.slice(pos,match.index),roman:false});
-    output.push({text:match[0],roman:true});
+    if(match.index>=end)break;
+    append(pos,match.index,false);
+    append(match.index,match.index+match[0].length,true);
     pos=match.index+match[0].length;
   }
-  if(pos<input.length)output.push({text:input.slice(pos),roman:false});
+  append(pos,input.length,false);
   return output;
 }

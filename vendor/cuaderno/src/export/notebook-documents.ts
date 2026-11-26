@@ -66,9 +66,9 @@ function run(text:string,{bold=false,italic=false,underline=false,sizePt}:{
 function paragraph(text:string,props:string,flags:{bold?:boolean;italic?:boolean;underline?:boolean;sizePt?:number}={}):string{
   return '<w:p>'+props+run(text,flags)+'</w:p>';
 }
-/** Omitir […] en redonda tanto en Word como en la vista previa/PDF. */
-function latinRun(text:string,italic:boolean,underline=false):string{
-  return splitLatinOmissions(text).map(part=>run(part.text,{
+/** Corchetes y omisiones en redonda también en Word. */
+function latinRun(text:string,start:number,end:number,italic:boolean,underline=false):string{
+  return splitLatinOmissions(text,start,end).map(part=>run(part.text,{
     italic:italic&&!part.roman,underline,
   })).join('');
 }
@@ -78,14 +78,13 @@ function latin(p:TextPlacementV1,f:PageFormatV1):string{
   let cursor=0,body='';
   for(const mark of marks){
     if(mark.startUtf16<cursor||mark.endUtf16>source.length)continue;
-    body+=latinRun(source.slice(cursor,mark.startUtf16),true);
-    const text=source.slice(mark.startUtf16,mark.endUtf16);
+    body+=latinRun(source,cursor,mark.startUtf16,true);
     // No aparentar un subrayado válido si el anclaje está pendiente.
-    body+=latinRun(text,mark.kind!=='editorial-roman',
+    body+=latinRun(source,mark.startUtf16,mark.endUtf16,mark.kind!=='editorial-roman',
       mark.kind==='morph-underline'&&!mark.reviewRequired);
     cursor=mark.endUtf16;
   }
-  body+=latinRun(source.slice(cursor),true);
+  body+=latinRun(source,cursor,source.length,true);
   // Espacio posterior del pasaje igual al interlineado adicional (3 pt por defecto),
   // sin la antigua separación artificial de 6 em.
   return '<w:p>'+paraProps({align:'both',after:extraLatinSpacingPt(f.fontSizePt,f.lineSpacingPt),linePt:f.lineSpacingPt})+body+'</w:p>';
