@@ -1120,6 +1120,12 @@ test('la PWA prepara las tres pestañas y vuelve a abrir la portada sin red', as
     await page.getByRole('tab', { name: 'Examinator' }).click();
     const exam = page.frameLocator('#panel-examinator iframe');
     await expect(exam.getByRole('button', { name: 'Banco de textos…' })).toBeVisible();
+    const offlineLatin = exam.locator('textarea[data-k=texto]');
+    await offlineLatin.fill('Suas copias.');
+    await offlineLatin.evaluate(field => { field.focus(); field.setSelectionRange(5, 11); });
+    await offlineLatin.press('Shift+F10');
+    await exam.getByRole('menuitem', { name: 'Encerrar entre corchetes' }).click();
+    await expect(offlineLatin).toHaveValue('Suas [copias].');
     expect(await exam.locator('html').evaluate(async () => {
       await window.atlLoadPdfExporter();
       const encoded = await window.M.Exam.docx({ ...window.M.S, titulo: 'Word sin conexión' });

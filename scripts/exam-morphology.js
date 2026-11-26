@@ -22,7 +22,7 @@ export function setMark(state, token, replaceIndex) {
   const marks = state.subr.filter((mark, index) => index !== replaceIndex && mark.toks.length && !mark.toks.includes(token.i));
   if (marks.length >= 4) return false;
   state.subr = [...marks, entry(token, morphChoiceFromToken(token, state.texto), true)]
-    .sort((a, b) => a.toks[0] - b.toks[0]);
+    .sort((a, b) => a.toks[0] - b.toks[0]).concat(state.subr.filter(mark => mark.anchor));
   return true;
 }
 

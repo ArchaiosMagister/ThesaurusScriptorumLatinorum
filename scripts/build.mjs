@@ -57,6 +57,8 @@ for (const entry of ['fonts.css', 'icon.png', 'fonts']) {
 const academicRevision = await prepareSharedAcademic(notebook, exam, join(staging, 'modulos', 'academic'));
 const shared = join(staging, 'modulos', 'shared');
 await mkdir(shared, { recursive: true });
+for (const file of ['latin-context-edit.js', 'latin-context-menu.js', 'latin-context-academic.js'])
+  await cp(join(root, 'scripts', file), join(shared, file));
 await cp(join(root, 'scripts', 'text-usage.js'), join(shared, 'text-usage.js'));
 await cp(join(root, 'scripts', 'personal-academic.js'), join(shared, 'personal-academic.js'));
 await cp(join(root, 'scripts', 'latin-library.js'), join(shared, 'latin-library.js'));

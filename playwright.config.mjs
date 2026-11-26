@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
@@ -10,7 +10,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'iPad', use: { viewport: { width: 820, height: 1180 }, hasTouch: true } },
-    { name: 'escritorio', use: { viewport: { width: 1440, height: 900 } } }
+    { name: 'escritorio', use: { viewport: { width: 1440, height: 900 } } },
+    { name: 'iPhone', testMatch: '**/latin-context.spec.mjs', use: { ...devices['iPhone 13'] } }
   ],
   webServer: {
     command: 'node scripts/serve.mjs',

@@ -1,3 +1,6 @@
+import { markedLatinRuns } from '../core/atl-marked-latin.js';
+import { bankTagIds } from './atl-bank-review.js';
+import { bindLatinContext } from '../../shared/latin-context-menu.js';
 import { bankTagAssignable, bankTagVisible, infinitiveId, infinitiveTenses, infinitiveVoices, isInfinitiveTag, selectividadLabel } from './atl-bank-curriculum.js';
 import { communitySelect } from './atl-bank-planner.js';
 import { GRAMMAR_GROUP_IDS, matchesGrammarTag } from '../core/grammar-tags.js';
@@ -355,7 +358,7 @@ export function appendDuplicateCards(target, pairs, sources, { kindLabel, source
   }
 }
 
-export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, automaticFor = () => [], difficultyFor, isProtected, onClose, onError }) {
+export function openBankReader({ texts, selected, catalogue, modal, edit, tag, remove, usage, pendingTags, automaticFor = () => [], difficultyFor, isProtected, onClose, onError, consultLatin }) {
   let index = texts.findIndex(text => text.id === selected.id);
   if (index < 0) return;
   const content = element('div', { className: 'atl-bank-reader' });
@@ -410,6 +413,11 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
   content.append(tools, title, reference, exam, difficulty, latin, courses, tagSection, automaticSection, pending, notes, glossary, actions);
   const reader = modal('Lectura del texto', content, [{ label: 'Volver al listado' }],
     { width: 'min(760px, 96vw)', onClose });
+  if (consultLatin) {
+    latin.tabIndex = 0;
+    bindLatinContext(latin, { text: () => latin.textContent, report: onError,
+      academic: (range, point) => consultLatin(latin, range, point) });
+  }
   const labels = new Map(catalogue.map(tag => [tag.id, tag.label]));
   function render() {
     const text = texts[index];
@@ -426,7 +434,14 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
     const assessment = difficultyFor(text);
     difficulty.textContent = 'Dificultad ' + difficultyText(assessment.level) + ' · ' +
       (assessment.manual ? 'Docente' : 'Estimada') + ' · ' + difficultyEvidence(assessment);
-    latin.textContent = text.latin;
+    const marks = (text.editorialUnderlines?.length ? text.editorialUnderlines : text.teacherDocx?.underlines ?? [])
+      .map(mark => ({ ...mark, kind: 'morph-underline' }));
+    latin.replaceChildren(...markedLatinRuns(text.latin, marks).map(run => {
+      if (!run.underline && !run.roman) return document.createTextNode(run.text);
+      const part = element(run.underline ? 'u' : 'span', { textContent: run.text });
+      if (run.roman) part.classList.add('edition-roman');
+      return part;
+    }));
     tags.replaceChildren();
     courses.replaceChildren();
     automaticTags.replaceChildren();
@@ -434,14 +449,14 @@ export function openBankReader({ texts, selected, catalogue, modal, edit, tag, r
       const label = course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato';
       courses.append(element('span', { className: 'grammar-chip', textContent: label }));
     }
-    for (const id of text.tagIds) {
+    for (const id of bankTagIds(text)) {
       if (!labels.has(id) || !bankTagAssignable(id)) continue;
       tags.append(bankGrammarChip(id, labels.get(id), catalogue));
     }
     if (!tags.childElementCount) tags.append(element('span', { className: 'small muted', textContent: 'Sin etiquetas confirmadas' }));
     courses.hidden = !courses.childElementCount;
     for (const id of new Set(automaticFor(text.id))) {
-      if (!text.tagIds.includes(id) && labels.has(id) && bankTagAssignable(id)) {
+      if (!bankTagIds(text).includes(id) && labels.has(id) && bankTagAssignable(id)) {
         automaticTags.append(bankGrammarChip(id, labels.get(id), catalogue));
       }
     }

@@ -1,3 +1,9 @@
+import { integrateContextNotebookPreview, integrateContextNotebookWord } from './notebook-context-render.mjs';
+import { integrateNotebookContextCard, integrateExamContextCard } from './context-reading-card.mjs';
+import { integrateBankContextAcademic, integrateBankSpanValidation, integrateBankSpanWrites, integrateNotebookExerciseValidation,
+    integrateNotebookAcademicMenu, integrateNotebookExerciseControls, integrateNotebookQuestionAnchors } from './notebook-academic-integration.mjs';
+import { integrateContextExam, integrateExamContextValidation, integrateExamContextRender } from './exam-context-integration.mjs';
+import { integrateContextGrammar, integrateContextNotebook, integrateContextCorpus, integrateContextWrites, integrateContextFactory, integrateContextBank } from './latin-context-integration.mjs';
 import { requiredPatch, requiredPatches, requiredReplaceAll } from './required-patch.mjs';
 import { integratePeriodValidation, integrateCurriculumComposer, integrateCurriculumExport } from './curriculum-integration.mjs';
 import { simplifyNotebookOrganization, simplifyNotebookHeader, stableNotebookOverview } from './notebook-organizer.mjs';
@@ -91,12 +97,13 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     if (adapted !== original) await writeFile(file, adapted);
   }
   const commonUI = await readFile(new URL('../app/ui-tokens.css', import.meta.url), 'utf8') + '\n' +
-    await readFile(new URL('./common-ui.css', import.meta.url), 'utf8');
+    await readFile(new URL('./common-ui.css', import.meta.url), 'utf8') + '\n' +
+    await readFile(new URL('./latin-context.css', import.meta.url), 'utf8');
   let notebookRevision;
   let examRevision;
   const examAssets = [
-    './atl-exam-bank.js', './atl-exam-morphology.js',
-    '../shared/text-usage.js',
+    './atl-exam-bank.js', './atl-exam-morphology.js', './js/atl-exam-context.js', './js/atl-exam-context-academic.js',
+    '../shared/text-usage.js', '../shared/latin-context-edit.js', '../shared/latin-context-menu.js', '../shared/latin-context-academic.js',
     ...['storage/indexeddb-corpus-repository', 'core/errors', 'core/model', 'core/validation',
       'core/edition-validation', 'core/morph-categories', 'core/edition-model', 'core/library',
       'storage/workspace-repository', 'storage/workspace-backup', 'core/grammar-tags', 'core/editor-operations',
@@ -112,15 +119,21 @@ export async function adaptModule(directory, module, pages, academicRevision) {
   const personalAcademic = await readFile(new URL('./personal-academic.js', import.meta.url), 'utf8');
   if (module === 'cuaderno') {
     const validation = join(directory, 'core', 'validation.js');
-    await writeFile(validation, integrateOriginValidation(await readFile(validation, 'utf8')));
+    await writeFile(validation, integrateBankSpanValidation(integrateContextCorpus(integrateOriginValidation(await readFile(validation, 'utf8')))));
     const editionValidation = join(directory, 'core', 'edition-validation.js');
-    await writeFile(editionValidation, integratePeriodValidation(await readFile(editionValidation, 'utf8')));
+    await writeFile(editionValidation, integrateNotebookExerciseValidation(integratePeriodValidation(await readFile(editionValidation, 'utf8'))));
     const operations = join(directory, 'core', 'editor-operations.js');
-    await writeFile(operations, integrateOriginWrites(await readFile(operations, 'utf8')));
+    await writeFile(operations, integrateBankSpanWrites(integrateContextWrites(integrateOriginWrites(await readFile(operations, 'utf8')))));
     const editionOperations = join(directory, 'core', 'edition-operations.js');
     const editionSource = await readFile(editionOperations, 'utf8');
     if (!editionSource.includes('function reanchorGrammarSpan(')) throw new Error('Revisar el anclaje gramatical.');
-    await writeFile(editionOperations, editionSource.replace('function reanchorGrammarSpan(', 'export function reanchorGrammarSpan('));
+    await writeFile(editionOperations, integrateNotebookQuestionAnchors(integrateContextGrammar(editionSource)).replace('function reanchorGrammarSpan(', 'export function reanchorGrammarSpan('));
+    await cp(new URL('./notebook-marked-latin.js', import.meta.url), join(directory, 'core', 'atl-marked-latin.js'));
+    const factory = join(directory, 'core', 'edition-factory.js');
+    await writeFile(factory, integrateContextFactory(await readFile(factory, 'utf8')));
+    for (const file of ['bank-editorial-context.js', 'notebook-context.js', 'notebook-context-academic.js']) {
+      await cp(new URL('./' + file, import.meta.url), join(directory, 'ui', 'atl-' + file));
+    }
     const morphSelection = join(directory, 'core', 'morph-selection-collatinus.js');
     const originalMorphSelection = await readFile(morphSelection, 'utf8');
     const updatedMorphSelection = requiredPatches(originalMorphSelection, [
@@ -137,12 +150,12 @@ export async function adaptModule(directory, module, pages, academicRevision) {
     await writeFile(academicEngine, (await readFile(academicEngine, 'utf8')) + `
 const lexicalCollator = new Intl.Collator('es', { sensitivity: 'base' });
 export function lexicalValuesForDocument(option) {
-    const values = option.slots.map(slot => displayedAcademicSlotValue(option.kind, slot));
+    const values = option.slots.filter(slot => !slot.sourceAnchor?.reviewRequired).map(slot => displayedAcademicSlotValue(option.kind, slot));
     return option.kind === 'preverb' ? values : values.sort(lexicalCollator.compare);
 }
 `);
     const documents = join(directory, 'export', 'notebook-documents.js');
-    await writeFile(documents, requiredPatches(integrateCurriculumExport(await readFile(documents, 'utf8')), [
+    await writeFile(documents, requiredPatches(integrateContextNotebookWord(integrateCurriculumExport(await readFile(documents, 'utf8'))), [
       ['import { displayedAcademicSlotValue }', 'import { lexicalValuesForDocument }'],
       ['option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {'],
       ['displayedAcademicSlotValue(option.kind, slot)', 'value']
@@ -187,17 +200,17 @@ export function lexicalValuesForDocument(option) {
     apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
     await writeFile(applyFile, apply);
     const integrated = requiredPatches(requiredReplaceAll(
-      composeNotebookSource(await readFile(file, 'utf8')), './pwa-controls.js', './atl-pwa.js'), [
+      integrateBankContextAcademic(integrateContextBank(composeNotebookSource(await readFile(file, 'utf8')))), './pwa-controls.js', './atl-pwa.js'), [
       ['./edition-app.js', './atl-edition.js'],
       ["button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks"]
     ], 'Entradas de Cuadernos');
     await writeFile(join(directory, 'ui', 'atl-repertorios.js'), integrated);
     const edition = composeEditionSource(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8'));
     const readingCardFile = join(directory, 'ui', 'latin-reading-card.js');
-    const readingCard = integrateLatinReadingCard(await readFile(readingCardFile, 'utf8'));
+    const readingCard = integrateNotebookContextCard(integrateLatinReadingCard(await readFile(readingCardFile, 'utf8')));
     await writeFile(readingCardFile, readingCard);
     const editionWithCards = integrateReadingCardPreview(integrateCurriculumComposer(edition));
-    await writeFile(join(directory, 'ui', 'atl-edition.js'), requiredPatches(editionWithCards, [
+    await writeFile(join(directory, 'ui', 'atl-edition.js'), requiredPatches(integrateContextNotebookPreview(integrateNotebookAcademicMenu(integrateContextNotebook(editionWithCards))), [
       ['import { displayedAcademicSlotValue }', 'import { displayedAcademicSlotValue, lexicalValuesForDocument }'],
       ['option.slots.forEach((slot, index) => {', 'lexicalValuesForDocument(option).forEach((value, index) => {'],
       ['displayedAcademicSlotValue(option.kind, slot)', 'value']
@@ -216,7 +229,7 @@ export function lexicalValuesForDocument(option) {
           'const personalBases = () => teacherPreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1));')
         .replaceAll('choosePreverbBases(academicTeacherSnapshotV1,', 'choosePreverbBases(personalPreverbSnapshot(academicTeacherSnapshotV1),')
         .replaceAll('of bases)', 'of personalBases())').replaceAll('bases.find(', 'personalBases().find(')));
-    let pauControls = integrateManualNotebookUnderline(academicControls);
+    let pauControls = integrateNotebookExerciseControls(integrateManualNotebookUnderline(academicControls));
     // Solo las preguntas originales importadas se excluyen de la auditoría de repeticiones.
     const repetitionStart = pauControls.indexOf('function inspectRepetitions(');
     const repetitionEnd = pauControls.indexOf('function repetitionNotice(', repetitionStart);
@@ -273,6 +286,8 @@ export function lexicalValuesForDocument(option) {
       await readFile(new URL('./lazy-pdf-loader.js', import.meta.url), 'utf8'));
     // JSZip solo se necesita en el momento de exportar un DOCX, no al abrir
     // el editor. Conservamos la biblioteca original en el paquete sin conexión.
+    const examReadingCard = join(directory, 'js', 'latin-reading-card.js');
+    await writeFile(examReadingCard, integrateExamContextCard(await readFile(examReadingCard, 'utf8')));
     const renderFileWord = join(directory, 'js', 'render.js');
     const originalRender = await readFile(renderFileWord, 'utf8');
     const wordEntry = '  E.docx = async function (S) {';
@@ -297,6 +312,8 @@ export function lexicalValuesForDocument(option) {
       .replace("w && M.Propose.latDisplay(String(w).trim())", "w && (S.atlPauLexical ? String(w).trim() : M.Propose.latDisplay(String(w).trim()))"));
     await writeFile(join(directory, 'js', 'atl-word-loader.js'),
       await readFile(new URL('./lazy-word-loader.js', import.meta.url), 'utf8'));
+    for (const file of ['exam-context.js', 'exam-context-academic.js'])
+      await cp(new URL('./' + file, import.meta.url), join(directory, 'js', 'atl-' + file));
     const bankScript = await readFile(new URL('./exam-bank.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'atl-exam-bank.js'), bankScript);
     const mainFile = join(directory, 'js', 'exam.js');
@@ -379,10 +396,10 @@ export function lexicalValuesForDocument(option) {
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
         "const S = M.S, box = $('#editor .q4'); if (!box) return;\n    const editor = $('#editor'), scrollTop = editor.scrollTop;")
       .replace("    $$('select[data-q=prevn]', box).forEach", match => "    editor.scrollTop = scrollTop;\n" + match);
-    await writeFile(join(directory, 'js', 'atl-exam-editor.js'), editor);
+    await writeFile(join(directory, 'js', 'atl-exam-editor.js'), integrateContextExam(editor));
     const renderFile = join(directory, 'js', 'render.js');
-    await writeFile(renderFile, (await readFile(renderFile, 'utf8')).replace(
-      ' }))\n      .sort((a, b) => coll.compare(a.txt, b.txt));', ' }));'));
+    await writeFile(renderFile, integrateExamContextRender((await readFile(renderFile, 'utf8')).replace(
+      ' }))\n      .sort((a, b) => coll.compare(a.txt, b.txt));', ' }));')));
     const nativeStart = await readFile(join(directory, 'js', 'start.js'), 'utf8');
     const start = nativeStart.replace("    const data = JSON.stringify(Object.assign({ examinator: 1 }, M.S));", `    const current = M.S;
     if (M.atlRecordExam && typeof current.atlArchiveId !== 'string') current.atlArchiveId = crypto.randomUUID();
@@ -402,7 +419,7 @@ export function lexicalValuesForDocument(option) {
         M.persist();
       }
       M.toast('Examen abierto.');`);
-    await writeFile(join(directory, 'js', 'atl-exam-start.js'), start);
+    await writeFile(join(directory, 'js', 'atl-exam-start.js'), integrateExamContextValidation(start));
     const lists = (await readFile(join(directory, 'js', 'lists.js'), 'utf8'))
       .replaceAll("if (cur === 'preverbios' && M.S.texto) M.analyzeNow(true);", '');
     await writeFile(join(directory, 'js', 'atl-exam-lists.js'), lists);
@@ -449,7 +466,8 @@ export function lexicalValuesForDocument(option) {
     await writeFile(join(directory, 'js', 'atl-exam-filters.js'), filters);
     const proposalFile = join(directory, 'js', 'propose.js');
     const originalProposals = await readFile(proposalFile, 'utf8');
-    const proposals = originalProposals.replace(/  \/\* ---------- evolución fonética:[\s\S]*?(?=  \/\/ El banco fonético)/, `  /* ---------- evolución fonética ---------- */
+    const proposals = requiredPatch(originalProposals, '  P.preverbs = function (S) {',
+      '  P.prevClashes = clash;\n  P.preverbs = function (S) {', 'Compatibilidad de bases preverbiales').replace(/  \/\* ---------- evolución fonética:[\s\S]*?(?=  \/\/ El banco fonético)/, `  /* ---------- evolución fonética ---------- */
   function phoneticEntry(candidate, otherEntries) {
     const usedLabels = new Set(otherEntries.map(entry => entry.g));
     const g = candidate.labels.find(label => !usedLabels.has(label)) ?? candidate.labels[0];
@@ -559,7 +577,8 @@ export function lexicalValuesForDocument(option) {
     if (page === notebookPage) {
       additions.push('./atl-index.html', './atl-cuadernos.html', './atl-repertorios.html', '../ui/atl-repertorios.js', '../ui/atl-edition.js',
         '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js', '../ui/atl-bank-curriculum.js', '../ui/atl-bank-planner.js',
-        '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../../shared/text-usage.js');
+        '../ui/atl-bank-editorial-context.js', '../ui/atl-notebook-context.js', '../ui/atl-notebook-context-academic.js', '../../shared/latin-context-edit.js', '../../shared/latin-context-menu.js', '../../shared/latin-context-academic.js',
+        '../core/atl-marked-latin.js', '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../../shared/text-usage.js');
     }
     await writeFile(workerPath, requiredPatch(worker, marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ',', workerPath));
   }

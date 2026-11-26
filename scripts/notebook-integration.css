@@ -1562,3 +1562,28 @@
   #editor .atl-bank .atl-card-pau-year { display: inline-block; padding: .2rem .5rem; border-radius: 6px; background: #315c49; color: #fff; font: 750 1.08rem/1.2 var(--ui-font); font-variant-numeric: tabular-nums; white-space: nowrap; }
   #editor .atl-bank .atl-card-meta .atl-card-difficulty { justify-self: end; }
 }
+
+.atl-edit-latin-surface { position: relative; min-width: 0; }
+.atl-bank-edit-form .atl-edit-latin-field .atl-edit-latin-render {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  pointer-events: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  padding: .5rem .65rem;
+  border: 1px solid transparent;
+  font: italic clamp(1.2rem, 2.4vw, 1.45rem)/1.65 var(--text-font);
+  color: var(--ink);
+}
+.atl-edit-latin-surface.has-editorial-signs textarea {
+  color: transparent;
+  caret-color: var(--ink);
+  -webkit-text-fill-color: transparent;
+}
+.atl-edit-latin-surface.has-editorial-signs textarea::selection {
+  color: transparent;
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.atl-edit-latin-render .edition-roman { font-style: normal; }

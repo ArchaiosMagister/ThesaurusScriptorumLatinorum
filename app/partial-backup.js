@@ -22,7 +22,7 @@ export function subsetCorpus(corpus, texts, extraTags = []) {
     tags.set(id, tag);
     if (tag.parentId) include(tag.parentId);
   }
-  for (const id of [...texts.flatMap(text => text.tagIds), ...extraTags]) include(id);
+  for (const id of [...texts.flatMap(text => [...text.tagIds, ...(text.grammaticalSpans ?? []).flatMap(span => span.tagIds)]), ...extraTags]) include(id);
   return validateCorpus({ ...emptyCorpus(), texts, tags: [...tags.values()] });
 }
 

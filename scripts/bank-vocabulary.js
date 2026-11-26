@@ -1,3 +1,4 @@
+import { findVocabulary } from './atl-notebook-context-academic.js';
 function element(tag, value = '') {
   const node = document.createElement(tag);
   node.textContent = value;
@@ -22,16 +23,16 @@ export function vocabularyEditor(source) {
   section.append(list, add);
   let modified = false;
 
-  function row(entry) {
+  function row(entry, values) {
     const wrapper = element('div');
     wrapper.className = 'atl-source-vocabulary-row';
     const headword = document.createElement('input');
     headword.setAttribute('aria-label', 'Enunciado latino de vocabulario');
-    headword.value = entry?.headword ?? '';
+    headword.value = values?.headword ?? entry?.headword ?? '';
     headword.maxLength = 500;
     const meaning = document.createElement('input');
     meaning.setAttribute('aria-label', 'Traducción de vocabulario');
-    meaning.value = entry?.meaning ?? '';
+    meaning.value = values?.meaning ?? entry?.meaning ?? '';
     meaning.maxLength = 1000;
     for (const field of [headword, meaning]) {
       const label = element('label', field.getAttribute('aria-label'));
@@ -71,5 +72,26 @@ export function vocabularyEditor(source) {
         order, provenance: null, reviewState: 'manual', origin: 'manual', locked: true }];
     });
   }
-  return { section, read };
+  return { section, read,
+    snapshot() {
+      return { modified, entries: [...rows.values()].map(({ entry, headword, meaning }) =>
+        ({ entry, headword: headword.value, meaning: meaning.value })) };
+    },
+    restore(snapshot) {
+      if (JSON.stringify(snapshot) === JSON.stringify(this.snapshot())) return;
+      rows.clear();
+      list.replaceChildren();
+      snapshot.entries.forEach(values => row(values.entry, values));
+      modified = snapshot.modified;
+    },
+    addContext(proposal) {
+      const values = read() ?? original;
+      if (findVocabulary(values, proposal)) return false;
+      row({ headword: proposal.headword, meaning: proposal.meaning });
+      modified = true;
+      section.open = true;
+      section.dispatchEvent(new Event('change', { bubbles: true }));
+      return true;
+    }
+  };
 }

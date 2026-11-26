@@ -1,3 +1,4 @@
+import * as latinContext from './js/atl-exam-context.js';
 import { IndexedDbCorpusRepository } from '../cuaderno-integrado/storage/indexeddb-corpus-repository.js';
 import { foldLatin } from '../cuaderno-integrado/core/library.js';
 import { WorkspaceRepository } from '../cuaderno-integrado/storage/workspace-repository.js';
@@ -5,6 +6,7 @@ import { combineNotebookCorpora } from '../cuaderno-integrado/storage/workspace-
 import { findTextUses, loadUsageIndex, recordExam, savedExam, usageList } from '../shared/text-usage.js';
 
 const exam = window.M;
+exam.atlLatinContext = latinContext;
 exam.atlRecordExam = recordExam;
 window.atlOpenRelated = async id => {
   const snapshot = await savedExam(id);
@@ -26,6 +28,7 @@ function sourceData(text) {
     urn: '', text: text.latin, author: text.source.author ?? '',
     obra: text.source.work ?? '', cita: text.source.reference ?? '',
     bank: { id: text.id, updatedAt: text.updatedAt, title: text.title,
+      underlines: text.teacherDocx?.pauCv ? [] : text.editorialUnderlines ?? text.teacherDocx?.underlines ?? [],
       ...(text.teacherDocx?.pauCv ? { pau: text.teacherDocx } : {}) }
   };
 }

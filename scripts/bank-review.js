@@ -51,7 +51,7 @@ export function visibleBankAnalysis(text, review, catalogue, isRejected) {
   const rejected = new Set(review.rejected);
   const allowed = new Set(catalogue.map(tag => tag.id));
   const rows = review.pending.filter(proposal =>
-    allowed.has(proposal.tagId) && !text.tagIds.includes(proposal.tagId) &&
+    allowed.has(proposal.tagId) && !bankTagIds(text).includes(proposal.tagId) &&
     !recorded.has(proposalKeyFor(proposal)) && !isRejected(proposal, rejected, catalogue));
   return {
     current: true,
@@ -109,7 +109,7 @@ export function mergeCarriedReview(existing, carried) {
   return {...existing, rejected:[...rejected], corrected:[...corrected], pending:[...pending.values()]};
 }
 
-export async function carryBankReview(previous, next, storage = localStorage) {
+export async function carryBankReview(previous, next, storage = localStorage, edits = null) {
   const before = readBankReview(await bankReviewKey(previous), previous.latin, storage);
   if (!before.corrected.length && !before.pending.length && !before.rejected.length) return 0;
   const key = await bankReviewKey(next);
@@ -135,10 +135,12 @@ export async function carryBankReview(previous, next, storage = localStorage) {
     const wasRejected = dismissed.has(proposalKeyFor(proposal));
     if (!wasRejected && !tag) continue;
     const { start, end } = proposal;
-    const anchor = reanchorGrammarSpan({
+    const original = {
       startUtf16: start, endUtf16: end, exact: previous.latin.slice(start, end),
       textFingerprint: fingerprintForMark(previous.latin, start, end), reviewRequired: false
-    }, previous.latin, next.latin);
+    };
+    const anchor = edits?.length ? edits.reduce((item, edit) => reanchorGrammarSpan(item, edit.text, edit.latin, edit), original)
+      : reanchorGrammarSpan(original, previous.latin, next.latin);
     if (anchor.reviewRequired) { reviewRequired++; continue; }
     const moved = { ...proposal, start: anchor.startUtf16, end: anchor.endUtf16 };
     pending.push(moved);
@@ -150,4 +152,9 @@ export async function carryBankReview(previous, next, storage = localStorage) {
     storage.setItem(key, JSON.stringify(mergeCarriedReview(existing, { pending, corrected, rejected })));
   }
   return reviewRequired;
+}
+
+export function bankTagIds(text) {
+  return [...new Set([...text.tagIds, ...(text.grammaticalSpans ?? [])
+    .filter(span => !span.reviewRequired).flatMap(span => span.tagIds)])];
 }

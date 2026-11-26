@@ -1,0 +1,90 @@
+.atl-latin-context, .atl-latin-touch {
+  position: fixed;
+  z-index: 2147483000;
+  box-sizing: border-box;
+  background: var(--surface, var(--panel, Canvas));
+  color: var(--ink, var(--fg, CanvasText));
+  color-scheme: inherit;
+  border: 1px solid var(--edge, var(--rule, GrayText));
+  box-shadow: 0 8px 30px #0004;
+  border-radius: 12px;
+  font: 500 .9rem/1.35 system-ui, sans-serif;
+}
+.atl-latin-context {
+  width: 17.5rem;
+  padding: .3rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.atl-latin-context-group + .atl-latin-context-group {
+  border-top: 1px solid var(--edge, var(--rule, GrayText));
+  margin-top: .25rem;
+  padding-top: .25rem;
+}
+.atl-latin-context-heading {
+  padding: .35rem .6rem .15rem;
+  font-size: .76rem;
+  font-weight: 650;
+}
+.atl-latin-context button {
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  border: 0;
+  border-radius: 6px;
+  text-align: start;
+  font: inherit;
+  padding: .45rem .6rem;
+  cursor: pointer;
+}
+.atl-latin-context [role="menuitem"] { display: block; width: 100%; }
+.atl-latin-context button:hover, .atl-latin-context button:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: -2px;
+}
+.atl-latin-context form { padding: .4rem; }
+.atl-latin-context label { display: block; }
+.atl-latin-context textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin: .35rem 0;
+  font-size: 1rem;
+}
+.atl-latin-context blockquote {
+  margin: .15rem 0 .5rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 5rem;
+  overflow: auto;
+}
+.atl-latin-touch {
+  appearance: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 1.25rem;
+  touch-action: manipulation;
+}
+@media (any-pointer: coarse) {
+  .atl-latin-context button { min-height: 44px; }
+}
+@media print {
+  .atl-latin-context, .atl-latin-touch { display: none !important; }
+  .edition-underlined.edition-review { text-decoration: none; }
+}
+.atl-latin-context-panel { padding: .65rem; }
+.atl-latin-context-panel input, .atl-latin-context-panel select {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  margin: .25rem 0 .6rem;
+  font-size: 1rem;
+}
+.atl-latin-context-panel form button[type="submit"] {
+  border: 1px solid currentColor;
+}
+.atl-latin-context-panel .atl-context-option {
+  display: block;
+  width: 100%;
+}
