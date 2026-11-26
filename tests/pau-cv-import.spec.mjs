@@ -50,7 +50,11 @@ test('importar PDF PAU CV crea las dos fichas con metadatos y evita repetir la m
   // exam reference in the notes. A second PDF import must not recreate it.
   await bank.locator('.atl-bank-card').filter({hasText:'TÍTULO DE PRUEBA A'}).click();
   const edit=frame.locator('.modal').last();
-  await edit.getByRole('textbox',{name:'Texto latino',exact:true}).fill('Caesar legiones in hiberna ducit et exercitum in castra mittit.');
+  const latin=edit.getByRole('textbox',{name:'Texto latino',exact:true});
+  await expect(edit.locator('.atl-edit-latin-render')).toContainText('Cæsar legiones');
+  await expect(latin).toHaveValue('Caesar legiones in hiberna ducit et exercitum ad castra mittit.');
+  await expect(edit.locator('.atl-edit-dirty')).toHaveText('Sin cambios');
+  await latin.fill('Caesar legiones in hiberna ducit et exercitum in castra mittit.');
   page.once('dialog',d=>d.accept());
   await edit.getByRole('button',{name:'Guardar cambios',exact:true}).click();
   await expect(edit).toBeHidden();

@@ -125,7 +125,7 @@ export function attachBankSpans(corpus, id, spans, catalogue) {
 }
 
 // Keep the native control for editing, selection and the clipboard.
-export function renderBankEditorialField(field) {
+export function renderBankEditorialField(field, ligate) {
   const layer = document.createElement('div');
   layer.className = 'atl-edit-latin-render';
   layer.setAttribute('aria-hidden', 'true');
@@ -137,9 +137,12 @@ export function renderBankEditorialField(field) {
     layer.scrollTop = field.scrollTop;
     layer.scrollLeft = field.scrollLeft;
   }
+  let source, preview;
   function paint() {
-    const parts = splitLatinOmissions(field.value);
-    layer.hidden = !parts.some(part => part.roman);
+    const value = field.value;
+    const reading = source === value && !field.matches(':focus') ? preview ?? value : value;
+    const parts = splitLatinOmissions(reading);
+    layer.hidden = reading === value && !parts.some(part => part.roman);
     wrapper.classList.toggle('has-editorial-signs', !layer.hidden);
     layer.replaceChildren(...(!layer.hidden ? parts.map(part => {
       if (!part.roman) return document.createTextNode(part.text);
@@ -150,8 +153,25 @@ export function renderBankEditorialField(field) {
     }) : []));
     scroll();
   }
-  field.addEventListener('input', paint);
-  field.addEventListener('atl-latin-change', paint);
+  async function refresh() {
+    const value = field.value;
+    paint();
+    if (field.matches(':focus') || source === value || !/ae|oe/i.test(value)) return;
+    source = value;
+    preview = undefined;
+    try {
+      const result = await ligate(value);
+      if (source !== value) return;
+      preview = typeof result === 'string' ? result : undefined;
+      paint();
+    } catch {
+      if (source === value) source = undefined;
+    }
+  }
+  field.addEventListener('input', refresh);
+  field.addEventListener('atl-latin-change', refresh);
+  field.addEventListener('focus', paint);
+  field.addEventListener('blur', refresh);
   field.addEventListener('scroll', scroll);
-  paint();
+  void refresh();
 }

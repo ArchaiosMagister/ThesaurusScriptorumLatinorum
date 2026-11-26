@@ -1,12 +1,13 @@
 import { publishBuild } from './publish-build.mjs';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdir, readFile, rm, stat } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { assertVendoredSources } from './vendor-upstreams.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { prepareLibrary } from './library-integration.mjs';
 import { adaptModule } from './adapt.mjs';
 import { prepareSharedAcademic } from './shared-academic.mjs';
+import { requiredPatch, requiredPatches } from './required-patch.mjs';
 import { buildRootWorker } from './root-pwa.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
@@ -53,6 +54,24 @@ await mkdir(fontAssets);
 for (const entry of ['fonts.css', 'icon.png', 'fonts']) {
   await cp(join(examinator, entry), join(fontAssets, entry), { recursive: true });
 }
+
+// Share Examinator's diphthong rules while keeping Cuaderno's pinned
+// morphological engine and its existing analysis/cache contract.
+const examMotor = await readFile(join(exam, 'js', 'motor.js'), 'utf8');
+function motorSection(start, end) {
+  const from = examMotor.indexOf(start);
+  const to = examMotor.indexOf(end, from + start.length);
+  if (from < 0 || to < 0) throw new Error('Revisar la normalización de diptongos de Examinator.');
+  return examMotor.slice(from, to);
+}
+const bankMotor = join(notebook, 'examinator-cuadernos', 'collatinus', 'motor.js');
+const diphthongs = motorSection('function vocabLigatures(', 'function ligateTokens(');
+const ligateText = requiredPatch(motorSection('function ligateText(', '/* ---------- vocabulario ---------- */'),
+  '(t.lig || t.w)', 'latinWordLigatures(t.w, t.sel?.lid)', 'Ligaduras del banco');
+await writeFile(bankMotor, requiredPatches(await readFile(bankMotor, 'utf8'), [
+  ['const api = {', diphthongs + ligateText + 'const api = {'],
+  ['  analyze, tokenInfo, vocabEntries, lookup,', '  analyze, tokenInfo, vocabEntries, lookup, ligateText,']
+], 'Ligaduras del banco'));
 
 const academicRevision = await prepareSharedAcademic(notebook, exam, join(staging, 'modulos', 'academic'));
 const shared = join(staging, 'modulos', 'shared');
