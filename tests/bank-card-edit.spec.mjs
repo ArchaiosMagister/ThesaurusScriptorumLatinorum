@@ -257,6 +257,13 @@ test('la ficha conserva navegación y guardado accesibles durante la lectura de 
   await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
   await bank.locator('.atl-bank-card').click();
   const body = modal.locator('.mb');
+  const latin = modal.getByRole('textbox', { name: 'Texto latino', exact: true });
+  const snippet = bank.locator('.cuaderno-home-text-snippet');
+  const typography = node => {
+    const { fontFamily, fontStyle } = getComputedStyle(node);
+    return { fontFamily, fontStyle };
+  };
+  expect(await latin.evaluate(typography)).toEqual(await snippet.evaluate(typography));
   await expect(modal.locator('.atl-edit-citation')).toContainText('César');
   expect(await body.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(2);
   const footer = modal.locator('.atl-edit-footer');
@@ -266,10 +273,21 @@ test('la ficha conserva navegación y guardado accesibles durante la lectura de 
   await expect(footer.getByRole('button', { name: 'Guardar cambios' })).toBeInViewport();
   const after = await footer.boundingBox();
   expect(Math.abs(initial.y - after.y)).toBeLessThan(2);
+  await footer.getByRole('button', { name: 'Detalles', exact: true }).click();
+  await expect(modal.getByRole('heading', { name: 'Detalles de la ficha' })).toBeFocused();
   await modal.getByRole('textbox', { name: 'Autor', exact: true }).fill('Julio César');
+  await modal.getByRole('button', { name: 'Volver al texto' }).click();
+  await expect(modal.getByRole('heading', { name: 'Texto latino', exact: true })).toBeFocused();
   await expect(modal.locator('.atl-edit-citation')).toHaveText('Julio César');
+  const revised = 'Gallia est omnis divisa.\n\nHorum omnium fortissimi sunt Belgae.';
+  await latin.fill(revised);
+  await expect(modal.locator('.atl-edit-word-count')).toHaveText('9 palabras');
+  await expect(footer.getByRole('status')).toHaveText('Cambios sin guardar');
   await footer.getByRole('button', { name: 'Guardar cambios' }).click();
   await expect(modal).toBeHidden();
+  await page.reload();
+  await bank.locator('.atl-bank-card').click();
+  await expect(latin).toHaveValue(revised);
 });
 
 

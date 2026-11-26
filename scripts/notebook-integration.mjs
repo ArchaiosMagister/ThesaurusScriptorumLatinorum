@@ -420,43 +420,55 @@ window.addEventListener('atl-view', () => {
     }, 'tbtn');
     remove.disabled = protectedBankSourceIds().has(source.id);
     const actions = el('div', 'atl-bank-edit-actions');
-    actions.append(save, remove);
-    if (remove.disabled) actions.append(el('span', 'small muted', 'Ficha protegida por un cuaderno histórico.'));
+    actions.append(save);
     form.classList.add('atl-bank-edit-form');
     const main = el('div', 'atl-bank-edit-main');
     const metadata = el('aside', 'atl-bank-edit-meta');
     const wordCount = el('span', 'atl-edit-word-count');
     const latinHeading = el('div', 'atl-edit-section-heading');
-    latinHeading.append(el('h3', '', 'Texto latino'), wordCount);
+    const latinLabel = el('h3', '', 'Texto latino');
+    latinLabel.tabIndex = -1;
+    latinHeading.append(latinLabel, wordCount);
     const latin = inputs.get('latin');
     latin.lang = 'la';
+    latin.spellcheck = false;
+    latin.setAttribute('autocapitalize', 'off');
+    latin.setAttribute('autocorrect', 'off');
     const updateCount = () => {
         const count = latin.value.trim().split(/\\s+/u).filter(Boolean).length;
         wordCount.textContent = count + (count === 1 ? ' palabra' : ' palabras');
     };
     latin.addEventListener('input', updateCount);
     updateCount();
-    const titleField = inputs.get('title').closest('label');
+    const title = inputs.get('title');
+    const titleField = title.closest('label');
     titleField.classList.add('atl-edit-title-field');
+    title.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.isComposing) event.preventDefault();
+    });
     const latinField = latin.closest('label');
     latinField.classList.add('atl-edit-latin-field');
-    latin.rows = 1;
-    // Measure the actual wrapped lines, not a character-count approximation.
-    const fitLatin = () => {
-        if (!latin.isConnected || !latin.clientWidth) return;
-        latin.style.height = '0px';
-        const border = latin.offsetHeight - latin.clientHeight;
-        latin.style.height = Math.ceil(latin.scrollHeight + border) + 'px';
+    const readingFields = [title, latin];
+    const fitReading = field => {
+        if (!field.isConnected || !field.clientWidth) return;
+        field.style.height = '0px';
+        const border = field.offsetHeight - field.clientHeight;
+        field.style.height = Math.ceil(field.scrollHeight + border) + 'px';
     };
-    let latinWidth = 0;
-    const latinSizeObserver = new ResizeObserver(() => {
-        const width = latin.clientWidth;
-        if (width && width !== latinWidth) {
-            latinWidth = width;
-            fitLatin();
+    const readingWidths = new Map();
+    const readingSizeObserver = new ResizeObserver(entries => {
+        for (const { target } of entries) {
+            const width = target.clientWidth;
+            if (width && width !== readingWidths.get(target)) {
+                readingWidths.set(target, width);
+                fitReading(target);
+            }
         }
     });
-    latin.addEventListener('input', fitLatin);
+    for (const field of readingFields) {
+        field.rows = 1;
+        field.addEventListener('input', () => fitReading(field));
+    }
     const notes = inputs.get('notes').closest('label');
     const notesPanel = el('details', 'atl-edit-notes');
     notesPanel.append(el('summary', '', 'Notas y contexto'), notes);
@@ -511,10 +523,10 @@ window.addEventListener('atl-view', () => {
     for (const course of source.courseIds ?? []) classification.append(el('span', 'atl-edit-class-chip', course === '1bach' ? '1.º Bachillerato' : '2.º Bachillerato'));
     identity.append(titleField, citation, classification);
     const passage = el('section', 'atl-edit-passage');
-    passage.append(latinHeading, latinField);
+    passage.append(identity, latinHeading, latinField);
     const supplementary = el('div', 'atl-edit-supplementary');
     supplementary.append(notesPanel, glossary.section);
-    main.append(identity, passage, grammarSection, supplementary);
+    main.append(passage, grammarSection, supplementary);
     const bibliographic = el('div', 'atl-edit-bibliography');
     bibliographic.append(el('h3', '', 'Referencia bibliográfica'),
         inputs.get('author').closest('label'), inputs.get('work').closest('label'),
@@ -522,10 +534,22 @@ window.addEventListener('atl-view', () => {
     exam.container.classList.add('atl-edit-exam');
     const teaching = el('div', 'atl-edit-teaching');
     teaching.append(el('h3', '', 'Clasificación docente'), courseField, difficultyField, exam.container);
-    metadata.append(bibliographic, teaching);
-    const columns = el('div', 'atl-bank-edit-columns');
-    columns.append(main, metadata);
-    form.prepend(columns);
+    const manage = el('div', 'atl-edit-manage');
+    manage.append(remove);
+    if (remove.disabled) manage.append(el('span', 'small muted', 'Ficha protegida por un cuaderno histórico.'));
+    const detailHeading = el('h3', '', 'Detalles de la ficha');
+    detailHeading.tabIndex = -1;
+    const jump = target => {
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: 'start', inline: 'nearest' });
+    };
+    const detailBar = el('div', 'atl-edit-section-heading');
+    detailBar.append(detailHeading, button('Volver al texto', () => jump(latinLabel), 'hbtn'));
+    const detailGrid = el('div', 'atl-edit-detail-grid');
+    detailGrid.append(bibliographic, teaching);
+    metadata.append(detailBar, detailGrid, manage);
+    metadata.setAttribute('aria-label', 'Detalles de la ficha');
+    form.prepend(main, metadata);
     // The save operation keeps its existing validation and concurrency checks.
     const status = el('span', 'atl-edit-dirty', 'Sin cambios');
     status.setAttribute('role', 'status');
@@ -564,7 +588,7 @@ window.addEventListener('atl-view', () => {
     nav.append(previous, position, next);
     const guard = () => bypassClose || (!save.disabled && (!dirty() || window.confirm('¿Cerrar la ficha sin guardar los cambios?')));
     const afterClose = () => {
-        latinSizeObserver.disconnect();
+        readingSizeObserver.disconnect();
         const tagId = tagDestination;
         tagDestination = null;
         if (tagId) {
@@ -591,17 +615,23 @@ window.addEventListener('atl-view', () => {
             else { onClose?.(); M.toast('El texto ya no coincide con los filtros activos.'); }
         });
     };
-    form.append(actions);
-    actions.prepend(status);
-    for (const notice of [...form.children].filter(child => child.matches('p.small.muted'))) { notice.classList.add('atl-edit-import-notice'); main.append(notice); }
+    actions.prepend(status, button('Detalles', () => jump(detailHeading), 'hbtn'));
+    for (const notice of [...form.children].filter(child => child.matches('p.small.muted'))) {
+        notice.classList.add('atl-edit-import-notice');
+        notice.textContent = 'Este pasaje incluye marcas y vocabulario importados de Word. Si editas el latín y guardas, se desvincularán del pasaje.';
+        passage.append(notice);
+    }
     form.addEventListener('submit', event => { event.preventDefault(); save.click(); });
-    const modal = M.modal('Editar texto del banco', form, [{ label: 'Cancelar' }], {
-        width: 'min(1200px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
+    const modal = M.modal('Ficha del texto', form, [{ label: 'Cancelar' }], {
+        width: 'min(960px, 98vw)', noFocus: true, beforeClose: guard, onClose: afterClose
     });
     modal.el.classList.add('atl-bank-editor-modal');
-    fitLatin();
-    latinSizeObserver.observe(latinField);
-    document.fonts?.ready.then(fitLatin);
+    for (const field of readingFields) {
+        fitReading(field);
+        readingSizeObserver.observe(field);
+    }
+    document.fonts?.ready.then(() => readingFields.forEach(fitReading));
+    modal.el.querySelector('.xbtn').focus({ preventScroll: true });
     modal.el.querySelector('.mh').insertBefore(nav, modal.el.querySelector('.xbtn'));
     const cancel = modal.el.querySelector('.mf button');
     cancel.type = 'button';
@@ -620,13 +650,13 @@ window.addEventListener('atl-view', () => {
   let editorSave = source.slice(editorSaveStart, editorSaveEnd);
   const notesField = "const field = key === 'latin' ? el('textarea') : el('input');";
   if (editorSave.split(notesField).length !== 2) throw Error('Revisar campo de notas de ficha.');
-  editorSave = editorSave.replace(notesField, "const field = key === 'latin' || key === 'notes' ? el('textarea') : el('input');");
+  editorSave = editorSave.replace(notesField, "const field = ['title', 'latin', 'notes'].includes(key) ? el('textarea') : el('input');");
   const saveBegin = "const save = button('Guardar cambios', async () => {";
   const existingTry = '        save.disabled = true;\n        try {';
   if (editorSave.split(saveBegin).length !== 2 || editorSave.split(existingTry).length !== 2)
     throw Error('Revisar inicio del guardado del editor.');
   editorSave = editorSave.replace(existingTry, '').replace(saveBegin,
-    saveBegin + '\n        if (save.disabled) return;\n        save.disabled = true;\n        form.inert = true;\n        try {');
+    saveBegin + '\n        if (save.disabled) return;\n        save.disabled = true;\n        form.inert = true;\n        actions.inert = true;\n        try {');
   // If saving a protected text creates a copy, edit tags on the actual saved copy.
   const tagSaveAnchor = '            await reload();';
   if (editorSave.split(tagSaveAnchor).length !== 2) throw Error('Revisar destino del editor de etiquetas.');
@@ -634,7 +664,7 @@ window.addEventListener('atl-view', () => {
   const saveFinally = /finally\s*\{\s*save\.disabled = false;\s*\}/gu;
   if ([...editorSave.matchAll(saveFinally)].length !== 1) throw Error('Revisar fin de guardado de ficha.');
   source = source.slice(0, editorSaveStart) + editorSave.replace(saveFinally,
-    'finally { save.disabled = false; form.inert = false; destination = null; tagDestination = null; }') + source.slice(editorSaveEnd);
+    'finally { save.disabled = false; form.inert = false; actions.inert = false; destination = null; tagDestination = null; }') + source.slice(editorSaveEnd);
   replace('function openDuplicateAudit() {', "function openDuplicateAudit({ type = 'all', query: previousQuery = '', limit = 30 } = {}) {");
   replace("        ' No se cambia ni se borra ningún texto. Comprueba los pasajes antes de editar.'));",
     "        ' Comprueba los pasajes antes de editar las fichas.'));");

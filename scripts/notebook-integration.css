@@ -950,41 +950,9 @@
   .atl-notebook-metadata-form input { width: 100%; min-width: 0; min-height: 42px; padding: .5rem; font: inherit; }
 }
 
-/* Edición directa del banco: dos áreas de trabajo, sin cambiar sus operaciones. */
 @media screen {
-  .atl-bank-edit-form { display: grid; gap: .85rem; }
-  .atl-bank-edit-columns {
-    display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr); gap: .8rem; align-items: start;
-  }
-  .atl-bank-edit-main, .atl-bank-edit-meta {
-    display: grid; gap: .65rem; min-width: 0; padding: .8rem;
-    border: 1px solid var(--rule); border-radius: 10px; background: var(--paper-2);
-  }
-  .atl-bank-edit-form h3 { margin: 0; font: 700 1.2rem/1.2 var(--text-font); color: var(--accent); }
-  .atl-bank-edit-form .field { display: grid; gap: .3rem; min-width: 0; margin: 0; }
-  .atl-bank-edit-form .field > span:first-child { font-size: .83rem; font-weight: 650; }
-  .atl-bank-edit-form :is(input:not([type="checkbox"]), textarea, select) {
-    width: 100%; min-width: 0; min-height: 40px; border: 1px solid var(--rule); border-radius: 7px;
-    padding: .5rem .6rem; background: var(--paper); color: var(--ink); font-size: 16px;
-  }
-  .atl-bank-edit-form textarea[aria-label="Texto latino"] {
-    box-sizing: border-box; min-height: 3.5rem; height: auto; resize: none; font: 1.18rem/1.6 var(--text-font);
-  }
-  .atl-bank-edit-form :is(input, textarea, select):focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .atl-bank-edit-form :is(.atl-bank-courses, .atl-selectividad, .atl-source-vocabulary) {
-    margin: 0; min-width: 0; padding: .65rem; border: 1px solid var(--rule); border-radius: 8px;
-  }
-  .atl-bank-edit-form fieldset legend { font-size: .82rem; font-weight: 650; }
-  .atl-bank-edit-form .atl-bank-edit-actions {
-    position: sticky; bottom: 0; z-index: 1; justify-content: space-between; padding: .65rem;
-    border: 1px solid var(--rule); border-radius: 8px; background: var(--panel, var(--paper-2));
-  }
-  .atl-bank-edit-form .atl-bank-edit-actions button { min-height: 44px; }
   #editor .atl-bank .atl-bank-card-footer { flex-wrap: wrap; }
   #editor .atl-bank .atl-bank-card-actions { margin-inline-start: auto; }
-}
-@media screen and (max-width: 680px) {
-  .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Buscador del banco: filtros cotidianos visibles, facetas avanzadas plegables. */
@@ -1052,54 +1020,11 @@
  .atl-pau-import textarea {resize:vertical;}
 }
 
-/* Dedicated bank-edit workspace. Unrelated dialogs retain their original dimensions. */
 @media screen {
-  .modal.atl-bank-editor-modal { max-width: none; max-height: calc(100dvh - 24px); height: auto; overflow: hidden; }
-  .modal-bg:has(> .atl-bank-editor-modal) { padding: 8px; }
-  .atl-bank-editor-modal .mh { flex-wrap: wrap; gap: .5rem; padding: .65rem 1rem; background: var(--panel); }
-  .atl-bank-editor-modal .mh h2 { font-size: 1.08rem; flex: 1; min-width: 10rem; margin: 0; color: var(--accent); }
-  .atl-bank-editor-modal .mh .xbtn { flex: none; margin: 0; }
   .atl-edit-nav { display: flex; align-items: center; gap: .6rem; }
   .atl-edit-nav-button { min-height: 40px; min-width: 86px; border-radius: 7px; }
   .atl-edit-nav-button:disabled { opacity: .45; }
   .atl-edit-position { font-variant-numeric: tabular-nums; font-size: .83rem; font-weight: 650; min-width: 4.5rem; text-align: center; }
-  .atl-bank-editor-modal .mb { flex: 1; min-height: 0; padding: 0; overflow: auto; background: var(--paper); }
-  .atl-bank-editor-modal .atl-bank-edit-form { display: flex; flex-direction: column; gap: 0; margin: 0; }
-  .atl-bank-editor-modal .atl-bank-edit-columns { flex: 1; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 0; align-items: stretch; }
-  .atl-bank-editor-modal .atl-bank-edit-main, .atl-bank-editor-modal .atl-bank-edit-meta {
-    border: 0; border-radius: 0; padding: clamp(.75rem, 1.8vw, 1.5rem); gap: .75rem;
-    background: var(--paper); align-content: start; }
-  .atl-bank-editor-modal .atl-bank-edit-meta { border-inline-start: 1px solid var(--rule); background: var(--panel); }
-  .atl-bank-editor-modal .atl-bank-edit-main { display: flex; flex-direction: column; min-width: 0; }
-  .atl-bank-editor-modal .atl-bank-edit-form .field { margin: 0; gap: .25rem; }
-  .atl-bank-editor-modal .atl-edit-title-field input { font: 700 clamp(1.1rem, 2.2vw, 1.55rem)/1.35 var(--text-font, Georgia, serif); min-height: 50px; }
-  .atl-edit-section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; }
-  .atl-edit-word-count { color: var(--ink-2); font-size: .8rem; font-variant-numeric: tabular-nums; }
-  .atl-bank-editor-modal .atl-edit-latin-field { flex: none; display: flex; flex-direction: column; }
-  .atl-bank-editor-modal .atl-edit-latin-field > span { display: none; }
-  .atl-bank-editor-modal .atl-edit-latin-field textarea { flex: none; box-sizing: border-box; min-height: 3.5rem; height: auto; overflow-y: hidden; font: 1.19rem/1.7 var(--text-font, Georgia, serif); padding: .65rem .8rem; margin: 0; }
-  .atl-edit-bibliography, .atl-edit-teaching { display: grid; gap: .6rem; min-width: 0; }
-  .atl-edit-teaching { padding-top: .8rem; border-top: 1px solid var(--rule); }
-  .atl-bank-editor-modal .atl-bank-courses { display: flex; flex-wrap: wrap; gap: .45rem .8rem; }
-  .atl-bank-editor-modal .atl-bank-courses .atl-tag-option { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem 0; }
-  .atl-bank-editor-modal .atl-selectividad-fields:not([hidden]) { display: grid; grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); gap: .5rem; }
-  .atl-bank-editor-modal .atl-source-vocabulary, .atl-edit-notes { margin: 0; padding: .65rem .75rem; border: 1px solid var(--rule); border-radius: 8px; }
-  .atl-edit-notes summary { cursor: pointer; font-weight: 650; }
-  .atl-edit-notes[open] summary { margin-bottom: .5rem; }
-  .atl-bank-editor-modal .atl-bank-edit-actions { margin-top: auto; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .55rem; padding: .65rem 1rem; border: 0; border-top: 1px solid var(--rule); border-radius: 0; background: var(--panel); }
-  .atl-edit-dirty { margin-inline-end: auto; color: var(--ink-2); font-size: .8rem; }
-  .atl-edit-dirty[data-dirty="true"] { color: var(--ink); font-weight: 700; }
-  .atl-bank-editor-modal .atl-bank-edit-actions .primary { min-width: 130px; }
-  .atl-bank-editor-modal .atl-bank-edit-actions button:last-of-type { color: var(--danger, #a33); }
-}
-@media screen and (max-width: 740px) {
-  .modal.atl-bank-editor-modal { max-height: calc(100dvh - 12px); }
-  .atl-bank-editor-modal .atl-bank-edit-columns { grid-template-columns: minmax(0, 1fr); }
-  .atl-bank-editor-modal .atl-bank-edit-meta { border-inline-start: 0; border-top: 1px solid var(--rule); }
-  .atl-bank-editor-modal .mh { padding: .45rem .65rem; }
-  .atl-edit-nav { order: 3; width: 100%; justify-content: space-between; }
-  .atl-bank-editor-modal .atl-bank-edit-actions { padding: .5rem; gap: .35rem; }
-  .atl-bank-editor-modal .atl-edit-dirty { flex-basis: 100%; }
 }
 
 /* Manual tagging workspace: shared visual language with the bank text editor. */
@@ -1504,69 +1429,132 @@
   #editor .atl-bank .atl-filter-family-options .atl-tag-option { font-size: .79rem; padding: .35rem; gap: .25rem; }
 }
 
-/* Ficha abierta: lectura primero, información secundaria compacta y acciones
-   siempre accesibles fuera del área de desplazamiento. */
 @media screen {
-  .modal.atl-bank-editor-modal { border-radius: 14px; max-height: calc(100dvh - 20px); }
-  .atl-bank-editor-modal .mh { flex: none; padding: .6rem .85rem; gap: .45rem; }
-  .atl-bank-editor-modal .mh h2 { min-width: 0; color: var(--ink); font: 650 .95rem/1.3 var(--ui-font); }
-  .atl-bank-editor-modal .mh .xbtn { min-width: 40px; min-height: 40px; }
-  .atl-bank-editor-modal .atl-edit-nav { gap: .35rem; }
-  .atl-bank-editor-modal .atl-edit-nav-button { min-width: 72px; min-height: 40px; padding: .35rem .55rem; }
-  .atl-bank-editor-modal .mb { flex: 1 1 auto; min-height: 0; overscroll-behavior: contain; }
-  .atl-bank-editor-modal .atl-bank-edit-columns { grid-template-columns: minmax(0, 2.2fr) minmax(250px, 1fr); align-items: start; gap: .7rem; padding: .75rem; }
-  .atl-bank-editor-modal .atl-bank-edit-main, .atl-bank-editor-modal .atl-bank-edit-meta { padding: 0; gap: .7rem; background: transparent; border: 0; min-width: 0; }
-  .atl-bank-editor-modal :is(.atl-edit-identity,.atl-edit-passage,.atl-edit-bibliography,.atl-edit-teaching) { display: grid; gap: .55rem; padding: .75rem; min-width: 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel,var(--paper-2)); }
-  .atl-bank-editor-modal .atl-edit-title-field input { min-height: 44px; padding: .35rem .45rem; font: 700 clamp(1.2rem,2.5vw,1.65rem)/1.25 var(--text-font,Georgia,serif); }
-  .atl-bank-editor-modal .atl-edit-citation { margin: 0; color: var(--ink-2); font-size: .84rem; overflow-wrap: anywhere; }
-  .atl-bank-editor-modal .atl-edit-classification { display: flex; flex-wrap: wrap; gap: .3rem; }
-  .atl-bank-editor-modal .atl-edit-classification:empty { display: none; }
-  .atl-bank-editor-modal .atl-edit-class-chip { border: 1px solid var(--rule); border-radius: 20px; padding: .2rem .45rem; font-size: .76rem; color: var(--ink-2); overflow-wrap: anywhere; }
-  .atl-bank-editor-modal .atl-edit-section-heading h3 { color: var(--ink); font: 650 .95rem/1.3 var(--ui-font); }
-  .atl-bank-editor-modal .atl-edit-word-count { white-space: nowrap; }
-  .atl-bank-editor-modal .atl-edit-latin-field textarea { min-height: 3.2rem; padding: .6rem .7rem; font: 1.16rem/1.6 var(--text-font,Georgia,serif); background: var(--paper); }
-  .atl-bank-editor-modal .atl-text-grammar { margin: 0; padding: .7rem; background: var(--panel,var(--paper-2)); border-radius: 10px; }
-  .atl-bank-editor-modal .atl-text-grammar h3 { color: var(--ink); }
-  .atl-bank-editor-modal .atl-edit-supplementary { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; gap: .5rem; min-width: 0; }
-  .atl-bank-editor-modal .atl-edit-supplementary > details { min-width: 0; background: var(--panel,var(--paper-2)); border-radius: 8px; }
-  .atl-bank-editor-modal .atl-edit-supplementary > details[open] { grid-column: 1 / -1; }
-  .atl-bank-editor-modal .atl-edit-supplementary summary { min-height: 34px; cursor: pointer; font-size: .85rem; }
-  .atl-bank-editor-modal .atl-edit-supplementary textarea { min-height: 80px; resize: vertical; }
-  .atl-bank-editor-modal :is(.atl-edit-bibliography,.atl-edit-teaching) h3 { color: var(--ink); font: 650 .92rem/1.3 var(--ui-font); margin: 0; }
-  .atl-bank-editor-modal .atl-bank-edit-meta .field > span:first-child { font-size: .79rem; }
-  .atl-bank-editor-modal .atl-bank-edit-meta :is(input:not([type=checkbox]),select) { box-sizing: border-box; min-height: 42px; width: 100%; }
-  .atl-bank-editor-modal .atl-bank-courses { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .25rem; padding: .45rem; }
-  .atl-bank-editor-modal .atl-bank-courses .atl-tag-option { align-items: center; min-height: 40px; font-size: .8rem; }
-  .atl-bank-editor-modal :is(.atl-bank-courses,.atl-selectividad) input[type=checkbox] { flex: none; width: 17px; height: 17px; margin: 0; accent-color: var(--accent); }
-  .atl-bank-editor-modal .atl-selectividad-fields { min-width: 0; }
-  .atl-bank-editor-modal .atl-edit-import-notice { margin: 0; }
+  .modal-bg:has(> .atl-bank-editor-modal) { padding: 6px; }
+  .modal.atl-bank-editor-modal {
+    max-width: 100%;
+    max-height: calc(100dvh - 12px - env(safe-area-inset-bottom));
+    height: auto;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .atl-bank-editor-modal .mh {
+    flex: none; flex-wrap: wrap; gap: .5rem;
+    padding: .5rem clamp(.75rem, 2vw, 1.25rem);
+    background: var(--panel);
+    border-top: 3px solid var(--accent);
+  }
+  .atl-bank-editor-modal .mh h2 { flex: 1; margin: 0; color: var(--ink); font: 650 .95rem/1.3 var(--ui-font); }
+  .atl-bank-editor-modal .mh .xbtn { flex: none; min-width: 44px; min-height: 44px; margin: 0; }
+  .atl-bank-editor-modal .atl-edit-nav { gap: .3rem; }
+  .atl-bank-editor-modal .atl-edit-nav-button { min-width: 0; min-height: 44px; padding: .35rem .65rem; }
+  .atl-bank-editor-modal .mb {
+    flex: 1 1 auto; min-height: 0; padding: 0; overflow: auto;
+    overscroll-behavior: contain; background: var(--paper-2);
+  }
+  .atl-bank-edit-form {
+    box-sizing: border-box;
+    display: grid; gap: 1rem;
+    max-inline-size: 52rem; margin: 0 auto;
+    padding: clamp(.65rem, 2.5vw, 1.75rem);
+  }
+  .atl-bank-edit-main, .atl-bank-edit-meta { display: grid; gap: .75rem; min-width: 0; }
+  .atl-bank-edit-form .field { display: grid; gap: .3rem; min-width: 0; margin: 0; }
+  .atl-bank-edit-form .field > span:first-child { font-size: .83rem; font-weight: 650; }
+  .atl-bank-edit-form :is(input:not([type="checkbox"]), textarea, select) {
+    box-sizing: border-box; width: 100%; min-width: 0; min-height: 42px;
+    border: 1px solid var(--rule); border-radius: 8px;
+    padding: .5rem .6rem; background: var(--paper); color: var(--ink); font-size: 16px;
+  }
+  .atl-bank-editor-modal :is(button, input, textarea, select, summary):focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .atl-edit-passage {
+    display: grid; gap: .5rem; min-width: 0; padding: clamp(.8rem, 4vw, 2.4rem);
+    border: 1px solid var(--rule); border-radius: 12px; background: var(--paper);
+  }
+  .atl-edit-identity { display: grid; gap: .35rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule); margin-bottom: .5rem; }
+  .atl-edit-citation { margin: 0; color: var(--ink-2); font-size: .93rem; overflow-wrap: anywhere; }
+  .atl-edit-classification { display: flex; flex-wrap: wrap; gap: .3rem; }
+  .atl-edit-classification:empty { display: none; }
+  .atl-edit-class-chip { border: 1px solid var(--rule); border-radius: 20px; padding: .2rem .5rem; font-size: .76rem; color: var(--ink-2); overflow-wrap: anywhere; }
+  .atl-edit-section-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .35rem .75rem; }
+  .atl-bank-editor-modal .atl-bank-edit-form h3 { margin: 0; color: var(--ink); font: 650 .95rem/1.3 var(--ui-font); scroll-margin-top: .75rem; }
+  .atl-edit-word-count { color: var(--ink-2); font-size: .8rem; font-variant-numeric: tabular-nums; }
+  .atl-bank-edit-form .atl-edit-latin-field > span { display: none; }
+  .atl-bank-edit-form :is(.atl-edit-title-field, .atl-edit-latin-field) textarea {
+    display: block; height: auto; overflow: hidden; resize: none;
+  }
+  .atl-bank-edit-form .atl-edit-title-field textarea {
+    padding: .2rem 0; border-color: transparent;
+    font: 700 clamp(1.5rem, 4vw, 2.25rem)/1.15 var(--text-font);
+  }
+  .atl-bank-edit-form .atl-edit-latin-field textarea {
+    min-height: 3.25rem; padding: .5rem .65rem;
+    font: italic clamp(1.2rem, 2.4vw, 1.45rem)/1.65 var(--text-font);
+    border-color: var(--rule); background: var(--paper);
+  }
+  .atl-bank-editor-modal .atl-text-grammar,
+  .atl-bank-edit-meta {
+    margin: 0; padding: clamp(.75rem, 2vw, 1.15rem); background: var(--panel);
+    border: 1px solid var(--rule); border-radius: 10px;
+  }
+  .atl-bank-editor-modal :is(.atl-edit-tags, .atl-edit-section-heading button) { min-height: 44px; color: var(--accent); }
+  .atl-edit-supplementary, .atl-edit-detail-grid {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start; gap: .65rem;
+  }
+  .atl-edit-supplementary > details { min-width: 0; background: var(--panel); }
+  .atl-edit-supplementary > details[open] { grid-column: 1 / -1; }
+  .atl-edit-supplementary summary { min-height: 36px; cursor: pointer; font-size: .85rem; font-weight: 650; }
+  .atl-edit-supplementary details[open] summary { margin-bottom: .5rem; }
+  .atl-edit-supplementary textarea { min-height: 80px; resize: vertical; }
+  .atl-edit-bibliography, .atl-edit-teaching { display: grid; align-content: start; gap: .6rem; min-width: 0; }
+  .atl-edit-teaching { padding-inline-start: .9rem; border-inline-start: 1px solid var(--rule); }
+  .atl-bank-editor-modal :is(.atl-bank-courses, .atl-selectividad, .atl-source-vocabulary),
+  .atl-edit-notes {
+    margin: 0; min-width: 0; padding: .5rem .65rem;
+    border: 1px solid var(--rule); border-radius: 8px;
+  }
+  .atl-bank-editor-modal fieldset legend { font-size: .82rem; font-weight: 650; }
+  .atl-bank-editor-modal .atl-bank-courses { display: flex; flex-wrap: wrap; gap: .25rem .75rem; }
+  .atl-bank-editor-modal .atl-bank-courses .atl-tag-option {
+    display: inline-flex; align-items: center; gap: .35rem; min-height: 40px; font-size: .83rem;
+  }
+  .atl-bank-editor-modal :is(.atl-bank-courses, .atl-selectividad) input[type="checkbox"] {
+    flex: none; width: 17px; height: 17px; margin: 0; accent-color: var(--accent);
+  }
+  .atl-bank-editor-modal .atl-selectividad-fields:not([hidden]) { grid-template-columns: minmax(0, .7fr) minmax(0, 1.3fr); }
+  .atl-edit-manage {
+    display: flex; align-items: center; flex-wrap: wrap; gap: .5rem;
+    padding-top: .75rem; border-top: 1px solid var(--rule);
+  }
+  .atl-edit-manage button { min-height: 44px; color: var(--danger, #a33); }
   .atl-bank-editor-modal .mf.atl-edit-footer { flex: none; display: block; padding: 0; border-top: 1px solid var(--rule); }
-  .atl-bank-editor-modal .atl-edit-footer .atl-bank-edit-actions { position: static; box-sizing: border-box; width: 100%; margin: 0; padding: .55rem .75rem; border: 0; gap: .4rem; }
-  .atl-bank-editor-modal .atl-edit-footer .atl-edit-dirty { flex: 1; min-width: 6rem; }
-  .atl-bank-editor-modal .atl-edit-footer .atl-edit-dirty[data-dirty="true"] { color: var(--accent); }
-  .atl-bank-editor-modal .atl-edit-footer button { min-height: 44px; }
-  .atl-bank-editor-modal .atl-edit-footer .primary { min-width: 0; }
-}
-@media screen and (max-width: 850px) {
-  .atl-bank-editor-modal .atl-bank-edit-columns { grid-template-columns: minmax(0,1fr); padding: .5rem; }
-  .atl-bank-editor-modal .atl-bank-edit-meta { grid-template-columns: repeat(2,minmax(0,1fr)); align-items: start; }
+  .atl-edit-footer .atl-bank-edit-actions {
+    display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap;
+    gap: .45rem; padding: .5rem clamp(.65rem, 2vw, 1.25rem); background: var(--panel);
+  }
+  .atl-edit-dirty { margin-inline-end: auto; color: var(--ink-2); font-size: .8rem; }
+  .atl-edit-dirty[data-dirty="true"] { color: var(--accent); font-weight: 700; }
+  .atl-edit-footer button { min-height: 44px; }
 }
 @media screen and (max-width: 550px) {
-  .modal.atl-bank-editor-modal { max-height: calc(100dvh - 12px); border-radius: 10px; }
-  .atl-bank-editor-modal .atl-bank-edit-columns { gap: .5rem; }
-  .atl-bank-editor-modal .atl-bank-edit-main,.atl-bank-editor-modal .atl-bank-edit-meta { gap: .5rem; }
-  .atl-bank-editor-modal .atl-bank-edit-meta { grid-template-columns: minmax(0,1fr); }
-  .atl-bank-editor-modal .atl-edit-bibliography { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .atl-bank-editor-modal .atl-edit-bibliography > :is(h3,.field:first-of-type) { grid-column: 1/-1; }
-  .atl-bank-editor-modal :is(.atl-edit-identity,.atl-edit-passage,.atl-edit-bibliography,.atl-edit-teaching) { padding: .55rem; gap: .4rem; }
-  .atl-bank-editor-modal .atl-edit-footer .atl-bank-edit-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); padding: .4rem; }
-  .atl-bank-editor-modal .atl-edit-footer .atl-edit-dirty { grid-column: 1/-1; margin: 0; }
-  .atl-bank-editor-modal .atl-edit-footer button { min-width: 0; font-size: .78rem; white-space: normal; padding: .35rem; }
+  .modal.atl-bank-editor-modal { border-radius: 10px; }
+  .atl-bank-editor-modal .atl-edit-nav { order: 3; width: 100%; justify-content: space-between; }
+  .atl-edit-detail-grid { grid-template-columns: minmax(0, 1fr); }
+  .atl-edit-teaching { padding: .75rem 0 0; border: 0; border-top: 1px solid var(--rule); }
+  .atl-edit-footer .atl-bank-edit-actions { display: grid; grid-template-columns: repeat(2, auto) minmax(0, 1fr); }
+  .atl-edit-dirty { grid-column: 1 / -1; }
+  .atl-edit-footer button { min-width: 0; padding-inline: .4rem; white-space: normal; }
 }
 
-@media screen {
-  .atl-bank-editor-modal .atl-edit-grammar-heading { align-items: center; flex-wrap: wrap; }
-  .atl-bank-editor-modal .atl-edit-tags { min-height: 44px; flex: none; padding: .35rem .65rem; border-radius: 8px; font-size: .83rem; color: var(--accent); }
+@media screen and (min-width: 375px) and (max-width: 550px) {
+  .atl-bank-editor-modal .mh { padding-inline: .55rem; gap: .3rem; }
+  .atl-bank-editor-modal .mh h2 { font-size: .85rem; }
+  .atl-bank-editor-modal .atl-edit-nav { order: 0; width: auto; }
+  .atl-bank-editor-modal .atl-edit-position { min-width: 3rem; }
+  .atl-bank-editor-modal .atl-edit-nav-button { padding-inline: .45rem; }
 }
 
 /* El año PAU permanece legible incluso cuando se recorta la referencia. */
