@@ -19,6 +19,9 @@ test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',
  await card.click();
  const modal=frame.locator('.modal').last();
  await expect(modal.getByRole('textbox',{name:'Título didáctico'})).toHaveValue('CATÓN RECIBE EL GOBIERNO DE LA HISPANIA CITERIOR');
+ await expect(modal.locator('.atl-edit-latin-render')).toContainText('quæstor fuerat');
+ await expect(modal.getByRole('textbox',{name:'Texto latino',exact:true})).toHaveValue(/quaestor fuerat/);
+ await expect(modal.locator('.atl-edit-notes textarea')).toHaveValue(/PAU CV · JUNIO 2006 · Opción A/);
  await modal.getByRole('button',{name:'Cancelar',exact:true}).click();
  await bank.getByRole('searchbox',{name:/Buscar/}).first().fill('');
  await page.reload();

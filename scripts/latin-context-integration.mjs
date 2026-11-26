@@ -122,7 +122,7 @@ export function integrateContextBank(source) {
                     vocabulary: vocabulary ?? current.teacherDocx.vocabulary };`],
     ['const saveCopy = linked && !same && !current.teacherDocx;', 'const saveCopy = linked && (!same || contextual.changed) && !current.teacherDocx;'],
     ['if (saveCopy && !changedLatin) next = attachGrammarTags', 'if (saveCopy) next = attachGrammarTags'],
-    ["    latinField.classList.add('atl-edit-latin-field');", "    latinField.classList.add('atl-edit-latin-field');\n    renderBankEditorialField(latin);"],
+    ["    latinField.classList.add('atl-edit-latin-field');", "    latinField.classList.add('atl-edit-latin-field');\n    renderBankEditorialField(latin, text => callCollatinus('ligateText', { text }));"],
     ["latin.addEventListener('input', updateCount);", "latin.addEventListener('input', updateCount);\n    latin.addEventListener('atl-latin-change', updateCount);"],
     ["        field.addEventListener('input', () => fitReading(field));", "        field.addEventListener('input', () => fitReading(field));\n        field.addEventListener('atl-latin-change', () => fitReading(field));"],
     ['            let reviewNotice = \'\';', `            let reviewNotice = contextual.invalid ? ' Revisa los subrayados afectados (' + contextual.invalid + ').' : '';`],

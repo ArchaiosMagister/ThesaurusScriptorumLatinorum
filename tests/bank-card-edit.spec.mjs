@@ -317,3 +317,34 @@ test('el año PAU se destaca en la tarjeta sin afectar a textos ordinarios', asy
   await expect(card.locator('.atl-card-difficulty')).toBeVisible();
   await expect(bank.locator('.atl-bank-card').filter({hasText:'B ordinario'}).locator('.atl-card-pau-year')).toHaveCount(0);
 });
+
+test('la ficha muestra los diptongos confirmados y conserva el original al editar', async ({page}) => {
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame = page.frameLocator('#panel-cuaderno iframe');
+  const bank = frame.getByRole('region', { name: 'Banco de textos propios' });
+  const modal = frame.locator('.modal').last();
+  const latin = modal.getByRole('textbox', { name: 'Texto latino', exact: true });
+  const reading = modal.locator('.atl-edit-latin-render');
+  const original = 'Caesar proelium narrat. […] Poeta Cæsarem laudat.';
+  const title = 'Caesar, lectura en castellano';
+  await bank.getByRole('button', { name: 'Pegar en el banco' }).click();
+  await modal.getByRole('textbox', { name: 'Título', exact: true }).fill(title);
+  await latin.fill(original);
+  await modal.getByRole('button', { name: 'Guardar en el banco' }).click();
+  await bank.locator('.atl-bank-card').click();
+  await expect(reading).toHaveText('Cæsar prœlium narrat. […] Poeta Cæsarem laudat.');
+  await expect(reading.locator('.edition-roman')).toHaveText('[…]');
+  await expect(latin).toHaveValue(original);
+  await expect(modal.getByRole('textbox', { name: 'Título didáctico' })).toHaveValue(title);
+  await expect(modal.locator('.atl-edit-dirty')).toHaveText('Sin cambios');
+  await latin.focus();
+  await expect(reading).toHaveText(original);
+  const revised = 'CAESAR proelium vincit. […] Poeta Cæsarem laudat.';
+  await latin.fill(revised);
+  await latin.blur();
+  await expect(reading).toHaveText('CÆSAR prœlium vincit. […] Poeta Cæsarem laudat.');
+  await modal.getByRole('button', { name: 'Guardar cambios' }).click();
+  await bank.locator('.atl-bank-card').click();
+  await expect(latin).toHaveValue(revised);
+  await expect(reading).toHaveText('CÆSAR prœlium vincit. […] Poeta Cæsarem laudat.');
+});
