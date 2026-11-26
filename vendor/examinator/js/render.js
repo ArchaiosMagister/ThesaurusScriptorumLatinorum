@@ -5,6 +5,34 @@
   const E = M.Exam = {};
 
   /* ---------- contenido común ---------- */
+  // Los signos editoriales se reconocen en el texto completo, no por token.
+  // Se recortan luego los intervalos de cada run para conservar los subrayados.
+  function editorialRuns(runs) {
+    const source = runs.map(r => r.t).join('');
+    const spans = [...source.matchAll(/\[\s*(?:…|\.{3})\s*\]|[\[\]]/gu)];
+    const out = [];
+    let offset = 0, i = 0;
+    for (const r of runs) {
+      const end = offset + r.t.length;
+      let pos = offset;
+      const append = (a,b,n) => {
+        if (a < b) out.push({ ...r, t: source.slice(a,b), n });
+      };
+      while (i < spans.length && spans[i].index + spans[i][0].length <= offset) i++;
+      while (i < spans.length && spans[i].index < end) {
+        const a = spans[i].index, b = a + spans[i][0].length;
+        append(pos, Math.min(a,end), false);
+        append(Math.max(pos,a), Math.min(b,end), true);
+        pos = Math.min(b,end);
+        if (b > end) break;
+        i++;
+      }
+      append(pos,end,false);
+      offset = end;
+    }
+    return out;
+  }
+
   // Texto con subrayados: [{ t, u }]
   E.textRuns = function (S) {
     const text = S.texto || '';
@@ -24,12 +52,7 @@
     if (pos < text.length) runs.push({ t: text.slice(pos) });
     // texto seguido: saltos de línea → espacios
     for (const r of runs) r.t = r.t.replace(/\s*\n\s*/g, ' ');
-    // lo que va entre corchetes ([...], añadidos) no va en cursiva
-    const out = [];
-    for (const r of runs) {
-      for (const part of r.t.split(/(\[[^\]]*\])/)) { if (part) out.push(Object.assign({}, r, { t: part, n: /^\[[^\]]*\]$/.test(part) })); }
-    }
-    return out;
+    return editorialRuns(runs);
   };
   // La literatura mantiene intacto el texto que el docente pega o
   // selecciona. La grafía con ligaduras se calcula y guarda solo en memoria.
@@ -188,7 +211,7 @@
   vertical-align: top; white-space: pre-wrap; overflow-wrap: break-word; font-weight: normal; }
 .page .litTable .litLatin { font-style: italic; }
 .page .litTable .litTranslation { font-style: normal; }
-.page .txt .nr { font-style: normal; }
+.page .txt .nr, .page .litLatin .nr { font-style: normal; }
 .page .txt u { text-decoration-thickness: .7pt; text-underline-offset: 2pt; }
 .page .voc { border: 1px solid #222; padding: 3pt 7pt 4pt; margin: 6pt 0 10pt; }
 /* Una línea de separación antes del vocabulario, proporcional al interlineado del texto. */
@@ -217,7 +240,7 @@
     const litQuestionHtml = E.hasLiterature(S)
       ? `<li class="literatureQuestion">${esc(E.literatureQuestion(S))}
         <table class="litTable"><tbody><tr>
-          <td class="litLatin">${esc(E.literatureLatin(S))}</td>
+          <td class="litLatin">${runsHtml(editorialRuns([{ t: E.literatureLatin(S) }]))}</td>
           <td class="litTranslation">${esc(S.literatura.traduccion || '')}</td>
         </tr></tbody></table></li>` : '';
     return `<div class="page">
@@ -308,7 +331,7 @@ ${E.pageCss(S)}
       // 10 pt (20 medios puntos) y Palatino Linotype solo en la tabla.
       const litFont = '<w:rFonts w:ascii="Palatino Linotype" w:hAnsi="Palatino Linotype" w:cs="Palatino Linotype" w:eastAsia="Palatino Linotype"/><w:sz w:val="20"/><w:szCs w:val="20"/>';
       const litParagraphs = (content, italic) => String(content || '').split(/\r?\n/)
-        .map((line) => para([{ t: line, i: italic }],
+        .map((line) => para(italic ? editorialRuns([{ t: line }]).map(r => ({ t:r.t, i:!r.n })) : [{ t:line }],
           '<w:spacing w:before="0" w:after="0" w:line="300" w:lineRule="auto"/>', litFont)).join('');
       const half = Math.round(W / 2), rest = W - half;
       const litCell = (content, width) => `<w:tc><w:tcPr><w:tcW w:w="${width}" w:type="dxa"/><w:vAlign w:val="top"/></w:tcPr>${content}</w:tc>`;

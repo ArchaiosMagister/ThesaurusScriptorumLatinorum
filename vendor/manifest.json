@@ -422,11 +422,11 @@
       },
       {
         "path": "src/core/edition-inline-formatting.test.ts",
-        "sha256": "3399409cb7e8fabd0dc25961f3399395e5f1d3eb9fd15a0270fafc876662ad7a"
+        "sha256": "384c73876baad1c66af2933c2b6cc93b2a94ff170d5578310712d1f3f5176e4e"
       },
       {
         "path": "src/core/edition-inline-formatting.ts",
-        "sha256": "2953ac5d0fc1565bbda1b62408460fb6289297490768fb09d7c44770d141ff41"
+        "sha256": "f5b8b8569da8d1a17fd37c4bf190a127294dcabf8995e7951b69289af0c514e1"
       },
       {
         "path": "src/core/edition-model.ts",
@@ -618,11 +618,11 @@
       },
       {
         "path": "src/export/notebook-documents.test.ts",
-        "sha256": "ca5e8e2a0a4835def81860b4f8aeb988a990ac9dedbc990dc62adffc8d7ed035"
+        "sha256": "71766c143e79566f801604a6bb73ba3ddb05e7843ea782d9602e5465c395b936"
       },
       {
         "path": "src/export/notebook-documents.ts",
-        "sha256": "2b6cc1c3bbe6e76434f39d4a12fe074348af392fee0565ef7b82265ed3be9f6d"
+        "sha256": "f784df46396054516515e70f162fb37d7dcdd6a569a06a90c4c1124d0dee3958"
       },
       {
         "path": "src/export/zip-store.ts",
@@ -694,7 +694,7 @@
       },
       {
         "path": "src/ui/edition-app.ts",
-        "sha256": "2c29762f1ea7a4cb8c7b4843ee1ad26dc7e2019df80799e343036919277c5c4d"
+        "sha256": "e50625da2a31350ee1ca962ce6efeb61a18f3840db22c6e047fe9ade238926ec"
       },
       {
         "path": "src/ui/examinator-notebook-app.ts",
@@ -1128,7 +1128,7 @@
       },
       {
         "path": "js/render.js",
-        "sha256": "00d1d3f949c33ec0077873d759971596df93c767ef87fbcb1cc9be5bac8331f2"
+        "sha256": "84125b4f737199fe561490e3fafd083c0ccb6e98fdef932e7b15e2fe205d2eb3"
       },
       {
         "path": "js/shim.js",
