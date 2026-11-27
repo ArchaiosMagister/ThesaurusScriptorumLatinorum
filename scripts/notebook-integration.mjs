@@ -111,6 +111,25 @@ function renderHome() {`);
     }) });
 }
 `;
+  source = "import { importNationalPau } from './pau-national-import.js';\n" +
+    "import { appendNationalPassages } from './pau-national-storage.js';\n" + source;
+  source += `\nfunction openNationalPauImport() {
+    importNationalPau({modal:(...args)=>M.modal(...args),toast:message=>M.toast(message),
+      save:records=>writeSource(async()=>{
+        const current=await repo.load();
+        const existing=await loadCombinedCorpus();
+        const result=await appendNationalPassages(current.corpus,existing,records,
+          {upsertText,validateCorpus,now:new Date().toISOString()});
+        if (result.saved) {
+          await repo.save(result.corpus,current.revision);
+          await reload();
+          render();
+        }
+        return result;
+      })
+    });
+}
+`;
   source = "import { bankTagAssignable, bankTagVisible, isGrammarGrouping, isRetiredTag, compactGrammarTags, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
   source = "import { selectividadEditor, showBankPlanner } from './atl-bank-planner.js';\n" + source;
   source = "import { assessBankDifficulty, difficultyEvidence, difficultyText } from './atl-bank-difficulty.js';\n" + source;
@@ -316,7 +335,7 @@ window.addEventListener('atl-view', () => {
   replace("        title: nextNotebookTextTitle(composer.activeEdition()?.placements ?? []),\n        latin: fragment.text, author: fragment.author, work: fragment.obra, reference: fragment.cita,",
     "        title: nextNotebookTextTitle(composer.activeEdition()?.placements ?? []),\n        latin: fragment.text, author: fragment.author, work: fragment.obra, reference: fragment.cita,\n        origin: { kind: 'library', urn: fragment.urn },");
   replace('let next = upsertText(loaded.corpus, { ...data, id }, id, new Date().toISOString());',
-    `const ownVocabulary = current.teacherDocx && changedLatin ? glossary.read({ asOwn: true })
+    `const ownVocabulary = current.teacherDocx && changedLatin && !current.teacherDocx.nationalPau ? glossary.read({ asOwn: true })
                 : current.teacherDocx ? undefined : vocabulary;
             let next = upsertText(loaded.corpus, { ...data, id, origin: current.origin,
                 vocabulary: ownVocabulary ?? current.vocabulary }, id, new Date().toISOString());
@@ -355,9 +374,9 @@ window.addEventListener('atl-view', () => {
     };
     inputs.get('latin').addEventListener('input', updateEstimate);
     updateEstimate();
-    const exam = selectividadEditor(source.selectividad);
+    const exam = selectividadEditor(source.selectividad, {national:source.id.startsWith('pau.national.')});
     const sessionInfo = selectividadSession(source);
-    if (sessionInfo) exam.container.append(el('p', 'small muted', 'Convocatoria: ' + sessionInfo.label));
+    if (sessionInfo && !source.id.startsWith('pau.national.')) exam.container.append(el('p', 'small muted', 'Convocatoria: ' + sessionInfo.label));
     form.append(courseField, difficultyField, exam.container);
     const glossary = vocabularyEditor(source);
     form.append(glossary.section);
@@ -376,7 +395,7 @@ window.addEventListener('atl-view', () => {
                 JSON.stringify(data.courseIds) === JSON.stringify(current.courseIds ?? [])) {`);
   replace('const saveCopy = linked || (changedLatin && Boolean(current.teacherDocx));',
     `const saveCopy = linked && !same && !current.teacherDocx;
-            if (changedLatin && current.teacherDocx &&
+            if (changedLatin && current.teacherDocx && !current.teacherDocx.nationalPau &&
                 !window.confirm('Vas a modificar el texto latino importado de Word en esta misma ficha. ' +
                     'Las marcas y el vocabulario originales del DOCX dejarán de estar vinculados ' +
                     'a la nueva versión del texto. Los cuadernos ya creados conservarán su copia. ¿Continuar?')) return;`);

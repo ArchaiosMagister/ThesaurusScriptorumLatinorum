@@ -29,7 +29,8 @@ function sourceData(text) {
     obra: text.source.work ?? '', cita: text.source.reference ?? '',
     bank: { id: text.id, updatedAt: text.updatedAt, title: text.title,
       underlines: text.teacherDocx?.pauCv ? [] : text.editorialUnderlines ?? text.teacherDocx?.underlines ?? [],
-      ...(text.teacherDocx?.pauCv ? { pau: text.teacherDocx } : {}) }
+      ...(text.teacherDocx?.pauCv ? { pau: text.teacherDocx } : {}),
+      ...(text.teacherDocx?.nationalPau ? { national: text.teacherDocx } : {}) }
   };
 }
 

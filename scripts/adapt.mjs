@@ -187,6 +187,8 @@ export function lexicalValuesForDocument(option) {
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
     await cp(new URL('./pau-cv-parser.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-parser.js'));
     await cp(new URL('./pau-cv-import.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-import.js'));
+    for (const file of ['pdf','parser','cyl','profiles','import','storage'])
+      await cp(new URL('./pau-national-' + file + '.js', import.meta.url), join(directory, 'ui', 'pau-national-' + file + '.js'));
     const pauSeedData = await readFile(new URL('./pau-cv-seed-data.json', import.meta.url), 'utf8');
     const pauSeedScript = await readFile(new URL('./pau-cv-seed.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'ui', 'atl-pau-cv-seed.json'), pauSeedData);
@@ -198,14 +200,39 @@ export function lexicalValuesForDocument(option) {
     apply = requiredPatch(apply, anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})', 'Metadatos PAU CV');
     // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
     apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
+    apply = requiredPatches(apply, [
+      [': base.text.markup;', ": doc.nationalPau ? base.text.markup.filter(mark => mark.kind !== 'morph-underline') : base.text.markup;"],
+      ['return { ...q, words: doc.underlines.length ?', "return { ...q, ...(doc.nationalPau ? {enabled:Boolean(doc.underlines.length)} : {}), words: doc.underlines.length ?"],
+      ['})) : q.words };', '})) : doc.nationalPau ? [] : q.words };'],
+    ], 'Preguntas originales de Selectividad');
+    apply = requiredPatch(apply, "if (o.kind === 'preverb') {", `if (doc.nationalPau && o.kind==='preverb') {
+        return {...o,enabled:Boolean(doc.preverbBases?.length),slots:[],
+          ...(doc.preverbBases?.length ? { statement:{value:'Modificación preverbial: '+doc.preverbBases.join(', '),
+            origin:'manual',locked:true,lastEditAt:null} } : {})};
+      }
+      if (o.kind === 'preverb') {`, 'Bases originales de Selectividad');
+    apply = requiredPatch(apply, 'originals.slice(0, 4).map', '(doc.nationalPau ? originals : originals.slice(0,4)).map', 'Léxico original de Selectividad');
+    apply = requiredPatch(apply, 'for (const generated of o.slots) {', 'if (doc.nationalPau) return {...o,enabled:Boolean(actual.length),slots:actual};\n                for (const generated of o.slots) {', 'Opciones de Selectividad');
+    apply = requiredPatch(apply, 'questions, vocabulary: vocab,', `questions:doc.nationalPau ? questions.map(q=>q.kind==='choice'
+        ? {...q,enabled:q.options.some(option=>option.enabled),requiredCount:Math.max(1,Math.min(q.requiredCount,q.options.filter(option=>option.enabled).length))}
+        : q.kind==='syntax' ? {...q,enabled:false} : q) : questions,
+      vocabulary:doc.nationalPau && !vocab.length ? base.vocabulary : vocab,`, 'Vocabulario de Selectividad');
     await writeFile(applyFile, apply);
     const integrated = requiredPatches(requiredReplaceAll(
       integrateBankContextAcademic(integrateContextBank(composeNotebookSource(await readFile(file, 'utf8')))), './pwa-controls.js', './atl-pwa.js'), [
       ['./edition-app.js', './atl-edition.js'],
       ["button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks"]
     ], 'Entradas de Cuadernos');
-    await writeFile(join(directory, 'ui', 'atl-repertorios.js'), integrated);
-    const edition = composeEditionSource(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8'));
+    await writeFile(join(directory, 'ui', 'atl-repertorios.js'), requiredPatch(integrated,
+      'if (current.teacherDocx && (!changedLatin || contextual.edited)) {',
+      'if (current.teacherDocx && (!changedLatin || contextual.edited || current.teacherDocx.nationalPau)) {',
+      'Edición de una ficha nacional'));
+
+    const edition = requiredPatches(composeEditionSource(await readFile(join(directory, 'ui', 'edition-app.js'), 'utf8')), [
+      ["throw Error('No existe el cuaderno.');\n                return validateEdition({ ...old, updatedAt: at, placements: [...old.placements, place] });", "throw Error('No existe el cuaderno.');\n                return validateEdition({ ...old, updatedAt: at, placements: [...old.placements, doc.nationalPau ? prospective : place] });"],
+      ['if (autoApply)\n                await academics.generateInitial(place.id);\n            if (!draft)', 'if (!doc.nationalPau && autoApply)\n                await academics.generateInitial(place.id);\n            if (!draft)'],
+      ["? applyParsedTeacherDocx(p, doc, () => freshId('item')) : p)", "? (doc.nationalPau ? p : applyParsedTeacherDocx(p, doc, () => freshId('item'))) : p)"],
+    ], 'Importación nacional en Cuadernos');
     const readingCardFile = join(directory, 'ui', 'latin-reading-card.js');
     const readingCard = integrateNotebookContextCard(integrateLatinReadingCard(await readFile(readingCardFile, 'utf8')));
     await writeFile(readingCardFile, readingCard);
@@ -330,7 +357,26 @@ export function lexicalValuesForDocument(option) {
       S.titulo = d.bank.title;
       S.atlBankSource = { id: d.bank.id, updatedAt: d.bank.updatedAt };
       delete S.atlPauMorph;
-      if (S.atlPauLexical && !d.bank.pau) {
+      const previousNational=S.atlNationalPau;
+      delete S.atlNationalPau;
+      if (previousNational) S.vocabItems=(S.vocabItems??[]).filter(item=>!item.atlOfficialVocabulary);
+      if (d.bank.national) {
+        const doc=d.bank.national;
+        S.atlNationalPau=true;
+        S.atlPauLexical=true;
+        S.subr=[];
+        S.atlPauMorph={text:d.text,underlines:doc.underlines,national:true};
+        S.prev=(doc.preverbBases??[]).map(txt=>({txt,rows:[],lplain:''}));
+        S.evol=doc.lexical.phonetics.map(w=>({w,g:''}));
+        S.pref=[...doc.lexical.prefix];
+        S.latin=[...doc.lexical.latinism];
+        if (doc.vocabulary.length) {
+          S.vocMode='elegir';
+          S.vocabItems.push(...doc.vocabulary.map(entry=>({
+            manual:true,atlOfficialVocabulary:true,head:entry.headword,trad:entry.meaning??'',note:'',on:true
+          })));
+        }
+      } else if (S.atlPauLexical && !d.bank.pau) {
         delete S.atlPauLexical;
         S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
         P.evol(S); P.pref(S); P.latin(S);
@@ -354,6 +400,8 @@ export function lexicalValuesForDocument(option) {
     } else {
       delete S.atlPauMorph;
       delete S.atlBankSource;
+      if (S.atlNationalPau) S.vocabItems=(S.vocabItems??[]).filter(item=>!item.atlOfficialVocabulary);
+      delete S.atlNationalPau;
       if (S.atlPauLexical) {
         delete S.atlPauLexical;
         S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
@@ -383,14 +431,27 @@ export function lexicalValuesForDocument(option) {
         if (imported.text === text) {
           const result = morphology.importPauMarks(S, imported.underlines);
           if (result.marks.length) S.subr = result.marks;
-          if (result.marks.length !== 4 || result.missing.length) {
+          if (result.marks.length !== (imported.national ? imported.underlines.length : 4) || result.missing.length) {
             M.toast('Revisa los subrayados originales; se han conservado ' + result.marks.length +
-              ' de 4.' + (result.missing.length ? ' No trasladados: ' + result.missing.join(', ') : ''), 6500);
+              ' de ' + (imported.national ? imported.underlines.length : 4) + '.' + (result.missing.length ? ' No trasladados: ' + result.missing.join(', ') : ''), 6500);
           }
         }
       }`)
       .replace(/^      \$\{\(v\.manual \|\| v\.glosasSeparadas\) .*\n/m, '')
       .replace(/      if \(e\.target\.classList\.contains\('vsplit'\)\) \{[\s\S]*?(?=      if \(!e\.target\.classList\.contains\('von'\))/, '')
+      .replace('[0, 1].map((k) => `<div class="qrow">', '(S.atlNationalPau ? S.prev.map((_,k)=>k) : [0, 1]).map((k) => `<div class="qrow">')
+      .replace(/\[0, 1, 2, 3\]\.map\(\(k\) => `<div class="qrow"><input type="text" class="it" data-q="(evol|pref|latin)"/gu,
+        (match,kind)=>match.replace('[0, 1, 2, 3]', '(S.atlNationalPau ? S.'+kind+'.map((_,k)=>k) : [0, 1, 2, 3])'))
+      .replace('  function restoreQuestionChoices(S, previousTokens, previousSubr, previousPrev, indices) {', `  function restoreQuestionChoices(S, previousTokens, previousSubr, previousPrev, indices) {
+    if (S.atlNationalPau) {
+      S.subr=previousSubr.flatMap(mark=>{
+        const tokens=mark.toks.map(index=>indices.get(index));
+        return tokens.every(Number.isInteger)?[{...mark,toks:tokens}]:[];
+      });
+      return;
+    }`)
+      .replace("on: S.vocMode === 'todo' || !!e.proper", "on: S.vocMode === 'todo' || (!!e.proper && !S.vocabItems.some(item=>item.atlOfficialVocabulary))")
+      .replace('S.prev[k].n = n; S.prev[1 - k].n = n === 3 ? 2 : 3;', 'S.prev[k].n = n; if (!S.atlNationalPau) S.prev[1 - k].n = n === 3 ? 2 : 3;')
       .replace("P.prevDisplay(S, S.prev[k] || {})", "(S.atlPauLexical ? (S.prev[k]?.txt || '') : P.prevDisplay(S, S.prev[k] || {}))")
       .replace("P.evolDisplay((S.evol[k] || {}).w || '')", "(S.atlPauLexical ? (S.evol[k]?.w || '') : P.evolDisplay((S.evol[k] || {}).w || ''))")
       .replace("const S = M.S, box = $('#editor .q4'); if (!box) return;",
@@ -398,8 +459,25 @@ export function lexicalValuesForDocument(option) {
       .replace("    $$('select[data-q=prevn]', box).forEach", match => "    editor.scrollTop = scrollTop;\n" + match);
     await writeFile(join(directory, 'js', 'atl-exam-editor.js'), integrateContextExam(editor));
     const renderFile = join(directory, 'js', 'render.js');
-    await writeFile(renderFile, integrateExamContextRender((await readFile(renderFile, 'utf8')).replace(
-      ' }))\n      .sort((a, b) => coll.compare(a.txt, b.txt));', ' }));')));
+    const rendering = integrateExamContextRender((await readFile(renderFile, 'utf8')).replace(
+      ' }))\n      .sort((a, b) => coll.compare(a.txt, b.txt));', ' }));'));
+    await writeFile(renderFile, rendering
+      .replace("    if (p.length >= 2)", `    if (S.atlNationalPau) {
+      p.forEach((base,i)=>{ if (i) qa.push({t:', '}); qa.push({t:base.txt,i:true}); });
+      qa.push({t:'.'});
+    } else if (p.length >= 2)`)
+      .replace("    ];\n  };\n  E.questions", `    ].filter((_,i)=>!S.atlNationalPau || [p.length,S.evol?.length,S.pref?.length,S.latin?.length][i]);
+  };
+  E.questions`)
+      .replace('E.questionList = (S) => E.questions.map', `E.questionList = (S) => S.atlNationalPau ? [
+    'Traducción del texto.',
+    ...(S.subr?.length ? ['Análisis morfológico de las palabras subrayadas.'] : []),
+    ...(E.q4(S).length ? ['Léxico.'] : [])
+  ] : E.questions.map`)
+      .replaceAll("k === 3 && E.hasLiterature(S)", "(S.atlNationalPau ? k === E.questionList(S).length - 1 && q4.length : k === 3) && E.hasLiterature(S)")
+      .replace("k === 3 ? \`<ol", "(S.atlNationalPau ? k === E.questionList(S).length - 1 && q4.length : k === 3) ? \`<ol")
+      .replace('const last = k === 3;', 'const last = k === (S.atlNationalPau ? E.q4(S).length - 1 : 3);')
+      .replace("{ t: '5.', b: true }", "{ t: S.atlNationalPau ? (E.questionList(S).length + 1) + '.' : '5.', b: true }"));
     const nativeStart = await readFile(join(directory, 'js', 'start.js'), 'utf8');
     const start = nativeStart.replace("    const data = JSON.stringify(Object.assign({ examinator: 1 }, M.S));", `    const current = M.S;
     if (M.atlRecordExam && typeof current.atlArchiveId !== 'string') current.atlArchiveId = crypto.randomUUID();

@@ -23,7 +23,7 @@ export function communitySelect(empty) {
   return select;
 }
 
-export function selectividadEditor(value) {
+export function selectividadEditor(value, {national=false}={}) {
   const container = node('fieldset');
   container.className = 'atl-selectividad';
   const enabled = node('input');
@@ -46,6 +46,16 @@ export function selectividadEditor(value) {
   doneLabel.className = 'atl-pau-done';
   doneLabel.append(done, node('span', 'Hecho'));
   details.append(field('Año de Selectividad', year), field('Comunidad autónoma', community), doneLabel);
+  const session = node('select'), model = node('select'), option = node('input');
+  if (national) {
+    community.querySelector('option[value="Comunidad Valenciana"]')?.remove();
+    for (const item of ['', 'Ordinaria', 'Extraordinaria']) session.append(new Option(item||'Sin indicar',item));
+    for (const item of ['', 'Examen oficial', 'Modelo orientativo']) model.append(new Option(item||'Sin indicar',item));
+    session.value=value?.session??'';
+    model.value=value?.model??'';
+    option.value=value?.option??'';
+    details.append(field('Convocatoria',session),field('Tipo de examen',model),field('Opción',option));
+  }
   const update = () => { details.hidden = !enabled.checked; };
   enabled.addEventListener('change', update);
   update();
@@ -55,7 +65,8 @@ export function selectividadEditor(value) {
     read() {
       if (!enabled.checked) return null;
       if (!year.validity.valid) throw Error('Introduce un año entero entre 1900 y 2099.');
-      return { ...(year.value ? { year: Number(year.value) } : {}), ...(community.value ? { community: community.value } : {}), ...(done.checked && { hecho: true }) };
+      const exam={session:session.value,model:model.value,option:option.value.trim()};
+      return { ...Object.fromEntries(Object.entries(exam).filter(([,value])=>value)), ...(year.value ? { year: Number(year.value) } : {}), ...(community.value ? { community: community.value } : {}), ...(done.checked && { hecho: true }) };
     }
   };
 }

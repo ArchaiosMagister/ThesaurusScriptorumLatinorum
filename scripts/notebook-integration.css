@@ -1587,3 +1587,21 @@
   background: color-mix(in srgb, var(--accent) 28%, transparent);
 }
 .atl-edit-latin-render .edition-roman { font-style: normal; }
+
+.atl-pau-import .field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  font-size: 16px;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: .45rem;
+}
+.atl-pau-import input[type="checkbox"] {
+  width: 1.2em;
+  min-height: 1.2em;
+  vertical-align: middle;
+  accent-color: var(--accent);
+}

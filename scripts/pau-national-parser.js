@@ -10,6 +10,7 @@ const rowText = row => clean(typeof row === 'string' ? row : row?.text);
 
 function category(heading) {
   const text = fold(heading);
+  if (/\bmorfolog\w*\b.*\bsint[aá]ctic\w*\b/u.test(text)) return null;
   if (/\b(?:analiz\w*|analisis)\b.*\bmorfolog\w*|\bmorfolog\w*\b.*\b(?:formas|palabras)\b/u.test(text)) return 'morphology';
   if (/\b(?:evolucion|cambios|transformaciones)\b.*\bfonetic\w*|\bresultado patrimonial\b/u.test(text)) {
     if (/\b(?:catalan|valenciano|gallego|euskera|vasco|portugues|asturiano|frances|italiano)\b/u.test(text)) return null;
@@ -36,7 +37,14 @@ export function nationalMorphologyMarks(latin, forms) {
   const tokens = [...latin.matchAll(/[\p{L}\p{M}]+/gu)];
   const underlines = [], warnings = [], used = new Set();
   for (const form of forms) {
-    const hits = tokens.filter(token => key(token[0]) === key(form));
+    const parts = key(form).split(/\s+/u);
+    const hits = tokens.flatMap((token,index)=>{
+      const sequence=tokens.slice(index,index+parts.length);
+      if (sequence.length!==parts.length || !sequence.every((part,i)=>key(part[0])===parts[i])) return [];
+      const end=sequence.at(-1);
+      const exact=latin.slice(token.index,end.index+end[0].length);
+      return key(exact).replace(/\s+/gu,' ')===parts.join(' ')?[{index:token.index,0:exact}]:[];
+    });
     if (hits.length !== 1) {
       warnings.push(hits.length ? 'Ocurrencia morfológica ambigua: '+form : 'Forma morfológica no localizada: '+form);
       continue;

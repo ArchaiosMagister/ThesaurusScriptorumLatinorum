@@ -12,8 +12,13 @@ export function integrateOriginValidation(source) {
     }
     corpus.texts = corpus.texts.map(normalizeSelectividadAuthor);
     uniqueIds(corpus.texts, 'texts');`);
-  source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv']);");
-  source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }) };");
+  source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv', 'nationalPau']);");
+  source = replace(source, '  let preverbBases = null;', `  if (x.nationalPau !== undefined && (x.nationalPau !== true || x.pauCv !== undefined))
+        invalid(path + '.nationalPau', 'identidad de Selectividad incompatible');
+    let preverbBases = null;`);
+  source = replace(source, 'x.preverbBases.length !== 2', '!(x.nationalPau ? x.preverbBases.length > 0 && x.preverbBases.length <= 500 : x.preverbBases.length === 2)');
+  source = replace(source, 'preverbBases = [', "preverbBases = x.nationalPau ? x.preverbBases.map((base, index) => nonBlank(base, path+'.preverbBases['+index+']',500)) : [");
+  source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }), ...(x.nationalPau ? { nationalPau:true } : {}) };");
   source = replace(source, "['notes', 'vocabulary', 'reviewed', 'teacherDocx']);",
     "['notes', 'vocabulary', 'reviewed', 'teacherDocx', 'origin', 'difficulty', 'selectividad', 'courseIds', 'pauCv']);");
   return "import { communities } from '../ui/atl-bank-curriculum.js';\n" + replace(source, "        ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(",
@@ -25,7 +30,7 @@ export function integrateOriginValidation(source) {
         ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(`) + `
 
 function normalizeSelectividadAuthor(text) {
-    if (!text.selectividad && !text.teacherDocx?.pauCv) return text;
+    if (text.id.startsWith('pau.national.') || (!text.selectividad && !text.teacherDocx?.pauCv)) return text;
     const canonical = author => typeof author === 'string' && /^c[eé]sar$/iu.test(author.trim()) ? 'Julio César' : author;
     const author = canonical(text.source.author);
     const doc = text.teacherDocx;
@@ -43,13 +48,17 @@ function studyCourses(value, path) {
     return value;
 }
 function selectividad(value, path) {
-    const entry = record(value, path, [], ['year', 'community', 'hecho']);
+    const entry = record(value, path, [], ['year', 'community', 'hecho', 'session', 'model', 'option']);
     if (entry.hecho !== undefined && typeof entry.hecho !== 'boolean') invalid(path + '.hecho', 'estado de Selectividad inválido');
     if (entry.year !== undefined && (!Number.isInteger(entry.year) || entry.year < 1900 || entry.year > 2099))
         invalid(path + '.year', 'año de Selectividad inválido');
     if (entry.community !== undefined && !communities.includes(entry.community))
         invalid(path + '.community', 'comunidad de Selectividad inválida');
-    return { ...(entry.year !== undefined && { year: entry.year }),
+    if (entry.session !== undefined && !['Ordinaria','Extraordinaria'].includes(entry.session)) invalid(path+'.session','convocatoria inválida');
+    if (entry.model !== undefined && !['Examen oficial','Modelo orientativo'].includes(entry.model)) invalid(path+'.model','tipo de examen inválido');
+    return { ...(entry.session && {session:entry.session}), ...(entry.model && {model:entry.model}),
+        ...(entry.option !== undefined && {option:nonBlank(entry.option,path+'.option',120)}),
+        ...(entry.year !== undefined && { year: entry.year }),
         ...(entry.community !== undefined && { community: entry.community }), ...(entry.hecho === true && { hecho: true }) };
 }
 function textDifficulty(value, path) {

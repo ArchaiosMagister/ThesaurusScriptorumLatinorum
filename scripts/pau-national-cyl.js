@@ -9,7 +9,7 @@ const section = /^APARTADO\s+([123])(?:\s*:|\s*$)/iu;
 const footer = /^LAT[IÍ]N\s+II\s*[-–—]\s*Ejercicio\s*[-–—]\s*(?:Propuesta\s+\d+|Modelo\s*[“"«]?0[”"»]?)\s*\/\s*((?:19|20)\d{2})(?:\s+\d+)?$/iu;
 const pageFooter = /^P[aá]gina\s+\d+(?:\s+de\s+\d+)?$|^\d+$/iu;
 const authorName = name => /^c[eé]sar$/iu.test(name) ? 'Julio César' : name;
-const bulletWord = /^[§▪•■]\s*([\p{L}\p{M}]+)\s*[.]?$/u;
+const bulletWord = /^[§▪•■]\s*([\p{L}\p{M}]+)\s*[.]?$/u;
 
 export function scanCastillaLeonRows(pages) {
   const rows = pages.flatMap((page,index)=>page.map((row,i)=>({
@@ -62,11 +62,11 @@ export function scanCastillaLeonRows(pages) {
       const inline=bulletWord.exec(question[i]);
       if(inline){terms.push(inline[1]);continue;}
       // Some PDF text layers split the bullet and its etymon onto different rows.
-      if(/^[§▪•■]$/u.test(question[i]) && /^[\p{L}\p{M}]+$/u.test(question[i+1]??'')) {
+      if(/^[§▪•■]$/u.test(question[i]) && /^[\p{L}\p{M}]+$/u.test(question[i+1]??'')) {
         terms.push(question[++i]);
       }
     }
-    if(terms.length===1) phonetics.push(terms[0]);
+    if(terms.length) phonetics.push(...terms);
     else warnings.push('Revisar los étimos de evolución fonética del apartado común.');
   }
   for(const option of options) {
