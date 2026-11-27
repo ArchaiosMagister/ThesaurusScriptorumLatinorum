@@ -436,20 +436,21 @@ function murcia(pages) {
   });
 }
 
-export function recognizeNationalExam({pages,columns=[],info={},warnings=[]}) {
+export function recognizeNationalExam({pages,columns=[],info={},warnings=[],advisoryModel=false}) {
   const rows=pages.flat();
   const header=join(rows.slice(0,48))+' '+(info.Title??'')+' '+(info.Author??'');
   const institutionsFound=institutions.filter(([,pattern])=>pattern.test(header) ||
     (pattern.source==='universidad de cantabria' && rows.some(row=>/^Universidad de Cantabria\. \d{4}, PAU/u.test(row.text))));
   const community=institutionsFound.length===1?institutionsFound[0][0]:'';
   const period=header.match(/\b(20\d{2})\s*[–/-]\s*(20\d{2}|\d{2})\b/u);
-  const explicitYear=header.match(/(?:convocatoria (?:ordinaria|extraordinaria)(?: de)?|(?:junio|julio|septiembre)|ordin[aà]ria|propuesta \d+\/|convocat[oò]ria)\s*(20\d{2})\b/iu);
+  const explicitYear=header.match(/(?:convocatoria (?:ordinaria|extraordinaria)(?:[\s/]+(?:ordinaria|extraordinaria))?(?: de)?|(?:junio|julio|septiembre)|ordin[aà]ria|propuesta \d+\/|convocat[oò]ria)\s*(20\d{2})\b/iu);
   const footerYear=rows.map(row=>row.text.match(/^LAT[IÍ]N II [–-] Ejercicio [–-].+\/(20\d{2})\b/iu)?.[1]).find(Boolean);
   const repeatedYear=header.match(/\bPAU(20\d{2})\s*-/iu)?.[1];
   const year=repeatedYear?Number(repeatedYear):explicitYear?Number(explicitYear[1]):period?Number(period[2].padStart(4,period[1].slice(0,2))):footerYear?Number(footerYear):null;
-  const session = /\b(?:convocatoria extraordinaria|prueba extraordinaria)\b/iu.test(header)?'Extraordinaria':
+  const alternativeCall=/\bconvocatoria (?:ordinaria[\s/]+extraordinaria|extraordinaria[\s/]+ordinaria)\b/iu.test(header);
+  const session = alternativeCall?'':/\b(?:convocatoria extraordinaria|prueba extraordinaria)\b/iu.test(header)?'Extraordinaria':
     /\b(?:convocatoria ordinaria|prueba ordinaria|PAU ordin[àa]ria|ohikoa)\b/iu.test(header)||/\bPAU20\d{2}\s*-\s*JUNIO\b/iu.test(header)?'Ordinaria':'';
-  const model=/\bmodelo\s*(?:0|orientativo)|\bmodelo de muestra\b/iu.test(header)?'Modelo orientativo':session?'Examen oficial':'';
+  const model=advisoryModel||/\bmodelo\s*(?:0|orientativo)|\bmodelo de muestra\b/iu.test(header)?'Modelo orientativo':session?'Examen oficial':'';
   const metadata={community,year,session,model};
   const valencianLexical=/\bComponga por modificaci[oó]n preverbial\b/iu.test(join(rows)) &&
     ['A','B','C','D'].every(option=>rows.some(row=>new RegExp('Cuesti[oó]n '+option+'\\s*:','iu').test(row.text)));

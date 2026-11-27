@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {nationalTextRows,extractNationalPdfPages} from '../scripts/pau-national-pdf.js';
+import {recognizeNationalExam} from '../scripts/pau-national-profiles.js';
 import {scanCastillaLeonRows} from '../scripts/pau-national-cyl.js';
 const viewport={transform:[1,0,0,-1,0,800],scale:1};
 const transform=(_v,m)=>[m[0],-m[1],m[2],-m[3],m[4],800-m[5]];
@@ -60,4 +61,16 @@ test('PDF rows feed the isolated profile without invoking CV or saving',async()=
  assert.equal(scan.options.length,2);
  assert.deepEqual(scan.sharedLexical.phonetics,['noctem']);
  assert.deepEqual(scan.options[0].candidateRows.map(r=>r.text),['Contexto A','Gallia est diuisa.']);
+});
+
+test('a diagonal advisory-model label is metadata and a double call is unconfirmed',async()=>{
+ const mark=item('MODELO ORIENTATIVO',30,50,150);
+ mark.transform[1]=8;
+ const lines=[item('Latín II',10,20,45),item('CONVOCATORIA ORDINARIA EXTRAORDINARIA DE 2025',10,35,330)];
+ const extracted=await extractNationalPdfPages(file,{pdfjs:mock([[...lines,mark]]).api});
+ assert.ok(extracted.pages.every(page=>page.every(row=>row.text!=='MODELO ORIENTATIVO')));
+ assert.deepEqual(recognizeNationalExam(extracted).metadata,{
+   community:'',year:2025,session:'',model:'Modelo orientativo'
+ });
+ assert.equal(recognizeNationalExam({...extracted,advisoryModel:false}).metadata.model,'');
 });

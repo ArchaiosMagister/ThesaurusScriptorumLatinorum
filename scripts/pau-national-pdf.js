@@ -65,12 +65,15 @@ export async function extractNationalPdfPages(file,{pdfjs,workerSrc,assetRoot}={
     const pdf=await task.promise;
     if(!Number.isInteger(pdf.numPages)||pdf.numPages<1||pdf.numPages>MAX_PAGES)throw Error('Se esperaba un examen de hasta 16 páginas.');
     const pages=[],columns=[],warnings=[];
+    let advisoryModel=false;
     const info = await pdf.getMetadata?.().then(value=>value.info,()=>({})) ?? {};
     for(let n=1;n<=pdf.numPages;n++){
       const page=await pdf.getPage(n);
       try{
         const viewport=page.getViewport({scale:1});
         const content=await page.getTextContent();
+        // An explicit model watermark can be diagonal. Keep it as metadata.
+        advisoryModel ||= content.items.some(item=>/^\s*MODELO\s+ORIENTATIVO\s*$/iu.test(item.str??''));
         const rows=nationalTextRows(content.items,viewport,pdfjs.Util.transform);
         if(!rows.length)warnings.push('Página '+n+' sin texto extraíble: requiere revisión u OCR.');
         if (typeof page.getOperatorList === 'function') {
@@ -102,7 +105,7 @@ export async function extractNationalPdfPages(file,{pdfjs,workerSrc,assetRoot}={
       }finally{page.cleanup();}
     }
     if(!pages.some(rows=>rows.length))throw Error('El PDF no contiene texto extraíble; requiere OCR o selección manual.');
-    return {pages,columns,info,warnings};
+    return {pages,columns,info,warnings,advisoryModel};
   }finally{await task.destroy();}
 }
 
