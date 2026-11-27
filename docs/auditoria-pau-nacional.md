@@ -39,14 +39,28 @@ El cotejo identificó dos falsos positivos durante el desarrollo: la contextuali
 - **Bases preverbiales**. El flujo admite bases en listas explícitas y en revisión manual. Ninguno de los modelos de este ZIP acredita un ejercicio original de modificación preverbial con equivalencia inequívoca.
 - **Duplicados**. Se detecta el mismo binario y la misma opción automática o selección editorial. Se conservan archivos que difieren y sus variantes. Las copias con una codificación PDF distinta pueden producir otra ficha para revisión.
 
+## Formatos aragoneses de 2024 y 2025
+
+La primera revisión de aceptación detectó dos de siete pasajes en tres PDF externos. Madrid produjo las dos fichas esperadas. Los otros cinco pasajes motivaron el ajuste del perfil aragonés descrito aquí. Después del ajuste se detectan los siete pasajes de esa muestra. El examen ordinario aragonés de 2025 se reservó para un contraste posterior al diseño del perfil.
+
+| Documento | Pasajes automáticos | Elementos comprobados |
+| --- | ---: | --- |
+| [Aragón, extraordinaria de 2024](https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/24extra/latin.pdf) | 4/4 | Opciones A–D, léxico común, diez glosas y 13 anclajes de 16 formas propuestas. `gessit`, `cenabis` y `attuleris` se repiten y requieren selección manual. |
+| [Aragón, modelo orientativo de 2025](https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/25mod/latin.pdf) | 1/1 | Salustio, dos anclajes, tres glosas, tres étimos y tres latinismos. Modelo orientativo con convocatoria abierta. |
+| [Aragón, ordinaria de 2025](https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/25ord/latin.pdf) | 1/1 | Floro, dos anclajes, cinco glosas, tres étimos y tres latinismos. El contraste confirmó la lectura del bloque de traducción y motivó separar el número de libro de la obra en la referencia. |
+| [Madrid, extraordinaria de 2025](https://www.ucm.es/ejercicios-de-la-pau-convocatoria) | 2/2 | Ocho anclajes. Dos étimos del bloque independiente visibles para revisión, sin asignación automática. |
+
+Los enunciados de declinación, las repeticiones para sintaxis y las opciones de literatura quedaron fuera de los pasajes importados. Las fichas aragonesas conservan la revisión de puntuación junto a llamadas de nota. Ninguno de estos PDF se añade al repositorio.
+
 ## Reproducir
 
 ```sh
 npm test
 npm run build
 PAU_NATIONAL_CORPUS=/ruta/al/corpus node --test tests/*.integration.mjs
+PAU_INDEPENDENT_CORPUS=/ruta/al/contraste node --test tests/pau-national.integration.mjs
 node scripts/check-pau-national-corpus.mjs /ruta/al/corpus > /tmp/auditoria-pau.json
 npm run test:webkit
 ```
 
-El JSON reproducible se genera en local porque contiene los pasajes completos. La integración comprueba la persistencia en el banco, las cantidades variables, Cuadernos, Word, dependencias de copia y restauración, y reconciliación de Dropbox con datos locales. La reconciliación automatizada no usa una cuenta real de Dropbox.
+Para el corpus de contraste, guarda los PDF aragoneses de la tabla como `aragon-extra-2024.pdf`, `aragon-modelo-2025.pdf` y `aragon-ordinaria-2025.pdf`. El JSON reproducible se genera en local porque contiene los pasajes completos. La integración comprueba la persistencia en el banco, las cantidades variables, Cuadernos, Word, dependencias de copia y restauración, y reconciliación de Dropbox con datos locales. La reconciliación automatizada no usa una cuenta real de Dropbox.

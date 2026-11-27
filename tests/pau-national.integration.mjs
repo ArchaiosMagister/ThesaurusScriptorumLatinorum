@@ -108,6 +108,10 @@ test('PDF originales del corpus local, incluidos los fragmentos bilingües y a d
       for (const mark of passage.doc.underlines)
         assert.equal(passage.doc.latin.slice(mark.startUtf16,mark.endUtf16),mark.exact,name);
     }
+    if (name==='V8aiok') {
+      assert.deepEqual(result.records[0].doc.lexical.phonetics,['laboráre','pĕ́dem','foedum']);
+      assert.equal(result.records[0].doc.vocabulary.length,6);
+    }
     if (name==='DtKJMF') {
       assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),[[],[]]);
       assert.match(result.records[0].doc.warnings.join(' '),/A\.4 noctem, B\.4 portum/u);
@@ -128,4 +132,47 @@ test('PDF originales del corpus local, incluidos los fragmentos bilingües y a d
       assert.doesNotMatch(result.records[1].doc.latin,/Ptolomaeum/u);
     }
   }
+});
+
+
+const independent=process.env.PAU_INDEPENDENT_CORPUS;
+test('documentos aragoneses de 2024 y 2025 del corpus externo',{skip:!independent},async()=>{
+  const recognize=async name=>{
+    const bytes=await readFile(join(independent,name+'.pdf'));
+    return recognizeNationalExam(await extractNationalPdfPages(new Blob([bytes]),{pdfjs,assetRoot}));
+  };
+  const official=await recognize('aragon-extra-2024');
+  assert.deepEqual(official.metadata,{community:'Aragón',year:2024,session:'Extraordinaria',model:'Examen oficial'});
+  assert.deepEqual(official.records.map(item=>item.option),['A','B','C','D']);
+  assert.deepEqual(official.records.map(item=>item.doc.vocabulary.length),[2,3,3,2]);
+  assert.deepEqual(official.records.map(item=>item.doc.underlines.map(mark=>mark.exact)),[
+    ['belli','patiens','discebat','conviviis'],['crudelitate','omnium','mortuus est'],
+    ['latus sum','fuere','artium','ambitione'],['Fabulle','aranearum']
+  ]);
+  for (const {doc} of official.records) {
+    assert.deepEqual(doc.lexical.phonetics,['mĕtŭm','delicátŭm','quaero','regīnam']);
+    assert.deepEqual(doc.lexical.latinism,['alias','agenda','factótum','placebo']);
+    assert.doesNotMatch(doc.latin,/\b(?:Traducción del texto|Análisis|Notas:)/iu);
+  }
+  assert.match(official.records[1].doc.warnings.join(' '),/ambigua: gessit/u);
+  assert.match(official.records[3].doc.warnings.join(' '),/ambigua: cenabis.*ambigua: attuleris/u);
+  assert.match(official.records[3].doc.latin,/^Cenabis bene,[\s\S]+aranearum\.$/u);
+  const model=await recognize('aragon-modelo-2025');
+  assert.deepEqual(model.metadata,{community:'Aragón',year:2025,session:'',model:'Modelo orientativo'});
+  assert.equal(model.records.length,1);
+  const {doc}=model.records[0];
+  assert.match(doc.latin,/^Urbem Romam,[\s\S]+facta erat\.$/u);
+  assert.deepEqual(doc.underlines.map(mark=>mark.exact),['vagabantur','hominum']);
+  assert.deepEqual(doc.lexical.phonetics,['cálidŭm','capŭt','rugītum']);
+  assert.deepEqual(doc.lexical.latinism,['in albis','ex libris','corpore insepulto']);
+  const ordinary=await recognize('aragon-ordinaria-2025');
+  assert.deepEqual(ordinary.metadata,{community:'Aragón',year:2025,session:'Ordinaria',model:'Examen oficial'});
+  assert.equal(ordinary.records.length,1);
+  const specimen=ordinary.records[0].doc;
+  assert.deepEqual([specimen.author,specimen.work,specimen.reference],['Floro','Epítome','I 1']);
+  assert.match(specimen.latin,/^Succedit Romulo[\s\S]+gubernaret\.$/u);
+  assert.deepEqual(specimen.underlines.map(mark=>mark.exact),['eius','gubernaret']);
+  assert.equal(specimen.vocabulary.length,5);
+  assert.deepEqual(specimen.lexical.phonetics,['cálidum','pŏntem','causam']);
+  assert.deepEqual(specimen.lexical.latinism,['In medias res','ex libris','alias']);
 });

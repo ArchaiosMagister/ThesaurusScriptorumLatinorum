@@ -74,3 +74,31 @@ test('a diagonal advisory-model label is metadata and a double call is unconfirm
  });
  assert.equal(recognizeNationalExam({...extracted,advisoryModel:false}).metadata.model,'');
 });
+
+test('Aragón: las cuatro opciones dejan fuera los fragmentos sintácticos y comparten el léxico',async()=>{
+ const lines=['EJERCICIO DE: LATÍN II','CONVOCATORIA EXTRAORDINARIA DE 2024',
+  'Elija una de las cuatro opciones propuestas A, B, C, D:',
+  ...[...'ABCD'].flatMap(option=>[
+    'OPCIÓN '+option,'Contexto de la opción (Nepote, Vidas 1.2).',
+    'Dux legatos misit. Dux ibi mansit.','Notas:','1. legatos: enviados.',
+    '1. Traducción del texto. (4 puntos)','2. Análisis morfológico. (1 punto)',
+    '2.1. Análisis mofológico de uno de los siguientes términos (0,25 puntos)',
+    '-dux / legatos (caso, número y género)',
+    '3. Análisis sintáctico del segmento.','Dux ibi mansit.'
+  ]),
+  'BLOQUE 2 (2 puntos)','4.1. Explique el significado de las siguientes expresiones latinas',
+  'a) ab initio c) de iure','b) ad hoc d) in situ',
+  '4.2. Explique la evolución del latín al castellano','a) lactem c) noctem','b) aurum d) portam',
+  'BLOQUE 3 (2 puntos)','OPCIÓN A','Literatura'];
+ const m=mock([lines.map((line,i)=>item(line,20,10+i*12,line.length*5))]);
+ const result=recognizeNationalExam(await extractNationalPdfPages(file,{pdfjs:m.api}));
+ assert.equal(result.metadata.community,'Aragón');
+ assert.deepEqual(result.records.map(record=>record.option),['A','B','C','D']);
+ for (const {doc} of result.records) {
+   assert.equal(doc.latin,'Dux legatos misit. Dux ibi mansit.');
+   assert.deepEqual(doc.underlines.map(mark=>mark.exact),['legatos']);
+   assert.deepEqual(doc.lexical.latinism,['ab initio','ad hoc','de iure','in situ']);
+   assert.deepEqual(doc.lexical.phonetics,['lactem','aurum','noctem','portam']);
+   assert.match(doc.warnings.join(' '),/ambigua: dux/u);
+ }
+});

@@ -371,25 +371,61 @@ function asturias(pages,columns) {
     lexical:{phonetics:phonetic?[phonetic[1]]:[]}})];
 }
 
-function aragon(rows) {
-  const part=bounds(rows,/^TEXTO$/u,/^Notas:$/iu);
-  const contextEnd=part.findIndex(row=>/\d[\d.\-]*\)$/u.test(row.text));
+function aragonLexical(rows) {
+  const block=bounds(rows,/^BLOQUE 2\s*\(/iu,/^(?:BLOQUE 3\s*\(|CONTIN[ÚU]A AL DORSO)/iu,{optional:true});
+  const parts=numbered(block,/^4\.([12])\.\s*/u);
+  const list=(number,heading)=> {
+    const part=parts.find(({match})=>match[1]===number && heading.test(match.input));
+    if (!part) return [];
+    return part.rows.flatMap(row=>[...row.text.matchAll(/(?:^|\s)([a-d])\)\s*(.*?)(?=\s+[a-d]\)|$)/gu)])
+      .filter(match=>/^[\p{L}\p{M}]+(?:\s+[\p{L}\p{M}]+)*\.?$/u.test(match[2].trim()))
+      .sort((a,b)=>a[1].localeCompare(b[1]))
+      .map(match=>match[2].trim().replace(/\.$/u,''));
+  };
+  return {phonetics:list('2',/evoluci[oó]n del lat[ií]n al castellano/iu),
+    latinism:list('1',/explique el significado .*expresiones latinas/iu)};
+}
+
+function aragonPassage(rows, lexical, option='') {
+  const [part,glossaryAndQuestions]=before(rows,/^Notas:$/iu);
+  const contextEnd=part.findIndex(row=>/\d[\d.\-]*\)\.?$/u.test(row.text));
   const context=join(part.slice(0,contextEnd+1));
-  const source=context.match(/\s+\(([^,]+), (.+?) (\d[\d.\-]*)\)$/u);
+  const source=context.match(/\s+\(([^,()]+?)(?:, ([^()]+?))? ((?:[IVXLCDM]+\s+)?\d[\d.\-]*)\)\.?$/u);
   if (contextEnd<0 || !source) throw Error('Confirma la contextualización y la referencia.');
   const latinRows=part.slice(contextEnd+1).filter(row=>!/^[;," ]+$/u.test(row.text));
-  const morphology=bounds(rows,/^2\. An[aá]lisis morfol[oó]gico\./iu,/^3\. An[aá]lisis sint[aá]ctico/iu,{optional:true});
-  const forms=morphology.flatMap(row=>row.text.match(/^[-–]([\p{L}\p{M} ]+)\s+\(/u)?.slice(1)??[]);
-  const phonetics=bounds(rows,/^4\.2\. Explique la evoluci[oó]n del lat[ií]n al castellano/iu,/^CONTIN[ÚU]A AL DORSO/iu,{optional:true})
-    .flatMap(row=>[...row.text.matchAll(/[a-c]\) ([\p{L}\p{M}]+)\./gu)].map(m=>m[1]));
-  const glossary=rows.slice(rows.findIndex(row=>/^Notas:$/iu.test(row.text))+1)
-    .filter(row=>/^\d[-.][- .]?\s/u.test(row.text));
-  const vocabulary=glossary.flatMap(row=>{
-    const entry=row.text.match(/^\d[-.]([- .]?)[\s]*([\p{L}\p{M}]+)\s*(?:[:,=]\s*|(?=forma resultante))(.+)$/u);
-    return entry?[{headword:entry[2],meaning:entry[3]}]:[];
+  const morphology=bounds(glossaryAndQuestions,/^2\. An[aá]lisis morfol[oó]gico\./iu,/^3\. An[aá]lisis sint[aá]ctico/iu,{optional:true});
+  const forms=morphology.flatMap(row=>{
+    const alternatives=row.text.match(/^[-–]([\p{L}\p{M} /]+)\s+\(/u)?.[1];
+    if (alternatives) return alternatives.split('/').map(form=>form.trim());
+    return row.text.match(/^2\.[12]\. An[aá]lisis morfol[oó]gico de (?!un[oa] de\b)([\p{L}\p{M} ]+?)\s+\(/iu)?.slice(1)??[];
   });
-  return [passage({latinRows,notes:context.slice(0,source.index),author:source[1],work:source[2],reference:source[3],
-    forms,vocabulary,lexical:{phonetics},warnings:['Coteja la puntuación junto a las llamadas de nota. Revisa el auxiliar suplido en obortae sunt.']})];
+  const glossary=bounds(glossaryAndQuestions,/^Notas:$/iu,/^1\. Traducci[oó]n del texto\./iu,{optional:true});
+  const vocabulary=glossary.flatMap(row=>{
+    const entry=row.text.match(/^\d+[.\- ]+\s*([^:=]+?)\s*(?:[:,=]\s*|(?=forma resultante))(.+)$/u);
+    const headword=entry?.[1].trim();
+    if (!headword || headword.split(/[, (]/u).filter(Boolean).length>4) return [];
+    return [{headword,meaning:entry[2]}];
+  });
+  return passage({latinRows,notes:context.slice(0,source.index),author:source[1],work:source[2],reference:source[3],
+    option,forms,vocabulary,lexical,warnings:['Coteja la puntuación junto a las llamadas de nota.']});
+}
+
+const aragonOptions=/^OPCI[ÓO]N\s+([A-D])(?:\s+.*)?$/iu;
+const aragonFourOptions=/^Elija una de las cuatro opciones propuestas A, B, C, D:/iu;
+const aragonExercise=/^EJERCICIO DE:\s*LAT[IÍ]N II$/iu;
+
+function aragon(rows) {
+  const lexical=aragonLexical(rows);
+  if (rows.some(row=>aragonFourOptions.test(row.text))) {
+    const body=bounds(rows,aragonFourOptions,/^BLOQUE 2\s*\(/iu);
+    const options=numbered(body,aragonOptions);
+    if (options.map(({match})=>match[1].toUpperCase()).join('')!=='ABCD')
+      throw Error('Confirma las opciones del bloque de traducción.');
+    return options.map(({match,rows})=>aragonPassage(rows,lexical,match[1].toUpperCase()));
+  }
+  const start=rows.findIndex(row=>/^TEXTO$/iu.test(row.text));
+  if (start<0) throw Error('Confirma dónde empieza el texto de traducción.');
+  return [aragonPassage(rows.slice(start+1),lexical)];
 }
 
 function navarra(rows) {
@@ -441,7 +477,14 @@ export function recognizeNationalExam({pages,columns=[],info={},warnings=[],advi
   const header=join(rows.slice(0,48))+' '+(info.Title??'')+' '+(info.Author??'');
   const institutionsFound=institutions.filter(([,pattern])=>pattern.test(header) ||
     (pattern.source==='universidad de cantabria' && rows.some(row=>/^Universidad de Cantabria\. \d{4}, PAU/u.test(row.text))));
-  const community=institutionsFound.length===1?institutionsFound[0][0]:'';
+  // The Zaragoza seal is sometimes an image. Fall back to a corroborated
+  // layout signature when the header supplies no textual institution.
+  const aragonLayout=rows.slice(0,10).some(row=>aragonExercise.test(row.text)) &&
+    rows.some(row=>/^4\.2\. Explique la evoluci[oó]n del lat[ií]n al castellano/iu.test(row.text)) &&
+    (rows.some(row=>aragonFourOptions.test(row.text)) ||
+      (advisoryModel && rows.some(row=>/^BLOQUE 1 .*Lea con detenimiento el siguiente texto/iu.test(row.text))));
+  const community=institutionsFound.length===1?institutionsFound[0][0]:
+    !institutionsFound.length&&aragonLayout?'Aragón':'';
   const period=header.match(/\b(20\d{2})\s*[–/-]\s*(20\d{2}|\d{2})\b/u);
   const explicitYear=header.match(/(?:convocatoria (?:ordinaria|extraordinaria)(?:[\s/]+(?:ordinaria|extraordinaria))?(?: de)?|(?:junio|julio|septiembre)|ordin[aà]ria|propuesta \d+\/|convocat[oò]ria)\s*(20\d{2})\b/iu);
   const footerYear=rows.map(row=>row.text.match(/^LAT[IÍ]N II [–-] Ejercicio [–-].+\/(20\d{2})\b/iu)?.[1]).find(Boolean);
