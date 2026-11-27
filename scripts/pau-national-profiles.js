@@ -38,9 +38,10 @@ const numbered = (rows, pattern) => {
   return blocks;
 };
 
-function bounds(rows, start, end) {
+function bounds(rows, start, end, {optional=false}={}) {
   const from = rows.findIndex(row=>start.test(row.text));
   const to = rows.findIndex((row,i)=>i>from && end.test(row.text));
+  if ((from<0 || to<0) && optional) return [];
   if (from<0 || to<0) throw Error('Faltan límites reconocibles del apartado de traducción.');
   return rows.slice(from+1,to);
 }
@@ -101,7 +102,7 @@ function castillaLeon(pages) {
     item.doc.vocabulary = noteAt<0?[]:notesVocabulary(rows.slice(noteAt));
     item.notes = item.doc.title;
     item.doc.title = '';
-    const lexicalRows = bounds(pages.flat(),/^APARTADO 2:/iu,/^APARTADO 3:/iu);
+    const lexicalRows = bounds(pages.flat(),/^APARTADO 2:/iu,/^APARTADO 3:/iu,{optional:true});
     const questions = numbered(lexicalRows,/^2\.(\d+)\s/u);
     const context = questions.find(q=>/expresi[oó]n latina/iu.test(q.match.input));
     if (context) {
@@ -168,7 +169,7 @@ function galicia(pages) {
   const copy = copies.find(copy=>copy.rows.some(row=>/^CUESTIONES:$/iu.test(row.text))) ?? copies[0];
   const noteRows=bounds(copy.rows,/^CONTEXTO:$/iu,/^TEXTO:$/iu);
   const context=join(noteRows).replace(/, que (?:usted|vostede) explica.*$/iu,'.');
-  const lexical=bounds(copy.rows,/^PREGUNTA 3\./iu,/^PREGUNTA 4\./iu);
+  const lexical=bounds(copy.rows,/^PREGUNTA 3\./iu,/^PREGUNTA 4\./iu,{optional:true});
   const exercises=numbered(lexical,/^3\.(\d)\.\s+/u);
   const prefix=exercises.find(q=>/prefijo de origen latino/iu.test(q.match.input));
   const latinism=exercises.find(q=>/significado de las siguientes expresiones latinas/iu.test(q.match.input));
@@ -189,8 +190,12 @@ function extremadura(rows) {
   const forms=[...join(morph).matchAll(/(?:nominativo y genitivo\)|identificando la conjugaci[oó]n):\s*([^()]+)\(/giu)].flatMap(match=>terms(match[1])).filter(form=>group.test(form));
   const phonetics=join(bounds(rows,/^2\.2\. EVOLUCI[ÓO]N FON[ÉE]TICA/iu,/^APARTADO 3 \(2 puntos\)\. LITERATURA LATINA,/iu));
   const etyma=[...phonetics.matchAll(/(?:vocablo latino|remite al lat[ií]n) ([\p{L}\p{M}]+)\. Explica la evoluci[oó]n fon[eé]tica/giu)].map(match=>match[1]);
+  const vocabulary=part.slice(end+1).flatMap(row=>{
+    const gloss=row.text.match(/^([\p{L}\p{M}]+(?: [\p{L}\p{M}]+)?)\. ((?:Del verbo|Acusativo) .+)$/iu);
+    return gloss?[{headword:gloss[1],meaning:gloss[2]}]:[];
+  });
   return [passage({latinRows:part.slice(start,end+1),notes:join(part.slice(1,contextEnd+1)),
-    author:source[1],work:source[2],reference:source[3],forms,lexical:{phonetics:etyma},
+    author:source[1],work:source[2],reference:source[3],forms,vocabulary,lexical:{phonetics:etyma},
     warnings:['Coteja las notas numeradas y los espacios contiguos a las llamadas.']})];
 }
 
@@ -256,10 +261,10 @@ function cantabria(rows) {
   const part=bounds(rows,/^APARTADO 1 \[6 puntos\]/iu,/^Pregunta obligatoria 1:/iu);
   const options=numbered(part,/^Texto ([12]): (.+)$/u);
   if (options.length!==2) throw Error('Confirma los dos pasajes de traducción.');
-  const lexical=bounds(rows,/^Pregunta obligatoria 4\b/iu,/^Pregunta obligatoria 5\b/iu);
+  const lexical=bounds(rows,/^Pregunta obligatoria 4\b/iu,/^Pregunta obligatoria 5\b/iu,{optional:true});
   const list=lexical.at(-1)?.text;
   const phonetics=list&&group.test(list)?list.split(' '):[];
-  const excerpts=bounds(rows,/^Pregunta obligatoria 5\b/iu,/^Universidad de Cantabria\. \d{4}, PAU/u);
+  const excerpts=bounds(rows,/^Pregunta obligatoria 5\b/iu,/^Universidad de Cantabria\. \d{4}, PAU/u,{optional:true});
   const latinism=excerpts.flatMap(row=>row.runs.filter(run=>run.italic)
     .map(run=>run.text.trim()).filter(value=>group.test(value)&&value.includes(' ')));
   return options.map(({match,rows:body})=>{
@@ -270,8 +275,15 @@ function cantabria(rows) {
     const latinRows=beforeSource.filter(row=>!digits.test(row.text) && !/^\d+\s+\d+\./u.test(row.text) &&
       !(continuation&&row===rightmostTitle));
     const reference=sourceRows[0].text;
-    return typedMarks(passage({latinRows,notes,option:match[1],reference,
-      author:reference.split(/,| (?=\d)/u)[0],lexical:{phonetics,latinism},
+    const glossary=[...beforeSource.filter(row=>/^\d+\s+\d+\./u.test(row.text)),...sourceRows.slice(1)]
+      .map(row=>({text:row.text.replace(/^\d+\s+(?=\d+\.)/u,'')}));
+    const vocabulary=glossary.flatMap(({text})=>{
+      const entry=text.match(/^\d+\.\s*([^:=]+?)\s*([:=])\s*(.+)$/u);
+      return entry?[{headword:entry[1],meaning:entry[3]}]:[];
+    });
+    return typedMarks(passage({latinRows,notes,option:match[1],reference,vocabulary,
+      author:reference.split(/,| (?=\d)/u)[0],work:reference.split(',')[1]?.includes('Breviario')?reference.split(',')[1].trim():'',
+      lexical:{phonetics,latinism},
       warnings:latinism.length?['Coteja las notas marginales del pasaje.']:
         ['Coteja las notas marginales y los latinismos en los dos textos periodísticos.']}),latinRows,'bold');
   });
@@ -307,7 +319,7 @@ function stripScoring(row) {
 function castillaLaMancha(rows) {
   const options=numbered(bounds(rows,/^Realiza la traducci[oó]n de uno de estos textos:/iu,/^PREGUNTA 2\b/iu),/^Texto ([AB])-\s*(.+)$/u);
   const questions=numbered(bounds(rows,/^PREGUNTA 2\b/iu,/^BLOQUE B$/iu),/^([AB])\) Texto de /u);
-  if (options.length!==2 || questions.length!==2) throw Error('Confirma los textos y sus preguntas.');
+  if (options.length!==2) throw Error('Confirma los dos textos de traducción.');
   const shared=rows.find(row=>/^(?:[\p{L}\p{M}]+\s*>\s*\([\d,]+\)\s*){2,}$/u.test(row.text));
   const phonetics=shared?[...shared.text.matchAll(/([\p{L}\p{M}]+)\s*>/gu)].map(m=>m[1]):[];
   return options.map(({match,header,rows:body})=>{
@@ -319,10 +331,15 @@ function castillaLaMancha(rows) {
     const source=dense[end].text.match(/\s*\(([^,()]+), ([^()]+)\)$/u);
     const latinRows=dense.slice(start,end+1).map((row,i)=>stripScoring(i===end-start
       ? {...row,text:row.text.slice(0,source.index)} : row));
-    const bodyQuestions=questions.find(q=>q.match[1]===match[1]).rows;
+    const bodyQuestions=questions.find(q=>q.match[1]===match[1])?.rows??[];
     const bold=bodyQuestions.some(row=>/Analiza las \d+ palabras en negrita/iu.test(row.text));
     const notes=match[2].replace(/\s*\(\d+ punto.*$/u,'');
-    const item=passage({latinRows,notes,option:match[1],author:source[1],work:source[2],lexical:{phonetics}});
+    const glossary=join(dense.slice(end+1)).split(/(?:^|\s+)\d+[-–]\s*/u).filter(Boolean);
+    const vocabulary=glossary.flatMap(line=>{
+      const gloss=line.match(/^([^:]+):\s*(.+)$/u)??line.match(/^([\p{L}\p{M}]+) (por .+)$/u);
+      return gloss?[{headword:gloss[1],meaning:gloss[2]}]:[];
+    });
+    const item=passage({latinRows,notes,option:match[1],author:source[1],work:source[2],lexical:{phonetics},vocabulary});
     // Some exports anonymise font names. The option heading shares the
     // bold face in this format, while the body also has a regular face.
     const headingFace=header.runs[0]?.fontName;
@@ -334,10 +351,11 @@ function castillaLaMancha(rows) {
 function asturias(pages,columns) {
   const left=columns[0][0];
   const rows=bounds(left,/^Ejercicio 1 \(Traducci[oó]n\./iu,/^Traducci[oó]n:$/iu);
-  const [body,glosses]=before(rows,/^Curio, -onis \(m\.\):/iu);
-  const [context,...latinRows]=body;
+  const glossStart=rows.findIndex(row=>/^[\p{L}\p{M}]+,\s*-[^:]+:/u.test(row.text));
+  const [context,...latinRows]=glossStart<0?rows:rows.slice(0,glossStart);
+  const glosses=glossStart<0?[]:rows.slice(glossStart);
   const right=columns[0][1];
-  const morphology=bounds(right,/^Ejercicio 2 \(Morfolog[ií]a\./iu,/^Ejercicio 3 \(An[aá]lisis/iu);
+  const morphology=bounds(right,/^Ejercicio 2 \(Morfolog[ií]a\./iu,/^Ejercicio 3 \(An[aá]lisis/iu,{optional:true});
   const forms=morphology.flatMap(row=>[...row.text.matchAll(/([\p{L}\p{M}]+):/gu)].map(m=>m[1]));
   const phonetic=pages[0].map(text).join(' ').match(/evoluci[oó]n fon[eé]tica del lat[ií]n al castellano de ([\p{L}\p{M}]+) e indique/iu);
   return [passage({latinRows,notes:context.text,forms,vocabulary:notesVocabulary(glosses),
@@ -351,12 +369,18 @@ function aragon(rows) {
   const source=context.match(/\s+\(([^,]+), (.+?) (\d[\d.\-]*)\)$/u);
   if (contextEnd<0 || !source) throw Error('Confirma la contextualización y la referencia.');
   const latinRows=part.slice(contextEnd+1).filter(row=>!/^[;," ]+$/u.test(row.text));
-  const morphology=bounds(rows,/^2\. An[aá]lisis morfol[oó]gico\./iu,/^3\. An[aá]lisis sint[aá]ctico/iu);
+  const morphology=bounds(rows,/^2\. An[aá]lisis morfol[oó]gico\./iu,/^3\. An[aá]lisis sint[aá]ctico/iu,{optional:true});
   const forms=morphology.flatMap(row=>row.text.match(/^[-–]([\p{L}\p{M} ]+)\s+\(/u)?.slice(1)??[]);
-  const phonetics=bounds(rows,/^4\.2\. Explique la evoluci[oó]n del lat[ií]n al castellano/iu,/^CONTIN[ÚU]A AL DORSO/iu)
+  const phonetics=bounds(rows,/^4\.2\. Explique la evoluci[oó]n del lat[ií]n al castellano/iu,/^CONTIN[ÚU]A AL DORSO/iu,{optional:true})
     .flatMap(row=>[...row.text.matchAll(/[a-c]\) ([\p{L}\p{M}]+)\./gu)].map(m=>m[1]));
+  const glossary=rows.slice(rows.findIndex(row=>/^Notas:$/iu.test(row.text))+1)
+    .filter(row=>/^\d[-.][- .]?\s/u.test(row.text));
+  const vocabulary=glossary.flatMap(row=>{
+    const entry=row.text.match(/^\d[-.]([- .]?)[\s]*([\p{L}\p{M}]+)\s*(?:[:,=]\s*|(?=forma resultante))(.+)$/u);
+    return entry?[{headword:entry[2],meaning:entry[3]}]:[];
+  });
   return [passage({latinRows,notes:context.slice(0,source.index),author:source[1],work:source[2],reference:source[3],
-    forms,lexical:{phonetics},warnings:['Coteja la puntuación junto a las llamadas de nota. Revisa el auxiliar suplido en obortae sunt.']})];
+    forms,vocabulary,lexical:{phonetics},warnings:['Coteja la puntuación junto a las llamadas de nota. Revisa el auxiliar suplido en obortae sunt.']})];
 }
 
 function navarra(rows) {

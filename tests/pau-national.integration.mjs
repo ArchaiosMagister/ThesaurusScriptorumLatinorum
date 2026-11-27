@@ -107,7 +107,12 @@ test('PDF originales del corpus local, incluidos los fragmentos bilingües y a d
       assert.match(result.records[0].doc.latin,/\[= Caesar\]/u);
       assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),[['plĭcāre'],['plĭcāre']]);
     }
-    if (name==='jfLasT') assert.deepEqual(result.records[0].doc.lexical.latinism,['opera prima','alma mater']);
+    if (name==='jfLasT') {
+      assert.deepEqual(result.records[0].doc.lexical.latinism,['opera prima','alma mater']);
+      assert.deepEqual(result.records.map(passage=>passage.doc.vocabulary.length),[1,4]);
+    }
+    if (name==='XwSzYz') assert.deepEqual(result.records[0].doc.vocabulary.map(entry=>entry.headword),
+      ['Profectus est','Indictum est','Pyrenaeum','Transiit']);
     if (name==='P605nL') assert.deepEqual(result.records[0].doc.underlines.map(mark=>mark.exact),['die','imperaverat','iussit','naves']);
     if (name==='vR9EhV') {
       assert.doesNotMatch(result.records[0].doc.latin,/Hecateidos/u);
