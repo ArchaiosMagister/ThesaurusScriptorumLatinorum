@@ -8,6 +8,12 @@ export function integrateNotebook(source) {
   };
 
 
+  replace('        reviewWordImport(documents, failures, editionId);',
+    `        if (editionId && documents.length) prepareCollatinusForReview();
+        reviewWordImport(documents, failures, editionId);`);
+  replace('Solo se anticipa la preparación tras una acción docente de abrir etiquetas.',
+    'Solo se anticipa la preparación al abrir una revisión que usa Collatinus.');
+
   // Catalogue presentation belongs to the integrated app, not the pinned upstream.
   replace("import { openSupabaseSyncModal } from './supabase-sync-modal.js';\n", '');
   const syncStart = source.indexOf("    const sync = el('details', 'cuaderno-home-sync');");

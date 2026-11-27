@@ -760,10 +760,19 @@ test('un Word importado desde Cuadernos se guarda en el banco con sus marcas', a
   const frame = page.frameLocator('#panel-cuaderno iframe');
   page.once('dialog', prompt => prompt.accept('Cuaderno Word'));
   await frame.getByRole('button', { name: 'Nuevo cuaderno', exact: true }).click();
+  await frame.locator('html').evaluate(() => {
+    const post = Worker.prototype.postMessage;
+    window.wordReviewWarmRequests = 0;
+    Worker.prototype.postMessage = function (message, ...transfer) {
+      if (message?.method === 'warm') window.wordReviewWarmRequests++;
+      return post.call(this, message, ...transfer);
+    };
+  });
   const pending = page.waitForEvent('filechooser');
   await frame.getByRole('button', { name: 'Importar Word', exact: true }).click();
   await (await pending).setFiles({ name: 'eutropio.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', buffer });
   await expect(frame.locator('.word-review-item')).toContainText('2 subrayados');
+  expect(await frame.locator('html').evaluate(() => window.wordReviewWarmRequests)).toBe(1);
   await frame.getByRole('button', { name: 'Incorporar al cuaderno', exact: true }).click();
   await expect(frame.locator('.word-review')).toBeHidden();
   const { edition } = await notebookSnapshot(frame, 'Cuaderno Word');
