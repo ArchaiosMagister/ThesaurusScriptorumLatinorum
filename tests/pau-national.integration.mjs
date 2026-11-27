@@ -67,6 +67,12 @@ test('PDF, banco, Cuaderno, copia y reconciliación Dropbox conservan solo los e
   assert.equal(retry.corpus.texts[0].title,'Ficha revisada');
   const distinct=await appendNationalPassages(changed,changed,[{...incoming[0],digest:'other-document',year:2025}],deps);
   assert.equal(distinct.saved,1);
+  const variants=await appendNationalPassages(empty,empty,[
+    {...incoming[0],source:'selección de la primera opción'},
+    {...incoming[0],source:'selección de la segunda opción',option:'B'}
+  ],deps);
+  assert.equal(variants.saved,2);
+  assert.notEqual(variants.corpus.texts[0].id,variants.corpus.texts[1].id);
   const baseline=await fingerprintEditorParts(editor(saved.corpus),hash);
   const merged=await mergeEditorParts(editor(changed),editor(distinct.corpus),baseline,hash);
   const byId=rows=>Object.fromEntries(rows.map(row=>[row.id,row]));

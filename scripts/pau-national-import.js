@@ -216,7 +216,8 @@ export function importNationalPau({modal,save,toast}) {
         const selected=selection().trim();
         const record=prepareNationalPassage({latin:selected||'…'});
         if (!selected) record.doc.latin='';
-        add({...result.metadata,...record,...(selected&&{source:'selection:'+selected})});
+        const sourceKey=JSON.stringify(['selection',view.value,source.selectionStart,source.selectionEnd,selected]);
+        add({...result.metadata,...record,...(selected&&{source:sourceKey})});
       }),cards);
       for (const record of result.records) add({...record,source:'profile:'+(record.option||'único')});
       if (!result.records.length) details.open=true;
