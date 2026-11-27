@@ -126,22 +126,31 @@ function andalucia(rows) {
 
 function madrid(rows) {
   const part = bounds(rows,/^BLOQUE I\. TEXTO:/iu,/^BLOQUE II\. ETIMOLOG[IÍ]A/iu);
-  const lexicalPart = bounds(rows,/^BLOQUE II\. ETIMOLOG[IÍ]A/iu,/^BLOQUE III\. LITERATURA/iu);
+  const lexicalPart = bounds(rows,/^BLOQUE II\. ETIMOLOG[IÍ]A/iu,/^BLOQUE III\. LITERATURA/iu,{optional:true});
   const options = numbered(part,/^OPCI[ÓO]N ([AB])$/u);
+  if (options.length!==2) throw Error('Confirma la asignación de opciones de Madrid.');
   const lexical = numbered(lexicalPart,/^OPCI[ÓO]N ([AB])\.4\b/u);
-  if (options.length!==2 || lexical.length!==2) throw Error('Confirma la asignación de opciones de Madrid.');
+  const linked=rows.some(row=>/^BLOQUE II:\s*[^.]*\b(?:texto|opci[oó]n) elegid[oa]\b/iu.test(row.text));
+  const etyma=new Map(lexical.flatMap(({match,rows})=>{
+    const form=join(rows).match(/palabra latina ([\p{L}\p{M}]+) en su evoluci[oó]n al castellano/iu)?.[1];
+    return form?[[match[1],form]]:[];
+  }));
+  const independent=!linked&&etyma.size
+    ? 'Léxico independiente del texto elegido. Étimos para revisión: '+[...etyma].map(([option,form])=>option+'.4 '+form).join(', ')+'.'
+    : '';
   return options.map(({match,rows:lines})=>{
     const option=match[1];
     const [body,sourceAndQuestions] = before(lines,/^\([^()]+\d[^()]*\)$/u);
     const {latinRows,notes} = separate(body,(row,first)=>row.runs[0].fontName===first.runs[0].fontName);
     const end = join(sourceAndQuestions).match(/Analice morfol[oó]gicamente las palabras (.+?)\s*,?\s+indicando exclusivamente/iu);
     const forms=end ? terms(end[1]) : [];
-    const form = join(lexical.find(q=>q.match[1]===option)?.rows??[]).match(/palabra latina ([\p{L}\p{M}]+) en su evoluci[oó]n al castellano/iu);
+    const form = linked?etyma.get(option):undefined;
     const noteLines=sourceAndQuestions.slice(1,sourceAndQuestions.findIndex(row=>/^PREGUNTAS:$/u.test(row.text)));
     const vocabulary=notesVocabulary(join(noteLines).replace(/^NOTAS:\s*/u,'').split(/\s*\d+\.\s*/u)
       .filter(line=>line.includes(':')).map(text=>({text:text.replace(/;\s*$/u,'')})));
     return passage({latinRows,notes,option,reference:sourceAndQuestions[0].text.slice(1,-1),forms,vocabulary,
-      lexical:{phonetics:form?[form[1]]:[]},warnings:forms.length&&form?[]:['Revisa morfología y evolución fonética de esta opción.']});
+      lexical:{phonetics:form?[form]:[]},warnings:[...(!forms.length?['Revisa la morfología de esta opción.']:[]),
+        ...(independent?[independent]:[])]});
   });
 }
 

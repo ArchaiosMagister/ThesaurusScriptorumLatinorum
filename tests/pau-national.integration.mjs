@@ -102,7 +102,10 @@ test('PDF originales del corpus local, incluidos los fragmentos bilingües y a d
       for (const mark of passage.doc.underlines)
         assert.equal(passage.doc.latin.slice(mark.startUtf16,mark.endUtf16),mark.exact,name);
     }
-    if (name==='DtKJMF') assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),[['noctem'],['portum']]);
+    if (name==='DtKJMF') {
+      assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),[[],[]]);
+      assert.match(result.records[0].doc.warnings.join(' '),/A\.4 noctem, B\.4 portum/u);
+    }
     if (name==='3H8NiP') {
       assert.match(result.records[0].doc.latin,/\[= Caesar\]/u);
       assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),[['plĭcāre'],['plĭcāre']]);
