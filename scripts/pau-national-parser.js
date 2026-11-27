@@ -13,7 +13,7 @@ function category(heading) {
   if (/\bmorfolog\w*\b.*\bsint[aá]ctic\w*\b/u.test(text)) return null;
   if (/\b(?:analiz\w*|analisis)\b.*\bmorfolog\w*|\bmorfolog\w*\b.*\b(?:formas|palabras)\b/u.test(text)) return 'morphology';
   if (/\b(?:evolucion|cambios|transformaciones)\b.*\bfonetic\w*|\bresultado patrimonial\b/u.test(text)) {
-    if (/\b(?:catalan|valenciano|gallego|euskera|vasco|portugues|asturiano|frances|italiano)\b/u.test(text)) return null;
+    if (/\b(?:catalan|catala|valenciano|valencia|gallego|galego|euskera|euskara|vasco|portugues|asturiano|asturianu|frances|italiano)\b/u.test(text)) return null;
     return 'phonetics';
   }
   if (/\b(?:latinismos|locuciones latinas|expresiones latinas)\b/u.test(text) && /\b(?:signific\w*|explic\w*|emple\w*|utiliz\w*)\b/u.test(text)) return 'latinism';
@@ -101,33 +101,54 @@ export function prepareNationalPassage({latin,questions=[],title='',author='',wo
 // passage selection; they are not treated as successfully imported exams.
 export function parseExplicitNationalRows(pages) {
   const rows = pages.flat().map(rowText).filter(Boolean);
-  const result = [];
-  let block = null, option = '', pending = null;
-  const flush = () => {
-    if (!block) return;
-    if (pending) block.questions.push(pending);
-    pending = null;
-    const latin = block.lines.join('\n');
-    if (!latin.trim()) throw Error('Marcador de texto sin pasaje latino.');
-    result.push({...prepareNationalPassage({latin,questions:block.questions}),option:block.option});
+  const blocks = [], shared = [];
+  let block = null, option = '', pending = '', destination = null;
+  const flushQuestion = () => {
+    if (destination && pending) destination.push(pending);
+    pending = '';
+  };
+  const closePassage = () => {
+    flushQuestion();
     block = null;
+    destination = null;
   };
   for (const text of rows) {
     const opt = /^(?:opci[oó]n|modelo|ejercicio)\s+([A-Z])\s*[:.]?$/iu.exec(text);
-    if (opt) { flush(); option=opt[1].toUpperCase(); continue; }
+    if (opt) { closePassage(); option=opt[1].toUpperCase(); continue; }
     const start = /^texto latino\s*:\s*(.*)$/iu.exec(text);
-    if (start) { flush(); block={option,lines:start[1]?[start[1]]:[],questions:[],inQuestions:false}; continue; }
-    if (!block) continue;
-    if (/^(?:preguntas|cuestiones)\s*[:.]?$/iu.test(text)) { block.inQuestions=true; continue; }
+    if (start) {
+      closePassage();
+      block={option,lines:start[1]?[start[1]]:[],questions:[],inQuestions:false};
+      blocks.push(block);
+      destination=block.questions;
+      continue;
+    }
+    if (/^(?:preguntas|cuestiones)\s+(?:comunes|para ambas opciones)\s*[:.]?$/iu.test(text)) {
+      closePassage();
+      destination=shared;
+      continue;
+    }
+    if (/^(?:preguntas|cuestiones)\s+(?:independientes|de literatura)\s*[:.]?$/iu.test(text)) {
+      closePassage();
+      continue;
+    }
+    if (!destination) continue;
+    if (block && /^(?:preguntas|cuestiones)\s*[:.]?$/iu.test(text)) { block.inQuestions=true; continue; }
     if (questionNumber.test(text)) {
-      block.inQuestions=true;
-      if(pending) block.questions.push(pending);
+      if (block) block.inQuestions=true;
+      flushQuestion();
       pending=text;
-    } else if (block.inQuestions) {
+    } else if (block && !block.inQuestions) {
+      block.lines.push(text);
+    } else {
       pending=pending?pending+' '+text:text;
-    } else block.lines.push(text);
+    }
   }
-  flush();
-  if (!result.length) throw Error('Estructura no reconocida: selecciona los textos manualmente.');
-  return result;
+  flushQuestion();
+  if (!blocks.length) throw Error('Estructura no reconocida: selecciona los textos manualmente.');
+  return blocks.map(({option,lines,questions})=>{
+    const latin=lines.join('\n');
+    if (!latin.trim()) throw Error('Marcador de texto sin pasaje latino.');
+    return {...prepareNationalPassage({latin,questions:[...questions,...shared]}),option};
+  });
 }

@@ -58,3 +58,18 @@ test('explicit option boundaries keep each question with its own passage',()=>{
   assert.equal(result[1].doc.underlines[0].exact,'Romani');
   assert.throws(()=>parseExplicitNationalRows([['Latín II','Gallia est.']]),/Estructura no reconocida/);
 });
+
+test('las preguntas comunes se aplican a ambas opciones y las independientes quedan sin asignar',()=>{
+  const records=parseExplicitNationalRows([[
+    'Opción A','Texto latino: Gallia est.',
+    '1. Analiza morfológicamente: Gallia.',
+    'Opción B','Texto latino: Romani adsunt.',
+    '1. Analiza morfológicamente: Romani.',
+    'Preguntas comunes:', '2. Explica la evolución fonética al castellano: noctem.',
+    '3. Explica la evolución fonética al euskara: rotam.',
+    'Preguntas independientes:', '4. Explica el significado de los latinismos: ex aequo.'
+  ]]);
+  assert.deepEqual(records.map(record=>record.doc.lexical.phonetics),[['noctem'],['noctem']]);
+  assert.deepEqual(records.map(record=>record.doc.lexical.latinism),[[],[]]);
+  assert.deepEqual(records.map(record=>record.doc.underlines.map(mark=>mark.exact)),[['Gallia'],['Romani']]);
+});

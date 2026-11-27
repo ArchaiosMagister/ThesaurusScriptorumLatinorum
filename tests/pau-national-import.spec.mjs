@@ -9,7 +9,8 @@ const explicit=examPdf(['Universidad de Oviedo','Convocatoria ordinaria 2026','L
 const manual=examPdf(['Universidad de Zaragoza','Convocatoria extraordinaria 2025','LATÍN II',
   'Traduzca el texto que se propone.','Nauta aduenit.']);
 
-test('lote de Selectividad, revisión manual, exclusión y duplicados',async({page})=>{
+test('lote de Selectividad, revisión manual, exclusión y duplicados',async({page},testInfo)=>{
+  test.setTimeout(120000);
   await page.goto('/ThesaurusScriptorumLatinorum/');
   const frame=page.frameLocator('#panel-cuaderno iframe');
   const bank=frame.getByRole('region',{name:'Banco de textos propios'});
@@ -63,14 +64,20 @@ test('lote de Selectividad, revisión manual, exclusión y duplicados',async({pa
   await exam.getByRole('button',{name:/Ficha nacional revisada/}).click();
   const root=exam.locator('html');
   await expect.poll(()=>root.evaluate(()=>window.M.S.textAnalyzed),{timeout:45000}).toBe('Puer aquam portat.');
-  const document=await root.evaluate(async()=>{
-    const {M,JSZip}=window;
+  const document=await root.evaluate(async(_,exportPdf)=>{
+    const {M}=window;
     const html=M.Exam.printDoc(M.S);
     const encoded=await M.Exam.docx(M.S);
-    const word=await JSZip.loadAsync(encoded,{base64:true});
-    return {html,xml:await word.file('word/document.xml').async('string'),
+    const word=await window.JSZip.loadAsync(encoded,{base64:true});
+    let pdf=null;
+    if (exportPdf) {
+      await window.atlLoadPdfExporter();
+      pdf=await (await window.EXPdf.generate(html)).slice(0,5).text();
+    }
+    return {html,pdf,xml:await word.file('word/document.xml').async('string'),
       marks:M.S.subr.map(mark=>mark.toks.map(index=>M.S.tokens[index].w)).flat()};
-  });
+  },testInfo.project.name==='iPad');
+  if (testInfo.project.name==='iPad') expect(document.pdf).toBe('%PDF-');
   expect(document.marks).toEqual(['aquam']);
   expect(document.html).toContain('lignum');
   expect(document.xml).toContain('lignum');

@@ -73,6 +73,18 @@ test('PDF, banco, Cuaderno, copia y reconciliación Dropbox conservan solo los e
   assert.deepEqual(byId(validateCorpus(merged.cv.corpus[0][1].corpus).texts),byId(distinct.corpus.texts));
 });
 
+test('PDF rasterizado, defectuoso y examen incompleto dejan una salida explícita de revisión',async()=>{
+  await assert.rejects(extractNationalPdfPages(new Blob([examPdf([],{raster:true})]),{pdfjs,assetRoot}),/requiere OCR/iu);
+  await assert.rejects(extractNationalPdfPages(new Blob(['%PDF-1.4\nArchivo incompleto']),{pdfjs,assetRoot}));
+  const incomplete=await extractNationalPdfPages(new Blob([examPdf([
+    'Universidad de Oviedo','Convocatoria ordinaria 2026','LATÍN II','OPCIÓN A','Texto latino:'
+  ])]),{pdfjs,assetRoot});
+  const scan=recognizeNationalExam(incomplete);
+  assert.equal(scan.metadata.community,'Asturias');
+  assert.deepEqual(scan.records,[]);
+  assert.match(scan.warnings.join(' '),/sin pasaje latino/iu);
+});
+
 const archive=process.env.PAU_NATIONAL_CORPUS;
 const counts={
   '2l75QL':1,'3H8NiP':2,'88vFZV':2,Andalucia:2,BLidlk:2,DtKJMF:2,P605nL:2,UFbV67:2,
@@ -86,7 +98,7 @@ test('PDF originales del corpus local, incluidos los fragmentos bilingües y a d
     assert.equal(result.records.length,expected,name);
     assert.ok(result.metadata.community,name);
     for (const passage of result.records) {
-      assert.doesNotMatch(passage.doc.latin,/\b(?:traduzca|traducció|traduzca|puntos|an[aá]lisis|cuestiones)\b/iu,name);
+      assert.doesNotMatch(passage.doc.latin,/\b(?:traduzca|traducció|puntos|an[aá]lisis|cuestiones)\b/iu,name);
       for (const mark of passage.doc.underlines)
         assert.equal(passage.doc.latin.slice(mark.startUtf16,mark.endUtf16),mark.exact,name);
     }
