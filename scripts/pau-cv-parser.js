@@ -23,6 +23,27 @@ function citation(s) {
   const author=authors[match[1]]??match[1];
   return {author:/^c[eé]sar$/iu.test(author.trim())?'Julio César':author,work:match[2].trim(),reference:match[3].trim()};
 }
+const lexicalItem=/^[\p{L}\p{M}]+(?:[ -][\p{L}\p{M}]+)*$/u;
+
+function lateralLexicalItems(rows, kind) {
+  const groups=[];
+  for (const {firstCell:cell} of rows) {
+    if (!cell) continue;
+    const value=cast(cell.text);
+    if (!lexicalItem.test(value) || value.split(/\s+/u).length>(kind==='latinism'?5:1)) continue;
+    let group=groups.find(entries=>Math.abs(entries[0].x-cell.x)<=2);
+    if (!group) { group=[]; groups.push(group); }
+    group.push(cell);
+  }
+  const candidates=groups.filter(entries=>{
+    if (entries.length!==4) return false;
+    if (entries.some(cell=>cell.separated)) return true;
+    const edge=Math.max(...entries.map(cell=>cell.right));
+    return rows.filter(row=>row.firstCell?.x>edge+8 && row.text.length>35).length>=2;
+  });
+  return candidates.length===1 ? candidates[0].map(cell=>cast(cell.text)) : [];
+}
+
 function lexicalParts(rows) {
   const start=rows.findIndex(r=>/^PREGUNTA\s+3\s*$/iu.test(r.text));
   if(start<0)throw Error('No se reconoce la pregunta de léxico.');
@@ -31,19 +52,48 @@ function lexicalParts(rows) {
   const boundaries=['A','B','C','D'].map(id=>block.findIndex(r=>new RegExp('Cuestión\\s+'+id+'\\s*:','iu').test(r.text)));
   if(boundaries.some((n,i)=>n<0||(i&&n<=boundaries[i-1])))throw Error('No se reconocen los cuatro apartados de léxico.');
   const result=emptyLex();
+  let lateral=false;
   ['phonetics','prefix','latinism'].forEach((kind,i)=>{
     const part=block.slice(boundaries[i]+1,boundaries[i+1]);
-    const lastHeader=part.findLastIndex(r=>/NORMAS FONÉTICAS|SIGNIFICADO QUE APORTA|SIGNIFICAT QUE APORTA|ORACIÓ\s*\/\s*ORACIÓN|PALABRA LATINA|PALABRA PATRIMONIAL|PREFIX\s*\/\s*PREFIJO|LATINISMO/iu.test(r.text));
-    if(lastHeader<0)throw Error('Tabla de '+kind+' no reconocida.');
-    result[kind]=part.slice(lastHeader+1).map(r=>cast(r.text)).filter(s=>/^[\p{L}\p{M}]+(?:[ -][\p{L}\p{M}]+)*$/u.test(s));
+    const heading=/NORMAS FONÉTICAS|SIGNIFICADO QUE APORTA|SIGNIFICAT QUE APORTA|ORACIÓ\s*\/\s*ORACIÓN|PALABRA LATINA|PALABRA PATRIMONIAL|PREFIX\s*\/\s*PREFIJO|LATINISMO/iu;
+    const lastHeader=part.findLastIndex(r=>heading.test(r.text));
+    const vertical=lastHeader<0 ? [] : part.slice(lastHeader+1).map(r=>cast(r.text)).filter(s=>lexicalItem.test(s));
+    const lateralHeading=[
+      /NORMAS FONÉTICAS|NORMES FONÈTIQUES/iu,
+      /PREFIX D.ORIGEN LLAT[IÍ]|PREFIJO DE ORIGEN LATINO/iu,
+      /(?:EXPRESIONES LATINAS|EXPRESSIONS LLATINES).*(?:ORACI[ÓO]N|ORACIÓ)/iu
+    ][i];
+    result[kind]=vertical.length===4 ? vertical :
+      lateralHeading.test(part.map(r=>r.text).join(' ')) ? lateralLexicalItems(part,kind) : [];
     if(result[kind].length!==4)throw Error('Se esperaban cuatro términos de '+kind+'.');
+    lateral ||= vertical.length!==4;
   });
   const preverb=block.slice(boundaries[3]+1).map(r=>r.text).join(' ');
   const es=preverb.match(/Componga por modificación preverbial[\s\S]*/iu)?.[0]??'';
   const bases=[...es.matchAll(/base léxica(?:\s+de)?\s+([\p{L}\p{M}]+)/giu)].map(m=>m[1]);
   if(bases.length!==2)throw Error('No se reconocen las dos bases preverbiales.');
-  return {lexical:result,preverbBases:bases};
+  return {lexical:result,preverbBases:bases,lateral};
 }
+function translationBounds(rows,lateral) {
+  if (lateral) {
+    const context=rows[0];
+    const first=rows.findIndex(row=>row.face && row.face!==context?.face && row.x<context.x-1 && row.text.length>12);
+    if (first<1 || !rows.slice(0,first).some(row=>/\/\s*$/u.test(row.text)))
+      throw Error('No se localiza el inicio del pasaje entre los dos contextos.');
+    const firstRow=rows[first];
+    let last=first+1;
+    while (last<rows.length && rows[last].face===firstRow.face && Math.abs(rows[last].x-firstRow.x)<=3) last++;
+    if (!/[.!?…\]]$/u.test(rows[last-1].text)) throw Error('No se localiza el final del pasaje.');
+    return [first,last];
+  }
+  const max=Math.max(...rows.filter(row=>row.text.length>12).map(row=>row.size));
+  const first=rows.findIndex(row=>row.size>=max-.35&&row.text.length>12);
+  if (first<0) throw Error('No se localiza el pasaje latino.');
+  let last=first+1;
+  while(last<rows.length&&rows[last].size>=max-.35)last++;
+  return [first,last];
+}
+
 export function parsePauCvPages(pages) {
   const all=pages.flat();
   const header=all.map(r=>r.text).join(' ');
@@ -67,18 +117,15 @@ export function parsePauCvPages(pages) {
     const title=cast(titleLines.map(r=>r.text).join(' '));
     const meta=citation(part[cite].text);
     const tail=part.slice(cite+1);
-    const max=Math.max(...tail.filter(r=>r.text.length>12).map(r=>r.size));
-    const first=tail.findIndex(r=>r.size>=max-.35&&r.text.length>12);
-    if(first<0)throw Error('No se localiza el pasaje latino.');
-    let last=first+1;
-    while(last<tail.length&&tail[last].size>=max-.35)last++;
+    const [first,last]=translationBounds(tail,shared.lateral);
     const latinRows=tail.slice(first,last);
     const latin=clean(latinRows.map(r=>r.text).join(' ')).replace(/([\p{L}])\d+(?=\s|\[)/gu,'$1');
     if(latin.length<35)throw Error('Pasaje latino incompleto.');
     const before=cast(tail.slice(0,first).map(r=>r.text).join(' ')).replace(/^[. ]+/u,'');
     const after=cast(tail.slice(last).filter(r=>!/^\d+$|fa referència|hace referencia/iu.test(r.text)).map(r=>r.text).join(' '));
     const note=tail.slice(last).find(r=>/hace referencia/iu.test(r.text));
-    const forms=old?clean(questions.map(r=>r.text).join(' ')).match(/formas del texto propuesto:\s*([^.]*)\./iu)?.[1]?.split(',').map(clean)??[]:latinRows.flatMap(r=>r.underlines??[]);
+    const forms=old?clean(questions.map(r=>r.text).join(' ')).match(/formas del texto propuesto:\s*([^.]*)\./iu)?.[1]?.split(',').map(clean)??[]:
+      latinRows.flatMap(r=>shared.lateral && r.smallUnderlines ? r.smallUnderlines : r.underlines??[]);
     let underlines=[];
     try {if(forms.length===4)underlines=morphologyMarks(latin,forms);}catch{}
     const warnings=underlines.length===4?[]:['Revisa las cuatro formas morfológicas: no se han localizado con seguridad.'];
@@ -110,7 +157,7 @@ export async function readPauCvPdf(file) {
         const size=Math.hypot(item.transform[2],item.transform[3]);
         let group=groups.find(g=>Math.abs(g.y-y)<5);
         if(!group){group={y,items:[]};groups.push(group);}
-        group.items.push({text:item.str,x,y,size,width:item.width*2});
+        group.items.push({text:item.str,x,y,size,width:item.width*2,face:item.fontName});
       }
       groups.sort((a,b)=>a.y-b.y);
       // Solo la página de opciones modernas necesita imagen para recuperar los subrayados.
@@ -129,9 +176,11 @@ export async function readPauCvPdf(file) {
         let text='';
         for(const t of items){const prev=items[items.indexOf(t)-1];if(prev&&t.x-prev.x-prev.width>2&&!/\s$/u.test(text))text+=' ';text+=t.text;}
         const underlines=[];
-        if(pixels&&size>=11){
+        if(pixels&&size>=9.5){
           for(const t of items){
-            ctx.font='bold '+(t.size*2)+'px "Times New Roman",serif';
+            const embedded=size<11&&page.commonObjs.has(t.face)?page.commonObjs.get(t.face)?.loadedName:'';
+            if (size<11 && !embedded) continue;
+            ctx.font=embedded ? (t.size*2)+'px "'+embedded+'"' : 'bold '+(t.size*2)+'px "Times New Roman",serif';
             const total=ctx.measureText(t.text).width||1;
             for(const m of t.text.matchAll(letter)){
               const left=t.x+t.width*ctx.measureText(t.text.slice(0,m.index)).width/total;
@@ -147,7 +196,15 @@ export async function readPauCvPdf(file) {
             }
           }
         }
-        return {text:clean(text),size,underlines};
+        const visible=items.filter(item=>item.text.trim());
+        const gap=visible.findIndex((item,i)=>i>0 && item.x-visible[i-1].x-visible[i-1].width>size*2+2);
+        const left=gap>0?visible.slice(0,gap):visible;
+        const firstCell=left.length ? {
+          x:left[0].x, right:left.at(-1).x+left.at(-1).width,
+          separated:gap>0, text:left.map(item=>item.text).join(' ')
+        } : null;
+        return {text:clean(text),size,underlines:size>=11?underlines:[],
+          smallUnderlines:size<11?underlines:null,firstCell,x:visible[0]?.x,face:visible[0]?.face};
       }).filter(row=>row.text&&!/^\d+$/u.test(row.text));
       pages.push(rows);
       if(canvas){canvas.width=canvas.height=1;}

@@ -1,0 +1,2452 @@
+[
+  {
+    "id": "andalucia-2026-ordinaria",
+    "community": "Andalucía",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "59b79151546d050adeb9d63a114e9220f3e4d2b12d5b3a7bf8009e03715a87db",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Mario y Cinna reanudan la guerra en Italia",
+        "latin": "Marius, qui fugatus erat, et Cornelius Cinna, unus ex consulibus, bellum in Italia reparaverunt et ingressi urbem Romam nobilissimos e senatu et consulares viros interfecerunt, multos proscripserunt.",
+        "grammar": {
+          "gram.relativo": "qui fugatus erat",
+          "gram.verbo.pluscuamperfecto.indicativo.pasivo": "fugatus erat",
+          "gram.part.perfecto.deponente": "ingressi urbem Romam"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "V 7, 3",
+        "notes": "ingressi: participio de perfecto de ingredior («habiendo entrado»)."
+      },
+      {
+        "id": "2",
+        "title": "Por qué vemos los defectos ajenos",
+        "latin": "Peras imposuit Iuppiter nobis duas:\npropriis repletam vitiis post tergum dedit,\nalienis ante pectus suspendit gravem.\nHac re videre nostra mala non possumus.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "propriis repletam vitiis",
+          "gram.pron.proximo": "Hac re",
+          "gram.inf.presente.activo": "videre nostra mala"
+        },
+        "option": "2",
+        "author": "Fedro",
+        "work": "Fábulas",
+        "reference": "IV 10",
+        "notes": "mala: acusativo plural neutro de malus, -a, -um («defectos»)."
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "aragon-2027-modelo",
+    "community": "Aragón",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "ba50b0fa57ff1347b341833a9754a04b61be0f002bbe77f31f810bb84a999d4c",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El origen de Roma",
+        "latin": "Urbem Romam, sicuti ego accepi, condidere atque habuere initio Troiani, qui Aenea duce profugi sedibus incertis vagabantur, et cum his Aborigines, genus hominum agreste, sine legibus, sine imperio, liberum atque solutum. Ita brevi multitudo diversa atque vaga concordiā civitas facta erat.",
+        "grammar": {
+          "gram.relativo": "qui Aenea duce profugi sedibus incertis vagabantur",
+          "gram.ablativo.absoluto": "Aenea duce",
+          "gram.deponente": "vagabantur"
+        },
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "6.1-3",
+        "notes": "condidere = condiderunt; habuere = habuerunt. brevi es adverbio."
+      }
+    ],
+    "url": "https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/27mod/latin.pdf"
+  },
+  {
+    "id": "asturias-2026-ordinaria",
+    "community": "Asturias",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "47e168dd3aa9d5464c12d4997252b2a1bb98667332e68b8198bccbebca1ae3db",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El campamento de Curión",
+        "latin": "Castra erant ad bellum aptissima et loci munitione et maris propinquitate et aquae copia. Non frumentum, cuius erant plenissimi agri, deficere poterat. Itaque omnium suorum consensu Curio reliquas copias exspectare et bellum ducere parabat.",
+        "grammar": {
+          "gram.relativo": "cuius erant plenissimi agri",
+          "gram.inf.presente.activo": "deficere poterat",
+          "gram.pron.posesivo": "omnium suorum"
+        }
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "baleares-2026-ordinaria",
+    "community": "Islas Baleares",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "effbc51b350ae3e6c70506f2947f126b7df4ceba80437187a735683fe265b516",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César envía la caballería",
+        "latin": "Hac re nuntiata, Caesar omnem equitatum ad suos misit. Interim nostri milites impetum hostium sustinuerunt atque fortissime pugnauerunt et, paucis uulneribus acceptis, complures ex iis occiderunt. Postquam equitatus noster in conspectum uenit, hostes terga uerterunt magnusque eorum numerus occisus est.",
+        "grammar": {
+          "gram.ablativo.absoluto": "paucis uulneribus acceptis",
+          "gram.pron.proximo": "Hac re",
+          "gram.verbo.perfecto.indicativo.pasivo": "occisus est"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "reference": "4, 37, 2-4",
+        "notes": "fortissime: «amb molta valentia», «molt valentament». in conspectum uenire: «aparèixer»."
+      },
+      {
+        "id": "b",
+        "title": "Fabio Máximo conquista Tarento",
+        "latin": "Interea in Italia consul Fabius Maximus Tarentum recepit. Ibi etiam Carthalonem, ducem Hannibalis, occidit; XXV milia hominum captiuorum uendidit; praedam militibus dispertiuit; pecuniam hominum uenditorum ad fiscum rettulit. Tum multae ciuitates Romanorum, quae ad Hannibalem transierant, rursus se Fabio Maximo dediderunt.",
+        "grammar": {
+          "gram.relativo": "quae ad Hannibalem transierant",
+          "gram.genitivo.partitivo": "milia hominum captiuorum",
+          "gram.part.perfecto.pasivo": "hominum uenditorum"
+        },
+        "option": "B",
+        "author": "Eutropio",
+        "work": "Breuiarium Historiae Romanae",
+        "reference": "3, 16"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://estudis.uib.cat/models-examen/examen/pbau/2026:JUNY:LLATIII-Enunciat/Enunciat-LLATIII-JUNY-2026.pdf"
+  },
+  {
+    "id": "canarias-2027-modelo",
+    "community": "Canarias",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "afcb9dfc05ae202f4d2b39d720e76422e0146a2c6cdd09f567c6738440e77213",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César reúne al Senado",
+        "latin": "His rebus confectis, Caesar milites in proxima municipia deducit; ipse ad urbem proficiscitur. Coacto senatu, iniurias inimicorum commemorat. Patientiam proponit suam et acerbitatem inimicorum, qui omnia permiscere malunt. Denique hortatur ac postulat, ut rem publicam suscipiant et una secum administrent.",
+        "grammar": {
+          "gram.ablativo.absoluto": "His rebus confectis",
+          "gram.deponente": "proficiscitur",
+          "gram.relativo": "qui omnia permiscere malunt",
+          "gram.ut.completiva": "postulat, ut rem publicam suscipiant"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Evandro llega al Lacio",
+        "latin": "Regnante Fauno, Evander, Mercurii et Carmentis filius, simul cum matre eodem venit. Evander ob singularem eruditionem brevi tempore in familiaritatem Fauni se insinuavit, atque, ab eo hospitaliter exceptus, non parvum agri accepit in eo monte quem postea nos Palatium diximus.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Regnante Fauno",
+          "gram.part.presente.activo": "Regnante Fauno",
+          "gram.part.perfecto.pasivo": "ab eo hospitaliter exceptus",
+          "gram.genitivo.partitivo": "non parvum agri",
+          "gram.relativo": "quem postea nos Palatium diximus"
+        },
+        "option": "B"
+      }
+    ],
+    "url": "https://www.gobiernodecanarias.org/cmsgob1/export/sites/educacion/web/bachillerato/_galerias/descargas/pau-2027/20261006_modelo-de-prueba-y-glosario-latin-ii-pau-27.pdf"
+  },
+  {
+    "id": "cantabria-2026-ordinaria",
+    "community": "Cantabria",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "6f73b26bf618fe6af16d8b6029b52eada6410075ae566f37e3e6597b7caa7113",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Domiciano cae en los vicios de sus predecesores",
+        "latin": "Domitianus mox accepit imperium, frater ipsius iunior, Neroni aut Caligulae aut Tiberio similior quam patri vel fratri suo. Primis tamen annis moderatus in imperio fuit; mox ad ingentia vitia progressus libidinis, iracundiae, crudelitatis, avaritiae tantum in se odii concitavit, ut merita et patris et fratris aboleret.",
+        "grammar": {
+          "gram.pron.enfatico": "frater ipsius iunior",
+          "gram.part.perfecto.deponente": "ad ingentia vitia progressus",
+          "gram.genitivo.partitivo": "tantum in se odii",
+          "gram.ut.consecutiva": "concitavit, ut merita et patris et fratris aboleret"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "VII, 23, 1",
+        "notes": "Domiciano fue el tercer y último emperador de la dinastía Flavia. ipsius se refiere a Tito."
+      },
+      {
+        "id": "2",
+        "title": "El gorrión de Lesbia",
+        "latin": "Passer mortuus est meae puellae,\npasser, deliciae meae puellae,\nquem plus illa oculis suis amabat.\nNam mellitus erat suamque norat\nipsam tam bene quam puella matrem,\nnec sese a gremio illius movebat,\nsed circumsiliens modo huc modo illuc\nad solam dominam usque pipiabat.",
+        "grammar": {
+          "gram.deponente": "mortuus est",
+          "gram.relativo": "quem plus illa oculis suis amabat",
+          "gram.part.presente.activo": "circumsiliens",
+          "gram.pron.enfatico": "ipsam"
+        },
+        "option": "2",
+        "author": "Catulo",
+        "reference": "3, 3-10",
+        "notes": "norat = noverat; sese = se. oculis suis es ablativo comparativo."
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "castilla-la-mancha-2027-modelo",
+    "community": "Castilla-La Mancha",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "01211eafb71458577311c0162adf7bb8f5159dba2e8f6656944b78fc10ed082f",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César pide rehenes y zarpa",
+        "latin": "Eodem die legati, ab hostibus missi, ad Caesarem de pace venerunt. His Caesar numerum obsidum quem ante imperaverat duplicavit eosque in continentem adduci iussit. Ipse, idoneam tempestatem nactus, paulo post mediam noctem naves solvit.",
+        "grammar": {
+          "gram.agente": "ab hostibus missi",
+          "gram.relativo": "quem ante imperaverat",
+          "gram.inf.presente.pasivo": "adduci iussit",
+          "gram.part.perfecto.deponente": "idoneam tempestatem nactus"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "Caesar, -aris: César."
+      },
+      {
+        "id": "b",
+        "title": "Catulo se lamenta por el gorrión de su amada",
+        "latin": "Passer mortuus est meae puellae,\npasser, deliciae meae puellae,\nquem plus illa oculis suis amabat.\nNam mellitus erat suamque norat\nipsam tam bene quam puella matrem.",
+        "grammar": {
+          "gram.deponente": "mortuus est",
+          "gram.relativo": "quem plus illa oculis suis amabat",
+          "gram.pron.posesivo": "meae puellae",
+          "gram.pron.enfatico": "ipsam"
+        },
+        "option": "B",
+        "author": "Catulo",
+        "work": "Carmina Catulli",
+        "notes": "norat = noverat. quam es adverbio correlativo."
+      }
+    ],
+    "url": "https://www.uclm.es/-/media/Files/A04-Gestion-Academica/PDFEstudiantes/PDFEvAU/ReunionesMateria2627/ModelosExamen/EXAMEN-LATIN.ashx?la=gu"
+  },
+  {
+    "id": "castilla-y-leon-2026-ordinaria",
+    "community": "Castilla y León",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "3e7db3f272d45e239f729d8ceed60e4188fed0236a837eb3101a1469589b9826",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César prepara cinco legiones",
+        "latin": "Ipse [= Caesar] in Italiam magnis itineribus contendit duasque ibi legiones conscribit et tres, quae circum Aquileiam hiemabant, ex hibernis educit et cum his quinque legionibus ire contendit.",
+        "grammar": {
+          "gram.pron.enfatico": "Ipse [= Caesar]",
+          "gram.relativo": "quae circum Aquileiam hiemabant",
+          "gram.inf.presente.activo": "ire contendit"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "Aquileia, -ae: Aquileya, ciudad al norte del Adriático."
+      },
+      {
+        "id": "b",
+        "title": "Cicerón toma precauciones contra los conjurados",
+        "latin": "Haec ego omnia vixdum etiam coetu vestro dimisso comperi; domum meam maioribus praesidiis munivi atque firmavi, exclusi eos, quos tu ad me mane miseras.",
+        "grammar": {
+          "gram.ablativo.absoluto": "coetu vestro dimisso",
+          "gram.pron.proximo": "Haec ego omnia",
+          "gram.relativo": "quos tu ad me mane miseras"
+        },
+        "option": "B",
+        "author": "Cicerón",
+        "work": "In Catilinam"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://usal.es/files/acceso/latin_pau_junio_2026.pdf"
+  },
+  {
+    "id": "catalunya-2026-ordinaria",
+    "community": "Cataluña",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "64c5a42c25320ccad3a33474df98bd0d275862861d3f91b00208d4ac937adc33",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Los dioses crean a Pandora",
+        "latin": "Prometheus, Iapeti filius, primum homines ex luto finxit. Postea Vulcanus Iouis iussu ex luto mulieris effigiem fecit, cui Minerua animam dedit, ceterique dii etiam donum dederunt; ob id Pandoram nominauerunt. Ea data est in coniugium Epimetheo fratri; inde nata est Pyrrha.",
+        "grammar": {
+          "gram.relativo": "cui Minerua animam dedit",
+          "gram.verbo.perfecto.indicativo.pasivo": "Ea data est",
+          "gram.deponente": "nata est Pyrrha"
+        },
+        "author": "Higino",
+        "work": "Faules",
+        "reference": "142"
+      }
+    ],
+    "series": "1",
+    "session": "Ordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/examens-correccions/2026/llati/ord/pau_llat26jl.pdf"
+  },
+  {
+    "id": "extremadura-2027-modelo",
+    "community": "Extremadura",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "55c86d2eaea640ad031c429e64c19131e37590ad3ff94e3a4ecc6aaa7071e9c1",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El comienzo de la segunda guerra púnica",
+        "latin": "Tum Cornelius Scipio cum exercitū in Hispaniam profectus est, Sempronius in Siciliam. Bellum Carthaginiensibus indictum est. Hannibal, relictō in Hispaniā fratre Hasdrubale, Pyrenaeum transiit, deinde Alpes transcendit. Interea multi Ligures et Galli se coniunxērunt Hannibali.",
+        "grammar": {
+          "gram.deponente": "profectus est",
+          "gram.verbo.perfecto.indicativo.pasivo": "indictum est",
+          "gram.ablativo.absoluto": "relictō in Hispaniā fratre Hasdrubale"
+        },
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "3, 8",
+        "notes": "Pyrenaeum es acusativo singular. transiit es del verbo transeo."
+      }
+    ],
+    "url": "https://vrestudiantes.unex.es/wp-content/uploads/sites/23/2026/10/2026_27_Latin_ModeloExamen.pdf"
+  },
+  {
+    "id": "galicia-2027-modelo",
+    "community": "Galicia",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "d6e0635cb51d04a04c15a9bb02bd51d51b6eceae4c872c386b34f5db5f71ce55",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El gobierno despótico de Domiciano",
+        "latin": "Domitianus mox accepit imperium, frater Titi iunior. Primis tamen annis moderatus in imperio fuit; mox ad ingentia vitia progressus libidinis, iracundiae, crudelitatis, avaritiae tantum in se odii concitavit, ut merita et patris et fratris aboleret. Interfecit nobilissimos e senatu. Dominum se et deum primus appellari iussit. Consobrinos suos interfecit.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "ad ingentia vitia progressus",
+          "gram.genitivo.partitivo": "tantum in se odii",
+          "gram.ut.consecutiva": "concitavit, ut merita et patris et fratris aboleret",
+          "gram.inf.presente.pasivo": "appellari iussit"
+        }
+      }
+    ],
+    "url": "https://ciug.gal/uploads/PDF/2027/pau/6aa3be609856f95269668130latinmodelo27.pdf"
+  },
+  {
+    "id": "la-rioja-2026-ordinaria",
+    "community": "La Rioja",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "7fd1fc1bf91513cbca5d4d115f89fa4b97facd84e382a66be95f17b2262ed1d4",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El retrato de Catilina",
+        "latin": "L. Catilina, nobili genere natus, fuit magna vi et animi et corporis, sed ingenio malo pravoque. Ab adulescentia bella intestina, caedes, rapinae, discordia civilis grata huic fuere ibique iuventutem suam exercuit.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "nobili genere natus",
+          "gram.pron.proximo": "grata huic fuere",
+          "gram.pron.posesivo": "iuventutem suam"
+        },
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "5, 1-2",
+        "notes": "fuere = fuerunt."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://farmeandopau.com/examenes/la-rioja/latin/latin-2026-ordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "madrid-2027-modelo",
+    "community": "Comunidad de Madrid",
+    "year": 2027,
+    "model": "Modelo orientativo",
+    "sha256": "332073448900be600166af19ec4f24b5f4fd62f3a927561cdb7ce08b29a730bd",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Avisos dados a César sobre su muerte",
+        "latin": "Nam haruspices praemonuerant ut diligentissime iduum Martiarum caveret diem; uxor Calpurnia territa nocturno visu, ut eā die domi subsisteret, orabat; libelli coniurationem nuntiantes dati neque protinus ab eo lecti erant. Sed profecto ineluctabilis fatorum vis consilia corrumpit.",
+        "grammar": {
+          "gram.ut.completiva": "ut eā die domi subsisteret, orabat",
+          "gram.part.presente.activo": "coniurationem nuntiantes",
+          "gram.agente": "ab eo lecti erant",
+          "gram.verbo.pluscuamperfecto.indicativo.pasivo": "lecti erant"
+        },
+        "option": "A",
+        "author": "Veleyo Patérculo",
+        "reference": "2.57.2-3",
+        "notes": "César es el sujeto omitido de caveret y subsisteret. dati = dati erant."
+      },
+      {
+        "id": "b",
+        "title": "César en Alejandría",
+        "latin": "Sed Caesar, confisus famā rerum gestarum, proficisci non dubitaverat. Alexandriae de Pompei morte cognoscit atque ibi clamorem militum audit, quos rex in oppido praesidii causā reliquerat, et concursum ad se fieri videt. Hoc sedato tumultu, milites urbis omnibus partibus interficiebantur.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Hoc sedato tumultu",
+          "gram.relativo": "quos rex in oppido praesidii causā reliquerat",
+          "gram.inf.presente.deponente": "proficisci non dubitaverat",
+          "gram.verbo.imperfecto.indicativo.pasivo": "interficiebantur"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "Bellum civile",
+        "reference": "3, 106, 3-4",
+        "notes": "Alexandriae: locativo. Pompei = Pompeii. fieri: del verbo fio."
+      }
+    ],
+    "url": "https://www.ucm.es/file/2027-modelo-latin-ii"
+  },
+  {
+    "id": "murcia-2026-ordinaria",
+    "community": "Región de Murcia",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "926ca6e4aee892974263ce158ef6e5032a4b7156a24b3e8e3d1120a6b0bddae6",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Prolegómenos de la guerra Ptolemaica",
+        "latin": "Finito Punico bello, quod per XXIII annos tractum est, Romani legatos ad Ptolomaeum, Aegypti regem, miserunt auxilia promittentes, quia rex Syriae Antiochus bellum ei intulerat. Ille gratias Romanis egit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Finito Punico bello",
+          "gram.relativo": "quod per XXIII annos tractum est",
+          "gram.verbo.perfecto.indicativo.pasivo": "tractum est",
+          "gram.part.presente.activo": "auxilia promittentes"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Palas Atenea transforma a Aracne",
+        "latin": "Post ea discedens sucis Hecateidos herbae\nsparsit: et extemplo tristi medicamine tactae\ndefluxere comae, cum quis et naris et aures,\nfitque caput minimum; toto quoque corpore parva est.",
+        "grammar": {
+          "gram.part.presente.activo": "Post ea discedens",
+          "gram.part.perfecto.pasivo": "tristi medicamine tactae",
+          "gram.pron.relativo": "cum quis et naris et aures"
+        },
+        "option": "B",
+        "author": "Ovidio",
+        "work": "Metamorfosis"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://farmeandopau.com/examenes/murcia/latin/latin-2026-ordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "navarra-2026-ordinaria",
+    "community": "Navarra",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "0dc6c0fd6136db63f26b951f97a24cfb26f4eb90b047efad18afefa5ddd4c824",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Muerte de César",
+        "latin": "Caesar, bellis civilibus toto orbe compositis, Romam rediit. Agere insolentius coepit et contra consuetudinem Romanae libertatis. Coniuraverunt in eum sexaginta senatores equitesque Romani. Ergo Caesar, cum senatus die inter ceteros venisset ad curiam, tribus et viginti vulneribus confossus est.",
+        "grammar": {
+          "gram.ablativo.absoluto": "bellis civilibus toto orbe compositis",
+          "gram.cum.historico": "cum senatus die inter ceteros venisset ad curiam",
+          "gram.inf.presente.activo": "Agere insolentius coepit",
+          "gram.verbo.perfecto.indicativo.pasivo": "confossus est"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "VI, 25",
+        "notes": "senatus: sesión del senado. curia: lugar de reunión del senado. confodio: traspasar, atravesar."
+      },
+      {
+        "id": "b",
+        "title": "Escaramuzas entre César y Ariovisto",
+        "latin": "Ex eo die Caesar dies continuos quinque pro castris suas copias produxit et aciem instructam habuit, ut sibi potestas proelii contra Ariovistum non deesset. Ariovistus his omnibus diebus exercitum castris continuit, equestri proelio cotidie contendit. Genus hoc erat pugnae, quo se Germani exercuerant.",
+        "grammar": {
+          "gram.acus.ext": "dies continuos quinque",
+          "gram.ut.final": "ut sibi potestas proelii contra Ariovistum non deesset",
+          "gram.relativo": "quo se Germani exercuerant",
+          "gram.part.perfecto.pasivo": "aciem instructam"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "Guerra de las Galias",
+        "reference": "I, 48",
+        "notes": "copia: en plural, tropas. acies: línea de batalla. potestas: ocasión, posibilidad."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www2.unavarra.es/gesadj/Estudios/acceso_matricula/PAU/2026/Examenes_Ordinaria/ORDINARIA_CAS/Latin_cast.pdf"
+  },
+  {
+    "id": "pais-vasco-2026-ordinaria",
+    "community": "País Vasco",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "7ec917f7d76c2b95559f87d0e2f3308643ee568861ba5bc3f57cda41a116029f",
+    "passages": [
+      {
+        "id": "a-1",
+        "title": "La conjuración de Catilina",
+        "latin": "Multi senatores credebant Catilinam contra patriam coniuravisse; ille ergo expulsus est Roma a Cicerone consule. Socii eius in carcere strangulati sunt; sed Catilina ipse interfectus est ab Antonio altero consule.",
+        "grammar": {
+          "gram.inf.perfecto.activo": "Catilinam contra patriam coniuravisse",
+          "gram.verbo.perfecto.indicativo.pasivo": "strangulati sunt",
+          "gram.agente": "ab Antonio altero consule"
+        },
+        "option": "A.1",
+        "author": "Eutropio",
+        "reference": "VI, 15",
+        "notes": "expulsus est: de expello. interfectus est: de interficio."
+      },
+      {
+        "id": "a-2",
+        "title": "El caballo de Troya",
+        "latin": "Graeci, cum Troiam vi expugnare non possent, equum ingentem e ligno fabricaverunt, militibus armatis compleverunt et in litore reliquerunt. Troiani arbitrati sunt Graecos in patriam suam redivisse et equum in urbem receperunt.",
+        "grammar": {
+          "gram.cum.historico": "cum Troiam vi expugnare non possent",
+          "gram.deponente": "arbitrati sunt",
+          "gram.inf.perfecto.activo": "Graecos in patriam suam redivisse",
+          "gram.part.perfecto.pasivo": "militibus armatis"
+        },
+        "option": "A.2",
+        "author": "Ørberg",
+        "reference": "II, 30"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.ehu.eus/documents/d/unibertsitaterako-sarbidea/latin-ii-examen-ord-2026"
+  },
+  {
+    "id": "canarias-2026-ordinaria",
+    "community": "Canarias",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "a2c08ffe2bbc313489ac2a36d3221e24271cc7bdf02a45c37af9ac79fdf97bff",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César reúne al Senado",
+        "latin": "His rebus confectis, Caesar milites in proxima municipia deducit; ipse ad urbem proficiscitur. Coacto senatu, iniurias inimicorum commemorat. Patientiam proponit suam et acerbitatem inimicorum, qui omnia permiscere malunt. Denique hortatur ac postulat, ut rem publicam suscipiant et una secum administrent.",
+        "grammar": {
+          "gram.ablativo.absoluto": "His rebus confectis",
+          "gram.deponente": "proficiscitur",
+          "gram.relativo": "qui omnia permiscere malunt",
+          "gram.ut.completiva": "postulat, ut rem publicam suscipiant"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Evandro llega al Lacio",
+        "latin": "Regante Fauno, Evander, Mercurii et Carmentis filius, simul cum matre eodem venit. Evander ob singularem eruditionem brevi tempore in familiaritatem Fauni se insinuavit, atque, ab eo hospitaliter exceptus, non parvum agri accepit in eo monte quem postea nos Palatium diximus.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "ab eo hospitaliter exceptus",
+          "gram.genitivo.partitivo": "non parvum agri",
+          "gram.relativo": "quem postea nos Palatium diximus"
+        },
+        "option": "B",
+        "notes": "El examen imprime «Regante Fauno». El modelo de 2027 imprime «Regnante Fauno»."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.gobiernodecanarias.org/cmsgob1/export/sites/educacion/web/bachillerato/_galerias/descargas/pau-2026/examenes-PAU-junio-2026/examen-latin-ii-pau-junio-26.pdf"
+  },
+  {
+    "id": "castilla-la-mancha-2026-ordinaria",
+    "community": "Castilla-La Mancha",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "fd152ca2dce905480b380d39885c25c6b67c83bded2cc39ff8efada2edb82bb8",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César pide rehenes y zarpa",
+        "latin": "Eodem die legati, ab hostibus missi, ad Caesarem de pace venerunt. His Caesar numerum obsidum quem ante imperaverat duplicavit eosque in continentem adduci iussit. Ipse, idoneam tempestatem nactus, paulo post mediam noctem naves solvit.",
+        "grammar": {
+          "gram.agente": "ab hostibus missi",
+          "gram.relativo": "quem ante imperaverat",
+          "gram.inf.presente.pasivo": "adduci iussit",
+          "gram.part.perfecto.deponente": "idoneam tempestatem nactus"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "Caesar, -aris: César."
+      },
+      {
+        "id": "b",
+        "title": "Catulo se lamenta por el gorrión de su amada",
+        "latin": "Passer mortuus est meae puellae,\npasser, deliciae meae puellae,\nquem plus illa oculis suis amabat.\nNam mellitus erat suamque norat\nipsam tam bene quam puella matrem.",
+        "grammar": {
+          "gram.deponente": "mortuus est",
+          "gram.relativo": "quem plus illa oculis suis amabat",
+          "gram.pron.posesivo": "meae puellae",
+          "gram.pron.enfatico": "ipsam"
+        },
+        "option": "B",
+        "author": "Catulo",
+        "work": "Carmina Catulli",
+        "notes": "norat = noverat. quam es adverbio correlativo."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.uclm.es/-/media/Files/A04-Gestion-Academica/PDFEstudiantes/PDFEvAU/ModelosPruebas2526/LATIN.ashx?la=es"
+  },
+  {
+    "id": "aragon-2026-ordinaria",
+    "community": "Aragón",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "c36258b0147a134902534ec5829e0fab44bf669bf6d4c2c4672a7939f0d4937d",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Lucrecia habla con Colatino",
+        "latin": "Lucretiam sedentem maestam in cubiculo inveniunt. Adventu suorum lacrimae obortae quaerentique viro \"Satin salvē?\"- \"Minime\" inquit; \"quid enim salvi est mulieri, amissā pudicitiā? Vestigia viri alieni, Collatine, in lecto sunt tuo; ceterum corpus est tantum violatum, animus insons; mors testis erit\".",
+        "grammar": {
+          "gram.part.presente.activo": "Lucretiam sedentem",
+          "gram.ablativo.absoluto": "amissā pudicitiā",
+          "gram.genitivo.partitivo": "quid enim salvi est",
+          "gram.pron.posesivo": "in lecto sunt tuo"
+        },
+        "author": "Tito Livio",
+        "work": "Desde la fundación de Roma",
+        "reference": "1.58.6-7",
+        "notes": "obortae: se sobreentiende sunt. satin = satis + -ne. ceterum: por lo demás. tantum: tan solo."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/26ord/latin.pdf"
+  },
+  {
+    "id": "aragon-2026-extraordinaria",
+    "community": "Aragón",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "ca0b2fade5da2796f47bc27a7a0441baced77555748ba2a49fdd0a405a97c4d6",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Mercurio explica el embarazo de Alcmena",
+        "latin": "\"Is amare occepit Alcumenam clam virum\nusuramque eius corporis cepit sibi,\net gravidam fecit is eam compressu suo.\nNunc Alcumena, ut rem teneatis rectius,\nutrimque est gravida, et ex viro et ex summo Iove.\nEt meus pater nunc intus, hīc, cum illa cubat,\net, ob eam rem, haec nox est facta longior.”",
+        "grammar": {
+          "gram.inf.presente.activo": "amare occepit",
+          "gram.pron.posesivo": "meus pater",
+          "gram.pron.proximo": "haec nox",
+          "gram.subjuntivo": "ut rem teneatis rectius"
+        },
+        "author": "Plauto",
+        "work": "Anfitrión",
+        "reference": "107-113",
+        "notes": "is se refiere a Júpiter. hīc es adverbio. est facta pertenece al perfecto de fio."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "andalucia-2026-extraordinaria",
+    "community": "Andalucía",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "5e6223e50fa71d78f735d9014316a2eb34980c05a7936d62f1aea09b1446c4d5",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Victoria naval del cónsul Duilio",
+        "latin": "Duillius, commisso proelio, Carthaginiensium ducem vicit, triginta et unam naves cepit, quattuordecim mersit, septem milia hostium cepit, tria milia occidit. Neque ulla victoria Romanis gratior fuit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "commisso proelio",
+          "gram.genitivo.partitivo": "septem milia hostium",
+          "gram.part.perfecto.pasivo": "commisso proelio"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "II 20, 2",
+        "notes": "gratior: comparativo de gratus sin segundo término de comparación."
+      },
+      {
+        "id": "2",
+        "title": "Ovidio recuerda su partida al destierro",
+        "latin": "Cum subit illius tristissima noctis imago,\nquae mihi supremum tempus in urbe fuit,\ncum repeto noctem, qua tot mihi cara reliqui,\nlabitur ex oculis nunc quoque gutta meis.",
+        "grammar": {
+          "gram.relativo": "quae mihi supremum tempus in urbe fuit",
+          "gram.pron.relativo": "qua tot mihi cara reliqui",
+          "gram.deponente": "labitur ex oculis"
+        },
+        "option": "2",
+        "author": "Ovidio",
+        "work": "Tristes",
+        "reference": "I 3, 1-4",
+        "notes": "cara: «cosas queridas». qua: ablativo singular femenino del relativo."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "canarias-2026-extraordinaria",
+    "community": "Canarias",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "ca00158ec6b27c077a9cb8f7d9d9cc0019281d163f37d6cd5a8d16df9cf34f3e",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Domicio prepara su fuga",
+        "latin": "Litteris perlectis, Domitius dissimulans hortatur milites suos, ne animo deficiant et oppidum defendant. Ipse arcano cum paucis familiaribus suis colloquitur et fugere constituit. Rem autem diutius tegere et dissimulare non potuit. Itaque omnes Domitium circumsistunt et prehendunt, legatosque ad Caesarem mittunt.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Litteris perlectis",
+          "gram.part.presente.activo": "Domitius dissimulans",
+          "gram.ne.completiva": "hortatur milites suos, ne animo deficiant",
+          "gram.deponente": "colloquitur",
+          "gram.inf.presente.activo": "fugere constituit"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "La transformación de Ceix y Alcíone",
+        "latin": "Cum Ceyx in naufragio periisset, Alcyone, uxor eius, propter amorem ipsa se in mare praecipitavit; deorum misericordia, ambo in aves mutati sunt quae alcyones dicuntur. Hae aves nidum in mari septem diebus faciunt hiberno tempore. Mare his diebus tranquillum est.",
+        "grammar": {
+          "gram.cum.historico": "Cum Ceyx in naufragio periisset",
+          "gram.verbo.perfecto.indicativo.pasivo": "mutati sunt",
+          "gram.relativo": "quae alcyones dicuntur",
+          "gram.pron.proximo": "Hae aves"
+        },
+        "option": "B"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.gobiernodecanarias.org/cmsgob1/export/sites/educacion/web/bachillerato/_galerias/descargas/pau-2026/examenes-pau-julio-2026/examen-latin-pau-julio-26.pdf"
+  },
+  {
+    "id": "cantabria-2026-extraordinaria",
+    "community": "Cantabria",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "1fb7493cfa48e38d43eb3174e00286373d8b791f508641f39166c8e72133d1c7",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Derrota de Aníbal y triunfo de Escipión",
+        "latin": "Interea proelium ab utroque duce instructum est. Scipio victor recedit, paene ipso Hannibale capto, qui primum cum multis equitibus, deinde cum viginti, postremo cum quattuor evasit. Post id certamen pax cum Carthaginiensibus facta est. Scipio Romam rediit, ingenti gloria triumphavit atque Africanus ex eo appellari coepit",
+        "grammar": {
+          "gram.agente": "ab utroque duce instructum est",
+          "gram.ablativo.absoluto": "ipso Hannibale capto",
+          "gram.relativo": "qui primum cum multis equitibus, deinde cum viginti, postremo cum quattuor evasit",
+          "gram.inf.presente.pasivo": "appellari coepit"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "III 23, 2-3",
+        "notes": "El combate es la batalla de Zama (202 a. C.). victor y Africanus son complementos predicativos."
+      },
+      {
+        "id": "2",
+        "title": "Todos somos esclavos ante la Fortuna",
+        "latin": "Libenter ex iis qui a te veniunt cognovi familiariter te cum servis tuis vivere. Hoc prudentiam tuam, hoc eruditionem decet. “Servi sunt”. Immo homines. “Servi sunt”. Immo contubernales. “Servi sunt”. Immo humiles amici. “Servi sunt”. Immo conservi, si cogitaveris tantumdem in utrosque licere fortunae.",
+        "grammar": {
+          "gram.relativo": "qui a te veniunt",
+          "gram.inf.presente.activo": "te cum servis tuis vivere",
+          "gram.condicional": "si cogitaveris tantumdem in utrosque licere fortunae",
+          "gram.pron.proximo": "Hoc prudentiam tuam"
+        },
+        "option": "2",
+        "author": "Séneca",
+        "work": "Epístolas",
+        "reference": "V 47, 1",
+        "notes": "a te: de donde tú estás (Lucilio). contubernales: compañeros, camaradas. licere rige dativo."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "catalunya-2026-ordinaria-5",
+    "community": "Cataluña",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "e20f50342f0b4dbed78ee0e9c231a4b7c7588a362417aa18a7285c3eaf126745",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Apolo castiga la impiedad de Laocoonte",
+        "latin": "Laocoon, Anchisae frater, Apollinis sacerdos erat. Contra uoluntatem Apollinis uxorem duxerat atque liberos procreauerat. Deus, occasione data, per fluctus maris duos dracones misit ut filios eius necarent. Cum Laocoon eis auxilium ferre uellet, ipsum quoque necauerunt.",
+        "grammar": {
+          "gram.ablativo.absoluto": "occasione data",
+          "gram.ut.final": "misit ut filios eius necarent",
+          "gram.cum.historico": "Cum Laocoon eis auxilium ferre uellet",
+          "gram.inf.presente.activo": "auxilium ferre uellet"
+        },
+        "author": "Higino",
+        "work": "Faules",
+        "reference": "135"
+      }
+    ],
+    "series": "5",
+    "session": "Ordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/examens-correccions/2026/llati/ord/pau_llat26jl_tei.pdf"
+  },
+  {
+    "id": "catalunya-2026-extraordinaria-2",
+    "community": "Cataluña",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "4a061f3d8e9c92ddb9ad36a3c1deeb0e290643f091705ca2e659365b07a9dd60",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Guerra contra Tarento y alianza con Pirro",
+        "latin": "Eodem tempore Tarentinis bellum indictum est, quia legatis Romanorum iniuriam fecerant. Tarentini contra Romanos auxilium poposcerunt Pyrrum, Epiri regem, qui ex genere Achillis originem trahebat. Tum primum Romani cum transmarino hoste dimicauerunt. Commissa mox pugna, Pyrrus elephantorum auxilio uicit.",
+        "grammar": {
+          "gram.pron.identidad": "Eodem tempore",
+          "gram.verbo.perfecto.indicativo.pasivo": "bellum indictum est",
+          "gram.relativo": "qui ex genere Achillis originem trahebat",
+          "gram.ablativo.absoluto": "Commissa mox pugna"
+        },
+        "author": "Eutropio",
+        "work": "Breviari d’història de Roma",
+        "reference": "II, 11, 1-2"
+      }
+    ],
+    "series": "2",
+    "session": "Extraordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/examens-correccions/2026/llati/ext/pau_llat26sl.pdf"
+  },
+  {
+    "id": "extremadura-2026-ordinaria",
+    "community": "Extremadura",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "967f8ece5cdb2262d71abeae50b14f8ba50a1694fb5f1ac788f0e25c81ad8366",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Bruto y Casio se enfrentan a Marco Antonio y Octavio",
+        "latin": "Interea Brutus et Cassius, interfectores Caesaris, ingens bellum moverunt. Erant enim per Macedoniam et Orientem multi exercitus, quos occupaverant. Profecti sunt igitur contra eos Caesar Octavianus Augustus et M. Antonius. Apud Philippos, Macedoniae urbem, contra eos pugnaverunt.",
+        "grammar": {
+          "gram.relativo": "quos occupaverant",
+          "gram.deponente": "Profecti sunt",
+          "gram.part.perfecto.deponente": "Profecti sunt"
+        },
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "7, 3"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://vrestudiantes.unex.es/wp-content/uploads/sites/23/2025/11/2025_2026_Latin_ModeloExamen.pdf"
+  },
+  {
+    "id": "galicia-2026-ordinaria",
+    "community": "Galicia",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "1cd6cdc9fa24e214bb8c4db8f4404232c5acc8c3583706dd1294eabd71616188",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Las alforjas de los defectos",
+        "latin": "Peras imposuit Iuppiter nobis duas:\npropriis repletam vitiis post tergum dedit,\nalienis ante pectus suspendit gravem.\nHac re videre nostra mala non possumus;\nalii simul delinquunt, censores sumus.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "propriis repletam vitiis",
+          "gram.pron.proximo": "Hac re",
+          "gram.inf.presente.activo": "videre nostra mala",
+          "gram.pron.posesivo": "nostra mala"
+        },
+        "author": "Fedro",
+        "work": "Fábulas",
+        "reference": "IV 10"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://ciug.gal/uploads/PDF/2026/PAU/6a215d5b23cb849664279230latin20264.pdf"
+  },
+  {
+    "id": "galicia-2026-extraordinaria",
+    "community": "Galicia",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "d3a3ecf1d5de45d5c6825f95561617c38c26f6319cba53458f34aba76b2de8a5",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Numa Pompilio y sus reformas",
+        "latin": "Postea Numa Pompilius rex creatus est, qui bellum quidem nullum gessit, sed non minus civitati quam Romulus profuit. Nam et leges Romanis moresque constituit, qui consuetudine proeliorum iam latrones ac semibarbari putabantur, et annum descripsit in decem menses, et infinita Romae sacra ac templa constituit.",
+        "grammar": {
+          "gram.verbo.perfecto.indicativo.pasivo": "rex creatus est",
+          "gram.relativo": "qui bellum quidem nullum gessit",
+          "gram.verbo.imperfecto.indicativo.pasivo": "semibarbari putabantur"
+        }
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://ciug.gal/uploads/PDF/2026/PAU/6a4640952c5f453293018030-latin-ii.pdf"
+  },
+  {
+    "id": "madrid-2026-ordinaria",
+    "community": "Comunidad de Madrid",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "84c595f2b81ab042dc61b68d1d8f56b81d44e0f5602f1355250a26ff1f719515",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César exige rehenes antes de zarpar",
+        "latin": "Eodem die legati ab hostibus missi ad Caesarem de pace venerunt. His Caesar numerum obsidum, quem ante imperaverat, duplicavit eosque in continentem adduci iussit. Ipse idoneam tempestatem nactus paulo post mediam noctem naves solvit, quae incolumes ad continentem pervenerunt.",
+        "grammar": {
+          "gram.agente": "ab hostibus missi",
+          "gram.inf.presente.pasivo": "adduci iussit",
+          "gram.part.perfecto.deponente": "idoneam tempestatem nactus",
+          "gram.relativo": "quae incolumes ad continentem pervenerunt"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "reference": "4, 36, 1-4",
+        "notes": "missi concierta con legati. de pace: para tratar sobre la paz."
+      },
+      {
+        "id": "b",
+        "title": "César parte en busca de grano",
+        "latin": "Hac re cognitā, Caesar celeriter de navibus imperat omnes egredi atque in litore reliquos milites exspectare. Itaque sine morā, navibus eis in portum receptis et advectis militum equitumque copiis, rursus ad oppidum redit atque, ibi castris constitutis, ipse frumentatum est profectus.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Hac re cognitā",
+          "gram.inf.presente.deponente": "omnes egredi",
+          "gram.pron.enfatico": "ipse frumentatum est profectus",
+          "gram.deponente": "est profectus"
+        },
+        "option": "B",
+        "work": "Bellum Africum",
+        "reference": "11, 2-4",
+        "notes": "frumentatum: supino, «para proveerse de grano». est profectus = profectus est."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.ucm.es/file/lat%C3%8Dn-ii-23"
+  },
+  {
+    "id": "madrid-2026-extraordinaria",
+    "community": "Comunidad de Madrid",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "253b91eeab78b2db616fe246166d828492e9684f014be8288429992bf4f971b2",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Craso opera en el sur de la Galia",
+        "latin": "Armis obsidibusque acceptis, Crassus in fines Vocatium et Tarusatium profectus est. Tum vero barbari commoti legatos quoqueversum dimittere, obsides inter se dare, copias parare coeperunt. Mittuntur etiam ad eas civitates legati, quae sunt citerioris Hispaniae, finitimae Aquitaniae; inde auxilia arcessuntur.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Armis obsidibusque acceptis",
+          "gram.deponente": "profectus est",
+          "gram.inf.presente.activo": "copias parare coeperunt",
+          "gram.relativo": "quae sunt citerioris Hispaniae"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "reference": "3, 23, 1-3"
+      },
+      {
+        "id": "b",
+        "title": "Catilina dispone sus tropas para la lucha",
+        "latin": "Haec ubi dixit, paululum commoratus signa canere iubet atque instructos ordines in locum aequum deducit. Dein, remotis omnium equis, ipse exercitum pro loco atque copiis instruit. Nam uti planities erat inter sinistros montis et, ab dextrā, rupem asperam, octo cohortis in fronte constituit.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "paululum commoratus",
+          "gram.inf.presente.activo": "signa canere iubet",
+          "gram.ablativo.absoluto": "remotis omnium equis",
+          "gram.pron.enfatico": "ipse exercitum"
+        },
+        "option": "B",
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "59, 1-2",
+        "notes": "uti = ut. montis y cohortis son formas arcaicas por montes y cohortes."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.ucm.es/file/lat%C3%8Dn-ii-24"
+  },
+  {
+    "id": "asturias-2026-extraordinaria",
+    "community": "Asturias",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "2bdc36c58f2df35288b5c015b9e138aca2d9c441f3860eb9aac8be7506132b3b",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "César prepara el campamento",
+        "latin": "Caesar eas cohortes cum exercitu suo coniunxit. Caesar primis diebus castra magnis operibus munire et ex finitimis municipiis frumentum comportare reliquasque copias exspectare instituit.",
+        "grammar": {
+          "gram.pron.posesivo": "exercitu suo",
+          "gram.inf.presente.activo": "exspectare instituit"
+        },
+        "notes": "instituo: decidir."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "baleares-2026-extraordinaria",
+    "community": "Islas Baleares",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "e32018dfcf0182403af4c2549ff12e6964c84e65249217df8866ae18f4793836",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Los cónsules romanos combaten en África",
+        "latin": "Aemilius Paulus et Fuluius Nobilior, Romani consules, ad Africam profecti sunt cum trecentarum nauium classe. Primum Afros nauali certamine superant. Aemilius consul centum et quattuor naues hostium demersit, triginta cum pugnatoribus cepit, quindecim milia hostium occidit, milites suos ingenti praeda ditauit.",
+        "grammar": {
+          "gram.deponente": "profecti sunt",
+          "gram.genitivo.partitivo": "quindecim milia hostium",
+          "gram.pron.posesivo": "milites suos"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breuiarium Historiae Romanae",
+        "reference": "2, 22"
+      },
+      {
+        "id": "b",
+        "title": "Cepión es enviado contra Viriato",
+        "latin": "Nec multo post Caepio ad idem bellum missus est quod Viriatus contra Romanos in Lusitania gerebat. Postea Viriatus a suis interfectus est, cum Hispanias aduersus Romanos quattuordecim annos mouisset. Is pastor primo fuit, mox latronum dux, postremo multos populos ad bellum concitauit.",
+        "grammar": {
+          "gram.pron.identidad": "idem bellum",
+          "gram.relativo": "quod Viriatus contra Romanos in Lusitania gerebat",
+          "gram.agente": "a suis interfectus est",
+          "gram.acus.ext": "quattuordecim annos",
+          "gram.cum.historico": "cum Hispanias aduersus Romanos quattuordecim annos mouisset"
+        },
+        "option": "B",
+        "author": "Eutropio",
+        "work": "Breuiarium Historiae Romanae",
+        "reference": "4, 16"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://estudis.uib.cat/models-examen/examen/pbau/2026:JUL:LLATIII-Enunciat/Enunciat-LLATIII-JUL-2026.pdf"
+  },
+  {
+    "id": "castilla-la-mancha-2026-extraordinaria",
+    "community": "Castilla-La Mancha",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "6f7638128f404083fdfb5c6ec8ed2048935d3c337fb532bc48fd0b19eda43ede",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César marcha hacia los senones",
+        "latin": "Hāc re pro suggestu pronuntiatā, eodem die cum legionibus in Senones proficiscitur magnisque itineribus eo pervenit. Cognito eius adventu, Acco, qui princeps eius consilii fuerat, iubet in oppida multitudinem convenire.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Hāc re pro suggestu pronuntiatā",
+          "gram.deponente": "proficiscitur",
+          "gram.relativo": "qui princeps eius consilii fuerat",
+          "gram.inf.presente.activo": "multitudinem convenire"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "suggestus, -us: tribuna. eo es adverbio. Acco, -onis: Acón."
+      },
+      {
+        "id": "b",
+        "title": "El amante es un soldado",
+        "latin": "Militat omnis amans, et habet sua castra Cupido;\nAttice, crede mihi, militat omnis amans.\nQuae bello est habilis, Veneri quoque convenit aetas.\nTurpe senex miles, turpe senilis amor.",
+        "grammar": {
+          "gram.part.presente.activo": "omnis amans",
+          "gram.pron.posesivo": "sua castra",
+          "gram.relativo": "Quae bello est habilis"
+        },
+        "option": "B",
+        "author": "Ovidio",
+        "work": "Amores"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.uclm.es/-/media/Files/A04-Gestion-Academica/PDFEstudiantes/PDFEvAU/ModelosPruebas2526/EXTRAORDINARIA/LATIN.ashx?la=es"
+  },
+  {
+    "id": "castilla-y-leon-2026-extraordinaria",
+    "community": "Castilla y León",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "2ba37753c5da74b44cff28cfbcd1cfc4b463f6fe0deb09374300edd121f608f0",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César se enfrenta al enemigo junto al Támesis",
+        "latin": "Caesar, cognito consilio eorum, ad flumen Tamesim in fines Cassivellauni exercitum duxit. Eo cum venisset, animadvertit ad alteram fluminis ripam magnas esse copias hostium. Ripa erat acutis sudibus munita.",
+        "grammar": {
+          "gram.ablativo.absoluto": "cognito consilio eorum",
+          "gram.cum.historico": "Eo cum venisset",
+          "gram.inf.presente.activo": "magnas esse copias hostium"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "Cassivellaunus: Casivelono, líder militar britano."
+      },
+      {
+        "id": "b",
+        "title": "Los partidarios de Catilina dentro y fuera de Roma",
+        "latin": "Castra sunt in Italia contra populum Romanum in Etruriae faucibus conlocata; crescit in dies hostium numerus; eorum autem castrorum imperatorem, ducemque hostium intra moenia atque adeo in senatu videtis.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "conlocata",
+          "gram.voz.pasiva": "Castra sunt in Italia contra populum Romanum in Etruriae faucibus conlocata"
+        },
+        "option": "B",
+        "author": "Cicerón",
+        "work": "In Catilinam"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://usal.es/files/acceso/latin_pau_julio_2026.pdf"
+  },
+  {
+    "id": "la-rioja-2026-extraordinaria",
+    "community": "La Rioja",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "eaf875b854ba2985d24daece774dab2d858ec352c03f0d947aa25eb14efe77ee",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "La caída de Troya",
+        "latin": "Dum Latinus in Italia in pace diuturna regnat, Troia seu Ilium, clarissima Asiae urbs, post bellum decem annorum tandem a Graecis capta est. Graeci enim, cum urbem vi expugnare non possent, dolo usi sunt.",
+        "grammar": {
+          "gram.agente": "a Graecis capta est",
+          "gram.verbo.perfecto.indicativo.pasivo": "capta est",
+          "gram.cum.historico": "cum urbem vi expugnare non possent",
+          "gram.deponente": "dolo usi sunt"
+        }
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/la-rioja/latin/latin-2026-extraordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "murcia-2026-extraordinaria",
+    "community": "Región de Murcia",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "392d5f56b9b9375ecda8830c6d72fae636429656208e17ba11ed21655aad2098",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Guerra contra Yugurta",
+        "latin": "Missus adversus eum consul Bestia, corruptus regis pecunia, pacem cum eo flagitiosissimam fecit, quae a senatu improbata est. Postea contra eundem insequenti anno Albinus profectus est.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "corruptus regis pecunia",
+          "gram.relativo": "quae a senatu improbata est",
+          "gram.agente": "a senatu improbata est",
+          "gram.pron.identidad": "eundem",
+          "gram.deponente": "Albinus profectus est"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Tisbe regresa al lugar de la cita con Píramo",
+        "latin": "Ecce metu nondum posito, ne fallat amantem,\nilla redit iuvenemque oculis animoque requirit.\nSed postquam remorata suos cognovit amores,\npercutit indignos claro plangore lacertos.",
+        "grammar": {
+          "gram.ablativo.absoluto": "metu nondum posito",
+          "gram.ne.final": "ne fallat amantem",
+          "gram.pron.lejano": "illa redit",
+          "gram.part.perfecto.deponente": "remorata"
+        },
+        "option": "B",
+        "author": "Ovidio",
+        "work": "Metamorfosis"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/murcia/latin/latin-2026-extraordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "navarra-2026-extraordinaria",
+    "community": "Navarra",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "258f6c3885238d9343ee351b06d90adebda7227387a429951f77f6958560d4e6",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Ataque de Quinto Marcio contra Roma",
+        "latin": "Octavo decimo anno Q. Marcius, qui Coriolos ceperat, ad ipsos Volscos contendit et auxilia contra Romanos accepit. Romanos saepe vicit et usque ad urbem fere accessit. Cum ad eum mater Veturia et uxor Volumnia ex urbe venissent, earum fletu et precatione superatus removit exercitum.",
+        "grammar": {
+          "gram.relativo": "qui Coriolos ceperat",
+          "gram.pron.enfatico": "ipsos Volscos",
+          "gram.cum.historico": "Cum ad eum mater Veturia et uxor Volumnia ex urbe venissent",
+          "gram.part.perfecto.pasivo": "earum fletu et precatione superatus"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "I, 15"
+      },
+      {
+        "id": "b",
+        "title": "Vercingetórix asume el mando de toda la Galia",
+        "latin": "Defectione Aeduorum cognita, bellum augetur. Legationes in omnes partes circummittuntur. Petunt a Vercingetorige Aedui ut ad se veniat et rationes belli eis communicet. Totius Galliae concilium Bibracte indicitur. Eodem conveniunt undique frequentes. Multitudinis suffragiis res permittitur atque ad unum omnes Vercingetorigem probant imperatorem.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Defectione Aeduorum cognita",
+          "gram.voz.pasiva": "bellum augetur",
+          "gram.ut.completiva": "ut ad se veniat et rationes belli eis communicet"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "Guerra de las Galias",
+        "reference": "VII, 63"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www2.unavarra.es/gesadj/Estudios/acceso_matricula/PAU/2026/Examenes_extraordinaria/EXTRAORDINARIA_CAS/Latin_II_cast_extr.pdf"
+  },
+  {
+    "id": "pais-vasco-2026-extraordinaria",
+    "community": "País Vasco",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "0a145d65c754f30cff31847dd339efb84b65a44b83541eab29efefddd683c778",
+    "passages": [
+      {
+        "id": "a-1",
+        "title": "La conspiración contra Julio César",
+        "latin": "Caesar coepit insolenter agere contra consuetudinem Romanae libertatis. Cum ex sua voluntate multos honores praestaret, eum occidere decreverunt multi senatores, inter quos praecipui fuerunt Brutus et Cassius",
+        "grammar": {
+          "gram.inf.presente.activo": "coepit insolenter agere",
+          "gram.cum.historico": "Cum ex sua voluntate multos honores praestaret",
+          "gram.relativo": "inter quos praecipui fuerunt Brutus et Cassius"
+        },
+        "option": "A.1",
+        "author": "Eutropio",
+        "reference": "VI, 25"
+      },
+      {
+        "id": "a-2",
+        "title": "Juno favorece a los cartagineses",
+        "latin": "Iuno dea Carthaginem magis quam alias urbes diligebat, sed audiverat Troianos eam expugnaturos esse. Id metuens illorum naves longe a Latio arcebat et per multos annos circum omnia maria erraverunt.",
+        "grammar": {
+          "gram.inf.futuro.activo": "Troianos eam expugnaturos esse",
+          "gram.part.presente.activo": "Id metuens",
+          "gram.acus.ext": "per multos annos"
+        },
+        "option": "A.2",
+        "author": "Ørberg",
+        "reference": "II, 55"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.ehu.eus/documents/d/unibertsitaterako-sarbidea/latin-ii-examen-extraord-2026"
+  },
+  {
+    "id": "extremadura-2026-extraordinaria",
+    "community": "Extremadura",
+    "year": 2026,
+    "model": "Examen oficial",
+    "sha256": "c7ef00bded969852f0dbb363111aac4bdedae2461e284132ecef897bb7bc61b0",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Los dos Filipos toman el poder en Roma",
+        "latin": "Gordianō occisō, Philippi duo, filius ac pater, imperium invasērunt. Postquam exercitum reduxērunt incolumem, ad Italiam ex Syriā profecti sunt. In imperiō suō millesimus annus Romae urbis celebrātus est, ingenti apparatū ludōrum spectaculōrumque. Ambo deinde ab exercitū interfecti sunt.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Gordianō occisō",
+          "gram.deponente": "profecti sunt",
+          "gram.verbo.perfecto.indicativo.pasivo": "celebrātus est",
+          "gram.agente": "ab exercitū interfecti sunt"
+        },
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "9, 3",
+        "notes": "reduxērunt: de reduco, hacer volver."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/extremadura/latin/latin-2026-extraordinaria-examen-es.pdf"
+  },
+  {
+    "id": "extremadura-2025-ordinaria",
+    "community": "Extremadura",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "02601e81c06ae769c46004c5c38260f8667f44cec1119c48e0834a95869be388",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Bruto y Casio se enfrentan a Marco Antonio y Octavio",
+        "latin": "Interea Brutus et Cassius, interfectores Caesaris, ingens bellum moverunt. Erant enim per Macedoniam et Orientem multi exercitus, quos occupaverant. Profecti sunt igitur contra eos Caesar Octavianus Augustus et M. Antonius. Apud Philippos, Macedoniae urbem, contra eos pugnaverunt.",
+        "grammar": {
+          "gram.relativo": "quos occupaverant",
+          "gram.deponente": "Profecti sunt",
+          "gram.part.perfecto.deponente": "Profecti sunt"
+        },
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "7, 3"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://vrestudiantes.unex.es/wp-content/uploads/sites/23/2024/10/2024_25_Latin_MODELO_Examen.pdf"
+  },
+  {
+    "id": "galicia-2025-ordinaria",
+    "community": "Galicia",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "d74ddd51e82ead89a9ff23c4f265cb972d6259b4fd64168c39cb45503ffb3ce4",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El gobierno despótico de Domiciano",
+        "latin": "Domitianus mox accepit imperium, frater Titi iunior. Primis tamen annis moderatus in imperio fuit; mox ad ingentia vitia progressus libidinis, iracundiae, crudelitatis, avaritiae tantum in se odii concitavit, ut merita et patris et fratris aboleret. Interfecit nobilissimos e senatu. Dominum se et deum primus appellari iussit. Consobrinos suos interfecit.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "ad ingentia vitia progressus",
+          "gram.genitivo.partitivo": "tantum in se odii",
+          "gram.ut.consecutiva": "concitavit, ut merita et patris et fratris aboleret",
+          "gram.inf.presente.pasivo": "appellari iussit"
+        }
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://ciug.gal/uploads/PDF/2025/PAU/ordinaria/exames/30.pdf"
+  },
+  {
+    "id": "andalucia-2025-ordinaria",
+    "community": "Andalucía",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "7286550f76a1056ddd9acdc7d898a5fb08edd3ecc2d3decdb0e071a7cd98d64b",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Los logros del rey Servio Tulio",
+        "latin": "Post hunc Servius Tullius suscepit imperium, genitus ex nobili femina, captiva tamen et ancilla. Hic quoque Sabinos subegit, montes tres, Quirinalem, Viminalem, Esquilinum, urbi adiunxit, fossas circum murum duxit.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "genitus ex nobili femina",
+          "gram.pron.proximo": "Hic quoque"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "I 7, 1",
+        "notes": "Post hunc se refiere al rey anterior, Tarquinio Prisco."
+      },
+      {
+        "id": "2",
+        "title": "Catulo lamenta la muerte del gorrión de Lesbia",
+        "latin": "Lugete, o Veneres Cupidinesque,\net quantum est hominum venustiorum:\npasser mortuus est meae puellae,\npasser, deliciae meae puellae,\nquem plus illa oculis suis amabat.",
+        "grammar": {
+          "gram.genitivo.partitivo": "quantum est hominum venustiorum",
+          "gram.deponente": "mortuus est",
+          "gram.relativo": "quem plus illa oculis suis amabat"
+        },
+        "option": "2",
+        "author": "Catulo",
+        "work": "Poesías",
+        "reference": "3"
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "aragon-2025-ordinaria",
+    "community": "Aragón",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "831b36d42cba38ef640f30b7a2db55bf3a643274963c6d0ba51f968b61af0d68",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Numa Pompilio sucede a Rómulo",
+        "latin": "Succedit Romulo Numa, quem Romani petiverunt ob inclitam eius religionem. Ille sacra et caerimonias omnemque cultum deorum docuit. Ille pontifices, augures ceteraque sacerdotia creavit annumque in duodecim menses discripsit. Eo denique ferocem populum redegit ut imperium religione atque iustitia gubernaret.",
+        "grammar": {
+          "gram.relativo": "quem Romani petiverunt ob inclitam eius religionem",
+          "gram.pron.lejano": "Ille sacra",
+          "gram.ut.consecutiva": "Eo denique ferocem populum redegit ut imperium religione atque iustitia gubernaret"
+        },
+        "author": "Floro",
+        "work": "Epítome",
+        "reference": "I 1",
+        "notes": "sacra: ritos sagrados. discripsit: distribuyó. eo: hasta tal punto."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/25ord/latin.pdf"
+  },
+  {
+    "id": "asturias-2025-ordinaria",
+    "community": "Asturias",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "eefe315427d90dd9432d24f042b9ec92f2e586f74754f84618b35bf79b050634",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "César inicia una travesía marítima",
+        "latin": "His rebus gestis, Labieno in continenti cum tribus legionibus relicto, ut portus tueretur et rem frumentariam provideret, ipse cum quinque legionibus et pari numero equitum quem in continenti reliquerat, ad solis occasum naves solvit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Labieno in continenti cum tribus legionibus relicto",
+          "gram.ut.final": "ut portus tueretur et rem frumentariam provideret",
+          "gram.deponente": "portus tueretur",
+          "gram.relativo": "quem in continenti reliquerat"
+        }
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "baleares-2025-ordinaria",
+    "community": "Islas Baleares",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "f0c0082c9750f91009d963dc4a7db672ebd2f596c08916c6e3b92ce1c60566eb",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Algunos trabajos de Hércules",
+        "latin": "Hercules ceruum ferocem cum cornibus aureis uiuum in conspectu Eurysthei regis adduxit. Aues Stymphalides in insula Martis sagittis interfecit. Taurum, cum quo Pasiphae concubuit, ex Creta insula uiuum adduxit. Diomedem, Thraciae regem, et equos quattuor eius, qui carne humana uescebantur, interfecit.",
+        "grammar": {
+          "gram.relativo": "qui carne humana uescebantur",
+          "gram.pron.relativo": "cum quo Pasiphae concubuit",
+          "gram.deponente": "uescebantur"
+        },
+        "option": "A",
+        "author": "Higino",
+        "work": "Fabulae",
+        "reference": "30"
+      },
+      {
+        "id": "b",
+        "title": "Pompeyo recupera Sicilia y vence en África",
+        "latin": "Occiso Carbone, Siciliam Pompeius recepit. Inde transgressus est ad Africam; Domitium ducem et Hiardam, regem Mauretaniae, qui Domitio auxilium ferebat, occidit. Post haec, Sulla ingenti gloria triumphauit. Pompeius etiam de Africa triumphauit. Hunc finem habuerunt duo bella funestissima, Italicum et ciuile.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Occiso Carbone",
+          "gram.deponente": "transgressus est",
+          "gram.relativo": "qui Domitio auxilium ferebat",
+          "gram.pron.proximo": "Hunc finem"
+        },
+        "option": "B",
+        "author": "Eutropio",
+        "work": "Breuiarium Historiae Romanae",
+        "reference": "5, 9"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://estudis.uib.cat/models-examen/examen/pbau/2025:JUNY:LLATIII-Enunciat/Enunciat-LLATIII-JUNY-2025.pdf"
+  },
+  {
+    "id": "canarias-2025-ordinaria",
+    "community": "Canarias",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "31cfcd20b8af04172301e02cd63ae802282cb31428f4ef41b70b3a9eade586ef",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César y Escipión se preparan para el combate",
+        "latin": "Scipio, paulisper in eo loco commoratus, paulatim reducit suas copias in castra et, contione advocata, de terrore atque desperatione exercitus Caesaris facit verba et victoriam suis militibus pollicetur. Caesar iubet milites rursus ad opus redire et tirones in labore defatigat. Interim Numidae Gaetulique diffugiunt cotidie ex castris Scipionis.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "paulisper in eo loco commoratus",
+          "gram.ablativo.absoluto": "contione advocata",
+          "gram.deponente": "pollicetur",
+          "gram.inf.presente.activo": "milites rursus ad opus redire"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Primeros trabajos de Hércules",
+        "latin": "Cum Hercules esset infans, dracones duos manibus necavit, quos Iuno miserat. Iam adultus, leonem Nemaeum, quem Luna nutriverat in antro, necavit, et pellem pro tegumento habuit. Postea hydram, Typhonis filiam cum capitibus novem, quae afflatu homines necabat, ad fontem Lernaeum interfecit et aprum Erymanthium occidit.",
+        "grammar": {
+          "gram.cum.historico": "Cum Hercules esset infans",
+          "gram.relativo": "quem Luna nutriverat in antro",
+          "gram.pron.relativo": "quae afflatu homines necabat"
+        },
+        "option": "B"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.gobiernodecanarias.org/cmsgob1/export/sites/educacion/web/bachillerato/_galerias/descargas/pau-2025/examenes-PAU-junio-2025/examen-latin-ii-pau-junio-25.pdf"
+  },
+  {
+    "id": "cantabria-2025-ordinaria",
+    "community": "Cantabria",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "d6c956a8cd988a466cff2f73383f418d5ab32e93c4994ef5dafe7990b93e7083",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Nerón se suicida tras ser abandonado",
+        "latin": "Per haec Romano orbi execrabilis ab omnibus simul destitutus est et a senatu hostis iudicatus est; cum quaereretur ad poenam, e Palatio fugit et in suburbano liberti sui se interfecit. Obiit tricesimo et altero aetatis anno, imperii quarto decimo, atque in eo omnis Augusti familia consumpta est.",
+        "grammar": {
+          "gram.agente": "a senatu hostis iudicatus est",
+          "gram.cum.historico": "cum quaereretur ad poenam",
+          "gram.verbo.perfecto.indicativo.pasivo": "consumpta est"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "VII, 15, 1"
+      },
+      {
+        "id": "2",
+        "title": "Sempronia, seguidora de Catilina",
+        "latin": "Sed in eis erat Sempronia, quae multa saepe virilis audaciae facinora commiserat. Haec mulier genere atque forma, praeterea viro atque liberis, satis fortunata fuit; litteris Graecis et Latinis docta; psallere et saltare elegantius quam necesse est probae. Sed ei cariora semper omnia quam decus atque pudicitia fuit.",
+        "grammar": {
+          "gram.relativo": "quae multa saepe virilis audaciae facinora commiserat",
+          "gram.pron.proximo": "Haec mulier",
+          "gram.inf.presente.activo": "psallere et saltare"
+        },
+        "option": "2",
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "25, 1-2",
+        "notes": "psallere y saltare son infinitivos históricos. viro se refiere a Décimo Junio Bruto."
+      }
+    ],
+    "session": "Ordinaria"
+  },
+  {
+    "id": "castilla-la-mancha-2025-ordinaria",
+    "community": "Castilla-La Mancha",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "0758325ff2f53a2e3927c0c14f360673001afe68a9921f14ce2c26351564ddd9",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Los tréveros intentan atacar a Labieno",
+        "latin": "Dum haec a Caesare geruntur, Treveri, magnis coactis peditatus equitatusque copiis, Labienum cum unā legione, quae in eorum finibus hiemaverat, adoriri parabant; iamque ab eo non longius bidui viā aberant.",
+        "grammar": {
+          "gram.ablativo.absoluto": "magnis coactis peditatus equitatusque copiis",
+          "gram.agente": "a Caesare geruntur",
+          "gram.relativo": "quae in eorum finibus hiemaverat",
+          "gram.inf.presente.deponente": "adoriri parabant"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico"
+      },
+      {
+        "id": "b",
+        "title": "Un padre lleva a uno de sus gemelos a Tarento",
+        "latin": "Postquam iam pueri septuennes sunt, pater\noneravit navem magnam multis mercibus.\nimponit geminum alterum in navem pater,\nTarentum avexit secum ad mercatum simul;",
+        "grammar": {
+          "gram.verbo.perfecto.indicativo.activo": "oneravit navem"
+        },
+        "option": "B",
+        "author": "Plauto",
+        "work": "Menaechmi",
+        "notes": "septuennis, -e: de siete años."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.uclm.es/-/media/Files/A04-Gestion-Academica/PDFEstudiantes/PDFEvAU/ModelosPruebas2425/LATIN.ashx?la=es"
+  },
+  {
+    "id": "castilla-y-leon-2025-ordinaria",
+    "community": "Castilla y León",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "f4a697baa5e976f24d3c4831cc58bf0d3aae1d2d4e2b2c9ffa35c322fe7b3517",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Orgétorix conspira y persuade a su gente",
+        "latin": "Apud Helvetios nobilissimus fuit et ditissimus Orgetorix. Is, regni cupiditate inductus, coniurationem nobilitatis fecit et civitati persuasit ut de finibus suis cum omnibus copiis exirent.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "regni cupiditate inductus",
+          "gram.ut.completiva": "persuasit ut de finibus suis cum omnibus copiis exirent",
+          "gram.pron.posesivo": "finibus suis"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico"
+      },
+      {
+        "id": "b",
+        "title": "Cicerón pide que no se baje la guardia",
+        "latin": "Vos, Quirites, quoniam iam est nox, in vestra tecta discedite et ea, quamquam iam est periculum depulsum, tamen custodiis vigiliisque defendite.",
+        "grammar": {
+          "gram.pron.posesivo": "in vestra tecta",
+          "gram.voz.pasiva": "est periculum depulsum",
+          "gram.verbo.presente.imperativo.activo": "defendite"
+        },
+        "option": "B",
+        "author": "Cicerón",
+        "work": "In Catilinam"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://usal.es/files/acceso/latin_ii_pau_junio_2025.pdf"
+  },
+  {
+    "id": "catalunya-2025-ordinaria-1",
+    "community": "Cataluña",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "5ea0a36dba8129c07bc72d0fe01923d3766c077f271872273992e48f84eecc0c",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Los carnutes reanudan las hostilidades en la Galia",
+        "latin": "Vbi id tempus uenit, Carnutes Cenabum, signo dato, concurrunt ciuesque Romanos, qui negotii causa ibi constiterant, interficiunt bonaque eorum diripiunt; in iis hominibus C. Fufius Cita, honestus eques Romanus, qui rei frumentariae iussu Caesaris praeerat, interfectus est.",
+        "grammar": {
+          "gram.ablativo.absoluto": "signo dato",
+          "gram.relativo": "qui negotii causa ibi constiterant",
+          "gram.verbo.perfecto.indicativo.pasivo": "interfectus est"
+        },
+        "author": "Julio César",
+        "work": "Guerra de les Gàŀlies",
+        "reference": "VII, 3, 1"
+      }
+    ],
+    "series": "1",
+    "session": "Ordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/models-examen-anys-anteriors/examens-2025/llati/ord/pau_llat25jl.pdf"
+  },
+  {
+    "id": "catalunya-2025-ordinaria-4",
+    "community": "Cataluña",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "6e646e98baf1900c7233fd9116ad1b384e6c83f25f6852386fa492f4ff23e306",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Ptolomeo rechaza la ayuda romana",
+        "latin": "Finito Punico bello primo, quod per tres et uiginti annos tractum est, Romani legatos ad Ptolemaeum Aegypti regem miserunt, auxilia promittentes, quia rex Syriae Antiochus ei bellum intulerat. Ille gratias Romanis egit, auxilia autem non accepit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Finito Punico bello primo",
+          "gram.relativo": "quod per tres et uiginti annos tractum est",
+          "gram.part.presente.activo": "auxilia promittentes",
+          "gram.acus.ext": "per tres et uiginti annos"
+        },
+        "author": "Eutropio",
+        "work": "Breviari d’història de Roma",
+        "reference": "III, 1"
+      }
+    ],
+    "series": "4",
+    "session": "Ordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/models-examen-anys-anteriors/examens-2025/llati/ord/pau_llat25jl_tei.pdf"
+  },
+  {
+    "id": "la-rioja-2025-ordinaria",
+    "community": "La Rioja",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "a837185ec296ad88152db9d02a551c86e007bae31a1d80acf106f0335befec34",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Primeras actuaciones de Rómulo",
+        "latin": "Romulus, condita civitate quam ex nomine suo Romam vocavit, multitudinem finitimorum in civitatem recepit, (…). Tum, cum uxores ipse et populus suus non haberent, invitavit ad spectaculum vicinas urbi Romae nationes atque earum virgines rapuit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "condita civitate",
+          "gram.relativo": "quam ex nomine suo Romam vocavit",
+          "gram.cum.historico": "cum uxores ipse et populus suus non haberent"
+        },
+        "reference": "I, 2"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://farmeandopau.com/examenes/la-rioja/latin/latin-2025-ordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "madrid-2025-ordinaria",
+    "community": "Comunidad de Madrid",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "992b2128a6bb453043d74a738910be0dce1cf851b3c21c533e71d35798300ef7",
+    "passages": [
+      {
+        "id": "a",
+        "title": "La corrupción y la soberbia llegan a Roma",
+        "latin": "Ante Carthaginem deletam populus et senatus Romanus placide modesteque inter se rem publicam tractabant, neque gloriae neque dominationis certamen inter civis erat: metus hostilis in bonis artibus civitatem retinebat. Sed ubi illa formido mentibus decessit, lascivia atque superbia incessere.",
+        "grammar": {
+          "gram.part.perfecto.pasivo": "Ante Carthaginem deletam",
+          "gram.pron.lejano": "illa formido"
+        },
+        "option": "A",
+        "author": "Salustio",
+        "work": "Guerra de Yugurta",
+        "reference": "41, 2-3",
+        "notes": "civis = cives. incessere = incesserunt."
+      },
+      {
+        "id": "b",
+        "title": "Romanos y helvecios preparan sus ejércitos",
+        "latin": "Postquam id animadvertit, copias suas Caesar in proximum collem subducit equitatumque, qui sustineret hostium impetum, misit. Ipse interim in colle medio triplicem aciem instruxit legionum quattuor veteranarum. Helvetii impedimenta in unum locum contulerunt; ipsi, reiecto nostro equitatu, sub primam nostram aciem successerunt.",
+        "grammar": {
+          "gram.relativo": "qui sustineret hostium impetum",
+          "gram.subjuntivo": "qui sustineret",
+          "gram.pron.enfatico": "Ipse interim",
+          "gram.ablativo.absoluto": "reiecto nostro equitatu"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "reference": "1, 24, 1-5",
+        "notes": "qui sustineret: relativo con valor final. in colle medio: a media altura de la colina."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.ucm.es/file/lat%C3%8Dn-ii-14"
+  },
+  {
+    "id": "murcia-2025-ordinaria",
+    "community": "Región de Murcia",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "b6f3687977867a9f0c36459622fa6d1f80fd5a92eed1ef14383e407eb8f8a6d0",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Escipión en la segunda guerra púnica",
+        "latin": "Syphacem, Numidiae regem, qui se Afris coniunxerat, capit et castra eius invadit. Syphax cum nobilissimis Numidis Romam a Scipione mittitur. Qua re audita omnis fere Italia Hannibalem deserit.",
+        "grammar": {
+          "gram.relativo": "qui se Afris coniunxerat",
+          "gram.agente": "a Scipione mittitur",
+          "gram.ablativo.absoluto": "Qua re audita"
+        },
+        "option": "A",
+        "author": "Eutropio"
+      },
+      {
+        "id": "b",
+        "title": "La cabaña de Filemón y Baucis se transforma",
+        "latin": "Dumque ea mirantur, dum deflent fata suorum,\nilla vetus dominis etiam casa parva duobus\nvertitur in templum: furcas subiere columnae,\nstramina flavescunt aurataque tecta videntur.",
+        "grammar": {
+          "gram.deponente": "Dumque ea mirantur",
+          "gram.pron.lejano": "illa vetus",
+          "gram.voz.pasiva": "aurataque tecta videntur"
+        },
+        "option": "B",
+        "author": "Ovidio",
+        "work": "Metamorfosis"
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://farmeandopau.com/examenes/murcia/latin/latin-2025-ordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "pais-vasco-2025-ordinaria",
+    "community": "País Vasco",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "4a8ed58158246c0c40194e669675043f4e0448c1f1e72a0da3acf99736049c03",
+    "passages": [
+      {
+        "id": "a-1",
+        "title": "La rebelión de Espartaco",
+        "latin": "Cum septuaginta et quattuor gladiatores, duce Spartaco, ex ludo Capuae fugerent, novum bellum commotum est. Et per Italiam vagantes non levius bellum, quam Hannibal moverat, paraverunt. Victi sunt in Apulia a M. Licinio Crasso proconsule.",
+        "grammar": {
+          "gram.cum.historico": "Cum septuaginta et quattuor gladiatores, duce Spartaco, ex ludo Capuae fugerent",
+          "gram.ablativo.absoluto": "duce Spartaco",
+          "gram.agente": "a M. Licinio Crasso proconsule"
+        },
+        "option": "A.1",
+        "author": "Eutropio",
+        "reference": "VI, 7",
+        "notes": "ludus: escuela de gladiadores."
+      },
+      {
+        "id": "a-2",
+        "title": "Régulo se opone a la paz con Cartago",
+        "latin": "Carthaginienses a Regulo petiverunt ut Romam proficisceretur, pacem a Romanis obtineret et permutationem captivorum faceret. Sed cum ille Romam venisset senatui suasit ne pax cum Poenis fieret. Regressus ad Africam occissus est.",
+        "grammar": {
+          "gram.ut.completiva": "petiverunt ut Romam proficisceretur",
+          "gram.cum.historico": "cum ille Romam venisset",
+          "gram.ne.completiva": "senatui suasit ne pax cum Poenis fieret",
+          "gram.part.perfecto.deponente": "Regressus ad Africam"
+        },
+        "option": "A.2",
+        "author": "Ørberg",
+        "reference": "II, 192",
+        "notes": "fieret: de fio con valor pasivo."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://www.ehu.eus/documents/d/unibertsitaterako-sarbidea/latin-ii-examen-ord-2025"
+  },
+  {
+    "id": "andalucia-2025-extraordinaria",
+    "community": "Andalucía",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "6f3403b1f0d89f850bf17654c7162d236cbd6dec66c26576e1aa0cbfd637c6b8",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Victoria naval de los cónsules romanos en África",
+        "latin": "Ambo Romani consules ad Africam profecti sunt cum trecentarum navium classe. Primum Afros navali certamine superant. Aemilius consul centum et quattuor naves hostium demersit, triginta cum pugnatoribus cepit.",
+        "grammar": {
+          "gram.deponente": "profecti sunt",
+          "gram.verbo.perfecto.indicativo.activo": "demersit"
+        },
+        "option": "1",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "II 22, 1"
+      },
+      {
+        "id": "2",
+        "title": "Dido se consume de amor por Eneas",
+        "latin": "At regina gravi iamdudum saucia cura\nvulnus alit venis et caeco carpitur igni.\nMulta viri virtus animo multusque recursat\ngentis honos; haerent infixi pectore vultus\nverbaque.",
+        "grammar": {
+          "gram.voz.pasiva": "carpitur",
+          "gram.part.perfecto.pasivo": "infixi pectore vultus"
+        },
+        "option": "2",
+        "author": "Virgilio",
+        "work": "Eneida",
+        "reference": "IV 1-5",
+        "notes": "carpitur: se consume. honos = honor."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "aragon-2025-extraordinaria",
+    "community": "Aragón",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "fa5ee679f350a86ba31c4e265daf90d500044426ebb6ff334e8a2b14ea768c4b",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Retrato de Catilina",
+        "latin": "L. Catilina, nobili genere natus, fuit magna vi et animi et corporis, sed ingenio malo pravoque. Corpus patiens inediae, algoris, vigiliae supra quam cuiquam credibile est. Animus audax, subdolus, varius, cuius rei lubet simulator ac dissimulator, alieni adpetens, sui profusus, ardens in cupiditatibus; satis eloquentiae, sapientiae parum.",
+        "grammar": {
+          "gram.part.perfecto.deponente": "nobili genere natus",
+          "gram.part.presente.activo": "ardens in cupiditatibus",
+          "gram.genitivo.partitivo": "satis eloquentiae"
+        },
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "5.1-2"
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "asturias-2025-extraordinaria",
+    "community": "Asturias",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "826c60f2f4ce17f940793a122e39532f4d77fc445ab316bd949d58287c0913ca",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Catilina muere en combate",
+        "latin": "Catilina postquam fusas copias seque cum paucis relictum videt, memor generis atque pristinae suae dignitatis, in confertissimos hostes incurrit ibique pugnans confoditur; a suis inter hostium cadavera repertus est.",
+        "grammar": {
+          "gram.part.presente.activo": "pugnans",
+          "gram.verbo.presente.indicativo.pasivo": "confoditur",
+          "gram.verbo.perfecto.indicativo.pasivo": "repertus est",
+          "gram.pron.posesivo": "pristinae suae dignitatis"
+        }
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "baleares-2025-extraordinaria",
+    "community": "Islas Baleares",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "dcc74a1c9b5e43a702b66f2b9735508f01e6ad6d52eb096821195127839d79cf",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Metelo vence a los africanos y captura sus elefantes",
+        "latin": "Postea Metellus in Sicilia Afrorum ducem, qui ueniebat cum centum triginta elephantis et magnis copiis, superauit; uiginti milia hostium cecidit; sex et uiginti elephantos cepit. Reliquos elephantos collegit et, cum elephantorum numerus omnia itinera compleret, Romam deduxit ingenti pompa.",
+        "grammar": {
+          "gram.relativo": "qui ueniebat cum centum triginta elephantis",
+          "gram.genitivo.partitivo": "uiginti milia hostium",
+          "gram.cum.historico": "cum elephantorum numerus omnia itinera compleret"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breuiarium Historiae Romanae",
+        "reference": "2, 24"
+      },
+      {
+        "id": "b",
+        "title": "Los hombres de César capturan jinetes de Pompeyo",
+        "latin": "Postero die equites nostri ad Cordubam uersus prosecuti sunt eos qui commeatus ad castra Pompei ex oppido portabant. Ex his quinquaginta equites capti sunt et ad nostra castra adducti sunt. Eo die Quintus Marcius, qui tribunus Pompei fuerat, ad nos transfugit.",
+        "grammar": {
+          "gram.deponente": "prosecuti sunt",
+          "gram.relativo": "qui tribunus Pompei fuerat",
+          "gram.verbo.perfecto.indicativo.pasivo": "capti sunt",
+          "gram.pron.proximo": "Ex his"
+        },
+        "option": "B",
+        "author": "[Caes.]",
+        "work": "De bello Hispaniensi",
+        "reference": "11"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://estudis.uib.cat/models-examen/examen/pbau/2025:JUL:LLATIII-Enunciat/Enunciat-LLATIII-JUL-2025.pdf"
+  },
+  {
+    "id": "canarias-2025-extraordinaria",
+    "community": "Canarias",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "874362c6053b89bb4240e58202d9725048cd47070af8fd42665e99a5fe6808b1",
+    "passages": [
+      {
+        "id": "a",
+        "title": "César y sus enemigos se preparan para el combate",
+        "latin": "Postero die universas copias de castris omnibus educunt et in supercilio excelso, non longe a Caesaris castris, aciem instituunt. Caesar item producit copias et ante suas munitiones, quae erant in campo, consistit. Deinde legiones cohortatur et, signo dato, accesum hostium aucupatur.",
+        "grammar": {
+          "gram.pron.posesivo": "suas munitiones",
+          "gram.relativo": "quae erant in campo",
+          "gram.ablativo.absoluto": "signo dato",
+          "gram.deponente": "aucupatur"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "El león se reserva el botín",
+        "latin": "Numquam est fidelis societas cum potente. Vacca, capella et ovis socii fuerunt cum leone. Cum cepissent cervum vasti corporis, leo, partibus factis, dixit: “Ego primam partem tollo, quoniam nominor leo; secundam, quia sum fortis, tribuetis mihi; tertia, quia plus valeo, erit etiam mea”.",
+        "grammar": {
+          "gram.cum.historico": "Cum cepissent cervum vasti corporis",
+          "gram.ablativo.absoluto": "partibus factis",
+          "gram.verbo.futuro.indicativo.activo": "tribuetis mihi",
+          "gram.pron.posesivo": "erit etiam mea"
+        },
+        "option": "B"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.gobiernodecanarias.org/cmsgob1/export/sites/educacion/web/bachillerato/_galerias/descargas/pau-2025/examenes-pau-julio-2025/examen-latin-pau-julio-25.pdf"
+  },
+  {
+    "id": "cantabria-2025-extraordinaria",
+    "community": "Cantabria",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "6d783807121f2c15a167f8288e995dbef673194d968d95821c41134e64b3dbc8",
+    "passages": [
+      {
+        "id": "1",
+        "title": "Las obras de Tarquinio Prisco",
+        "latin": "Deinde regnum Tarquinius Priscus accepit. Hic numerum senatorum duplicavit; circum Romae aedificavit; ludos Romanos instituit, qui ad nostram memoriam permanent. Vicit idem etiam Sabinos. Muros fecit et cloacas, Capitolium inchoavit.",
+        "grammar": {
+          "gram.pron.proximo": "Hic numerum senatorum",
+          "gram.relativo": "qui ad nostram memoriam permanent",
+          "gram.pron.identidad": "idem etiam Sabinos"
+        },
+        "option": "1",
+        "notes": "Romae: locativo."
+      },
+      {
+        "id": "2",
+        "title": "La felicidad de una vida sencilla",
+        "latin": "Vitam quae faciant beatiorem, iucundissime Martialis, haec sunt: vires ingenuae, salubre corpus; prudens simplicitas, pares amici; convictus facilis, sine arte mensa; nox non ebria, sed soluta curis; non tristis torus, et tamen pudicus; somnus, qui faciat breves tenebras; quod sis, esse velis nihilque malis. Summum nec metuas diem nec optes.",
+        "grammar": {
+          "gram.relativo": "qui faciat breves tenebras",
+          "gram.subjuntivo": "velis nihilque malis",
+          "gram.inf.presente.activo": "esse velis",
+          "gram.pron.proximo": "haec sunt"
+        },
+        "option": "2",
+        "author": "Marcial",
+        "work": "Epigramas",
+        "reference": "X 47",
+        "notes": "vitam quae = quae vitam. summum nec = nec summum."
+      }
+    ],
+    "session": "Extraordinaria"
+  },
+  {
+    "id": "castilla-la-mancha-2025-extraordinaria",
+    "community": "Castilla-La Mancha",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "823d04168f5b76de2f7d1d4c98d5ad7d0498396899b6e4ce5591e329881763c4",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Petrosidio muere defendiendo el estandarte",
+        "latin": "L. Petrosidius aquilifer, cum magnā multitudine hostium premeretur, aquilam intra vallum proiecit, ipse pro castris fortissime pugnans occiditur. Illi aegre ad noctem oppugnationem sustinent; noctu ad unum omnes, desperatā salute, se ipsi interficiunt.",
+        "grammar": {
+          "gram.cum.historico": "cum magnā multitudine hostium premeretur",
+          "gram.part.presente.activo": "fortissime pugnans",
+          "gram.ablativo.absoluto": "desperatā salute",
+          "gram.pron.enfatico": "se ipsi"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "notes": "aquilifer, -i: portador del águila de la legión."
+      },
+      {
+        "id": "b",
+        "title": "Ovidio llora por su última noche en Roma",
+        "latin": "Cum subit illius tristissima noctis imago,\nquae mihi supremum tempus in urbe fuit,\ncum repeto noctem, quā tot mihi cara reliqui,\nlabitur ex oculis nunc quoque gutta meis.",
+        "grammar": {
+          "gram.relativo": "quae mihi supremum tempus in urbe fuit",
+          "gram.pron.relativo": "quā tot mihi cara reliqui",
+          "gram.deponente": "labitur ex oculis"
+        },
+        "option": "B",
+        "author": "Ovidio"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.uclm.es/-/media/Files/A04-Gestion-Academica/PDFEstudiantes/PDFEvAU/ModelosPruebas2425/EXTRAORDINARIA/LATIN.ashx?la=es"
+  },
+  {
+    "id": "castilla-y-leon-2025-extraordinaria",
+    "community": "Castilla y León",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "cb9d5bb18b5d823b90a271b2ed8cfb989aef0dc1bb2292af8e6652c95ae3ea4a",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Los romanos responden al ataque de Vercingetórix",
+        "latin": "Eodem tempore clamore exaudito, dat tuba signum suis Vercingetorix atque ex oppido educit. Nostri ad munitiones accedunt. Fundis, librilibus sudibusque, quas in opere disposuerant, ac glandibus Gallos proterrent.",
+        "grammar": {
+          "gram.pron.identidad": "Eodem tempore",
+          "gram.ablativo.absoluto": "clamore exaudito",
+          "gram.relativo": "quas in opere disposuerant"
+        },
+        "option": "A",
+        "author": "Julio César",
+        "work": "De bello Gallico"
+      },
+      {
+        "id": "b",
+        "title": "Cicerón describe a los partidarios de Catilina",
+        "latin": "Non enim iam sunt mediocres hominum libidines; nihil cogitant nisi caedem, nisi incendia, nisi rapinas. Patrimonia sua profuderunt, fortunas suas obligaverunt; fides nuper deficere coepit.",
+        "grammar": {
+          "gram.pron.posesivo": "Patrimonia sua",
+          "gram.inf.presente.activo": "deficere coepit"
+        },
+        "option": "B",
+        "author": "Cicerón",
+        "work": "In Catilinam"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://usal.es/files/acceso/latin_ii_pau_julio_2025.pdf"
+  },
+  {
+    "id": "catalunya-2025-extraordinaria-3",
+    "community": "Cataluña",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "f35da825ccfecc40a083195c3bfe0974f5f7027cb4b8addef431302d1d9e7b05",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Júpiter sepulta a Tifón bajo el Etna",
+        "latin": "Typhon ex terra natus est. Erat portentum immani magnitudine et centum capita habebat. Hic, quoniam regnare cupiebat, Iouem ad pugnam prouocauit. Iuppiter fulmine ardenti pectus Typhonis percussit et montem Aetnam super eum imposuit, qui ex eo adhuc ardet.",
+        "grammar": {
+          "gram.deponente": "natus est",
+          "gram.pron.proximo": "Hic, quoniam",
+          "gram.inf.presente.activo": "regnare cupiebat",
+          "gram.part.presente.activo": "fulmine ardenti",
+          "gram.relativo": "qui ex eo adhuc ardet"
+        },
+        "author": "Higino",
+        "work": "Faules",
+        "reference": "152"
+      }
+    ],
+    "series": "3",
+    "session": "Extraordinaria",
+    "url": "https://universitats.gencat.cat/web/.content/06_pau/models-examen-anys-anteriors/examens-2025/llati/ext/pau_llat25sl.pdf"
+  },
+  {
+    "id": "galicia-2025-extraordinaria",
+    "community": "Galicia",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "1e7c8cea88579ea34d5845b86af61c96204d088bab66653be9d763f87d63df68",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El asesinato de Julio César",
+        "latin": "Caesar, bellis civilibus toto orbe conpositis, Romam rediit. Agere insolentius coepit et contra consuetudinem Romanae libertatis. Cum ergo et honores ex sua voluntate praestaret et alia regia et paene tyrannica faceret, coniuratum est in eum a sexaginta vel amplius senatoribus equitibusque Romanis. Ergo Caesar tribus et viginti vulneribus confossus est.",
+        "grammar": {
+          "gram.ablativo.absoluto": "bellis civilibus toto orbe conpositis",
+          "gram.cum.historico": "Cum ergo et honores ex sua voluntate praestaret et alia regia et paene tyrannica faceret",
+          "gram.verbo.perfecto.indicativo.pasivo": "confossus est"
+        }
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://ciug.gal/uploads/PDF/2025/PAU/extraordinaria/exames/30.pdf"
+  },
+  {
+    "id": "la-rioja-2025-extraordinaria",
+    "community": "La Rioja",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "d5f771b1e77406563d62f6d320bec4843e474585125f2417cb05b8dbc90183f2",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "Acciones de Tito",
+        "latin": "Huic (Vespasiano) Titus filius successit. In oppugnatione Hierosolymorum sub patre militans duodecim propugnatores duodecim sagittarum confixit ictibus... Hic Romae amphitheatrum aedificavit et quinque milia ferarum in dedicatione eius occidit.",
+        "grammar": {
+          "gram.pron.proximo": "Huic (Vespasiano)",
+          "gram.part.presente.activo": "sub patre militans",
+          "gram.genitivo.partitivo": "quinque milia ferarum"
+        },
+        "notes": "Hierosolymorum: Jerusalén."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/la-rioja/latin/latin-2025-extraordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "madrid-2025-extraordinaria",
+    "community": "Comunidad de Madrid",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "65e73950703387b6943cd2f1886e9d5daeb8cdab47a2d5a1d77fe35219faa3bb",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Cincinato libera al ejército romano",
+        "latin": "Sequenti anno, cum in Algido monte ab Urbe duodecimo miliario Romanus obsideretur exercitus, L. Quinctius Cincinnatus dictator est factus, qui agrum quattuor iugerum manibus suis colebat. Is, cum in opere esset inventus, sudore deterso, togam praetextam accepit et, caesis hostibus, liberavit exercitum.",
+        "grammar": {
+          "gram.cum.historico": "cum in Algido monte ab Urbe duodecimo miliario Romanus obsideretur exercitus",
+          "gram.relativo": "qui agrum quattuor iugerum manibus suis colebat",
+          "gram.ablativo.absoluto": "sudore deterso",
+          "gram.pron.posesivo": "manibus suis"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "1, 17"
+      },
+      {
+        "id": "b",
+        "title": "Los sugambros abandonan sus tierras",
+        "latin": "Caesar in fines Sugambrorum contendit. Interim a compluribus civitatibus ad eum legati veniunt; quibus pacem atque amicitiam petentibus liberaliter respondet obsidesque ad se adduci iubet. At Sugambri, fugā comparatā, finibus suis excesserant suaque omnia exportaverant seque in solitudinem ac silvas abdiderant.",
+        "grammar": {
+          "gram.relativo.enlace": "quibus pacem atque amicitiam petentibus liberaliter respondet",
+          "gram.part.presente.activo": "pacem atque amicitiam petentibus",
+          "gram.inf.presente.pasivo": "adduci iubet",
+          "gram.ablativo.absoluto": "fugā comparatā"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "De bello Gallico",
+        "reference": "4, 18, 2-4"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.ucm.es/file/lat%C3%8Dn-ii-17"
+  },
+  {
+    "id": "murcia-2025-extraordinaria",
+    "community": "Región de Murcia",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "f9e96d6b0d92aa743a7f6fcb97243b741aae9df360181bb0dc9e62cc50ef2a31",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Rómulo tras la fundación de Roma",
+        "latin": "Condita civitate, quam ex nomine suo Romam vocavit, haec fere egit. Multitudinem finitimorum in civitatem recepit, centum ex senioribus legit quos senatores nominavit propter senectutem.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Condita civitate",
+          "gram.relativo": "quam ex nomine suo Romam vocavit",
+          "gram.pron.proximo": "haec fere egit"
+        },
+        "option": "A"
+      },
+      {
+        "id": "b",
+        "title": "Palas, disfrazada de anciana, aconseja a Aracne",
+        "latin": "“Consilium ne sperne meum: tibi fama petatur\ninter mortales faciendae maxima lanae;\ncede deae veniamque tuis, temeraria, dictis\nsupplice voce roga: veniam dabit illa roganti.”",
+        "grammar": {
+          "gram.verbo.presente.imperativo.activo": "cede deae",
+          "gram.pron.posesivo": "Consilium ne sperne meum",
+          "gram.part.presente.activo": "dabit illa roganti"
+        },
+        "option": "B",
+        "author": "Ovidio",
+        "work": "Metamorfosis"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/murcia/latin/latin-2025-extraordinaria-examen-criterios-es.pdf"
+  },
+  {
+    "id": "pais-vasco-2025-extraordinaria",
+    "community": "País Vasco",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "d01edd38e138ce7b5533ad57ff886811a335f4aea9d340aec31f432fc37d1821",
+    "passages": [
+      {
+        "id": "a-1",
+        "title": "Escipión es enviado a África",
+        "latin": "Anno quarto decimo postquam Hannibal in Italiam venerat, Scipio consul est factus et in Africam missus. Cui viro quidam divinum inesse existimabatur, adeo ut putaretur etiam cum numinibus habere sermonem.",
+        "grammar": {
+          "gram.relativo.enlace": "Cui viro",
+          "gram.ut.consecutiva": "adeo ut putaretur",
+          "gram.inf.presente.activo": "cum numinibus habere sermonem"
+        },
+        "option": "A.1",
+        "author": "Eutropio",
+        "reference": "III, 20",
+        "notes": "existimabatur y putaretur: pasiva impersonal según el examen."
+      },
+      {
+        "id": "a-2",
+        "title": "Tito y los objetos del templo de Jerusalén",
+        "latin": "Titus, filius Vespasiani, Iudaeos vicit atque Hierosolymam delevit. In templo Pacis servantur res sacrae quas Titus Iudaeis ademit; in iis candelabrum aureum, mensa aurata quae in templo eorum stabat et tubae argenteae quibus Iudaei convocabantur.",
+        "grammar": {
+          "gram.voz.pasiva": "servantur res sacrae",
+          "gram.relativo": "quas Titus Iudaeis ademit",
+          "gram.verbo.imperfecto.indicativo.pasivo": "Iudaei convocabantur"
+        },
+        "option": "A.2",
+        "author": "Ørberg",
+        "reference": "II, p. 21"
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://www.ehu.eus/documents/d/unibertsitaterako-sarbidea/latin-ii-examen-extraord-2025"
+  },
+  {
+    "id": "aragon-2025-modelo",
+    "community": "Aragón",
+    "year": 2025,
+    "model": "Modelo orientativo",
+    "sha256": "4714be196db657aec56e8593ad12d07f1b61486fc18c3c5355e85eb94820ac3d",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El origen de Roma",
+        "latin": "Urbem Romam, sicuti ego accepi, condidere atque habuere initio Troiani, qui Aenea duce profugi sedibus incertis vagabantur, et cum his Aborigines, genus hominum agreste, sine legibus, sine imperio, liberum atque solutum. Ita brevi multitudo diversa atque vaga concordiā civitas facta erat.",
+        "grammar": {
+          "gram.relativo": "qui Aenea duce profugi sedibus incertis vagabantur",
+          "gram.ablativo.absoluto": "Aenea duce",
+          "gram.deponente": "vagabantur"
+        },
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "6.1-3",
+        "notes": "condidere = condiderunt; habuere = habuerunt. brevi es adverbio."
+      }
+    ],
+    "url": "https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/25mod/latin.pdf"
+  },
+  {
+    "id": "aragon-2024-extraordinaria",
+    "community": "Aragón",
+    "year": 2024,
+    "model": "Examen oficial",
+    "sha256": "8cc44a054fffbbc3acb2499790e8f082d8ed93b512f21219db58b99732bba4d1",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Las virtudes guerreras de la juventud romana",
+        "latin": "Iam primum iuventus, simul ac belli patiens erat, in castris per laborem usum militiae discebat magisque in decoris armis et militaribus equis quam in scortis atque conviviis lubidinem habebant. Igitur talibus viris non labor insolitus, non locus ullus asper aut arduus erat, non armatus hostis formidulosus.",
+        "grammar": {
+          "gram.verbo.imperfecto.indicativo.activo": "usum militiae discebat",
+          "gram.part.perfecto.pasivo": "armatus hostis"
+        },
+        "option": "A",
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "7.4-5",
+        "notes": "lubidinem = libidinem."
+      },
+      {
+        "id": "b",
+        "title": "Tiberio, sucesor de Augusto",
+        "latin": "Tiberius ingenti socordia imperium gessit, gravi crudelitate, scelesta avaritia, turpi libidine. Nam nusquam ipse pugnavit, bella per legatos gessit suos. Hic tertio et vicesimo imperii anno, aetatis septuagesimo octavo, ingenti omnium gaudio mortuus est in Campania.",
+        "grammar": {
+          "gram.pron.enfatico": "nusquam ipse pugnavit",
+          "gram.pron.posesivo": "legatos gessit suos",
+          "gram.pron.proximo": "Hic tertio",
+          "gram.deponente": "mortuus est in Campania"
+        },
+        "option": "B",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "6.11"
+      },
+      {
+        "id": "c",
+        "title": "Salustio recuerda su juventud política",
+        "latin": "Sed ego adulescentulus initio, sicuti plerique, studio ad rem publicam latus sum, ibique mihi multa adversa fuere. Nam pro pudore, pro abstinentia, pro virtute audacia, largitio, avaritia vigebant. Quae tametsi animus aspernabatur insolens malarum artium, tamen inter tanta vitia inbecilla aetas ambitione corrupta tenebatur.",
+        "grammar": {
+          "gram.verbo.perfecto.indicativo.pasivo": "latus sum",
+          "gram.relativo.enlace": "Quae tametsi animus aspernabatur",
+          "gram.deponente": "aspernabatur",
+          "gram.verbo.imperfecto.indicativo.pasivo": "tenebatur"
+        },
+        "option": "C",
+        "author": "Salustio",
+        "work": "Conjuración de Catilina",
+        "reference": "3.3-4",
+        "notes": "rem publicam: política. fuere = fuerunt."
+      },
+      {
+        "id": "d",
+        "title": "Catulo invita a Fabulo a cenar",
+        "latin": "Cenabis bene, mi Fabulle, apud me\npaucis, si tibi di favent, diebus,\nsi tecum attuleris bonam atque magnam\ncenam, non sine candida puella\net vino et sale et omnibus cachinnis.\nHaec si, inquam, attuleris, venuste noster,\ncenabis bene. Nam tui Catulli\nplenus sacculus est aranearum.",
+        "grammar": {
+          "gram.condicional": "si tibi di favent",
+          "gram.pron.posesivo": "mi Fabulle",
+          "gram.pron.proximo": "Haec si",
+          "gram.verbo.futuro.indicativo.activo": "Cenabis bene"
+        },
+        "option": "D",
+        "author": "Catulo",
+        "reference": "13.1-8",
+        "notes": "paucis… diebus: ablativo de tiempo."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://academico.unizar.es/sites/academico/files/archivos/acceso/accespau/exame/24extra/latin.pdf"
+  },
+  {
+    "id": "extremadura-2025-extraordinaria",
+    "community": "Extremadura",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "fb882901ffc00de0189cbc9f4203b80d752689a86f1791758e9d06c2be3021d6",
+    "passages": [
+      {
+        "id": "texto",
+        "title": "El reinado de Adriano",
+        "latin": "Hadrianus pacem omni tempore imperii sui habuit, semel tantum dimicāvit per praesidem. Orbem Romanum circumiit; multă aedificiă publică aedificāvit. Facundissimus Latinō sermone, Graecō eruditissimus fuit. Non magnam clementiae famam habuit, tamen diligentissimus fuit circa militum disciplinam.",
+        "grammar": {
+          "gram.pron.posesivo": "imperii sui",
+          "gram.verbo.perfecto.indicativo.activo": "semel tantum dimicāvit"
+        },
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "8, 7",
+        "notes": "tantum: solamente. per praesidem: por medio de un gobernador. circa: en relación con."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/extremadura/latin/latin-2025-extraordinaria-examen-es.pdf"
+  },
+  {
+    "id": "navarra-2025-ordinaria",
+    "community": "Navarra",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "b9d44e1700da966e675f33a2fc9be3a90364d47c27f92e3ef83dc9247dfedf4b",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Fin de los decenviros",
+        "latin": "Cum decemviri primo anno bene egissent, secundo unus ex his, Ap. Claudius, Virginii cuiusdam filiam virginem corrumpere voluit; quam pater occidit, ne stuprum a decemviro sustineret, et rediens ad milites movit tumultum. Sublata est decemviris potestas ipsique damnati sunt.",
+        "grammar": {
+          "gram.cum.historico": "Cum decemviri primo anno bene egissent",
+          "gram.relativo.enlace": "quam pater occidit",
+          "gram.ne.final": "ne stuprum a decemviro sustineret",
+          "gram.part.presente.activo": "rediens ad milites",
+          "gram.verbo.perfecto.indicativo.pasivo": "damnati sunt"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "I, 18",
+        "notes": "decemvir, -iri: decenviro. rediens: participio de presente de redeo."
+      },
+      {
+        "id": "b",
+        "title": "Efectos de un temporal",
+        "latin": "Itaque, tempore commutato, tempestas nostros texit et naves Rhodias afflixit, ita ut omnes naves constratae eliderentur et naufragio interirent, et ex magno remigum propugnatorumque numero pars ad scopulos allisa interficeretur, pars ab nostris detraheretur; quos omnes conservatos Caesar domum dimisit.",
+        "grammar": {
+          "gram.ablativo.absoluto": "tempore commutato",
+          "gram.ut.consecutiva": "ita ut omnes naves constratae eliderentur",
+          "gram.agente": "ab nostris detraheretur",
+          "gram.relativo.enlace": "quos omnes conservatos Caesar domum dimisit"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "Guerra civil",
+        "reference": "III, 27",
+        "notes": "nostros se refiere a los soldados de César. Rhodius, -a, -um: rodio."
+      }
+    ],
+    "session": "Ordinaria",
+    "url": "https://farmeandopau.com/examenes/navarra/latin/latin-2025-ordinaria-examen-es.pdf"
+  },
+  {
+    "id": "navarra-2025-extraordinaria",
+    "community": "Navarra",
+    "year": 2025,
+    "model": "Examen oficial",
+    "sha256": "a2acefe034f7d56ea4296cd133d70e207f6d2cf80add9d0e9beea954a890b85e",
+    "passages": [
+      {
+        "id": "a",
+        "title": "Muerte de Pompeyo",
+        "latin": "Victo Pompeio, castra eius direpta sunt. Ipse fugatus Alexandriam petiit, ut a rege Aegypti, cui tutor a senatu datus erat, acciperet auxilia. Is occidit Pompeium, caput eius et anulum Caesari misit. Quo conspecto, Caesar lacrimas fudit tanti viri caput intuens.",
+        "grammar": {
+          "gram.ablativo.absoluto": "Victo Pompeio",
+          "gram.ut.final": "ut a rege Aegypti, cui tutor a senatu datus erat, acciperet auxilia",
+          "gram.relativo": "cui tutor a senatu datus erat",
+          "gram.relativo.enlace": "Quo conspecto",
+          "gram.part.presente.activo": "tanti viri caput intuens"
+        },
+        "option": "A",
+        "author": "Eutropio",
+        "work": "Breviario",
+        "reference": "VI, 21",
+        "notes": "tutor, -oris: tutor, protector. intuens: participio de presente de intueor."
+      },
+      {
+        "id": "b",
+        "title": "Rendición de los galos vencidos",
+        "latin": "Cum ab eo oppido Caesar cum exercitu circiter milia passuum quinque abesset, omnes maiores natu, ex oppido exeuntes, manus ad Caesarem tendere coeperunt. Item, cum ad oppidum accessisset castraque ibi poneret, pueri mulieresque ex muro, passis manibus suo more, pacem ab Romanis petierunt.",
+        "grammar": {
+          "gram.cum.historico": "cum ad oppidum accessisset castraque ibi poneret",
+          "gram.part.presente.activo": "ex oppido exeuntes",
+          "gram.inf.presente.activo": "tendere coeperunt",
+          "gram.ablativo.absoluto": "passis manibus",
+          "gram.pron.posesivo": "suo more"
+        },
+        "option": "B",
+        "author": "Julio César",
+        "work": "Guerra de las Galias",
+        "reference": "II, 13",
+        "notes": "absum: distar. passus: participio de perfecto de pando, tender, extender."
+      }
+    ],
+    "session": "Extraordinaria",
+    "url": "https://farmeandopau.com/examenes/navarra/latin/latin-2025-extraordinaria-examen-es.pdf"
+  }
+]

@@ -8,6 +8,12 @@ export function integrateNotebook(source) {
   };
 
 
+  replace('        reviewWordImport(documents, failures, editionId);',
+    `        if (editionId && documents.length) prepareCollatinusForReview();
+        reviewWordImport(documents, failures, editionId);`);
+  replace('Solo se anticipa la preparación tras una acción docente de abrir etiquetas.',
+    'Solo se anticipa la preparación al abrir una revisión que usa Collatinus.');
+
   // Catalogue presentation belongs to the integrated app, not the pinned upstream.
   replace("import { openSupabaseSyncModal } from './supabase-sync-modal.js';\n", '');
   const syncStart = source.indexOf("    const sync = el('details', 'cuaderno-home-sync');");
@@ -81,13 +87,23 @@ export function integrateNotebook(source) {
 function renderHome() {`);
 
   source = "import { installPauCvSeed, pauCvIdentity, isVerifiedPauTag } from './atl-pau-cv-seed.js';\n" + source;
+  source = "import { installNationalSeed, isPristineNationalSeed } from './pau-national-seed.js';\n" +
+    "import nationalSeedSignatures from './atl-pau-national-signatures.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
+  source = "import { downloadTeacherTxtTemplate, readTeacherTxt } from './teacher-txt.js';\n" + source;
   replace('        await composer.open();\n        wireButtons();', `        await composer.open();
     try {
         if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus, grammarCatalogue: allGrammarTags })) await reload();
     } catch (error) {
         console.warn('Banco inicial PAU CV:', error);
         M.toast('No se ha podido incorporar el banco inicial PAU CV. Tus datos no se han modificado.', 7000);
+    }
+    try {
+        if (await installNationalSeed({ repo, loadCombinedCorpus, validateCorpus, grammarCatalogue: allGrammarTags,
+            signatures: nationalSeedSignatures })) await reload();
+    } catch (error) {
+        console.warn('Catálogo inicial de Selectividad:', error);
+        M.toast('No se ha podido cargar el catálogo inicial de Selectividad.', 7000);
     }
     wireButtons();`);
   source += `\nfunction openPauCvImport() {
@@ -109,6 +125,25 @@ function renderHome() {`);
         if (count) { await repo.save(next,current.revision);await reload();render(); }
         return count;
     }) });
+}
+`;
+  source = "import { importNationalPau } from './pau-national-import.js';\n" +
+    "import { appendNationalPassages } from './pau-national-storage.js';\n" + source;
+  source += `\nfunction openNationalPauImport() {
+    importNationalPau({modal:(...args)=>M.modal(...args),toast:message=>M.toast(message),
+      save:records=>writeSource(async()=>{
+        const current=await repo.load();
+        const existing=await loadCombinedCorpus();
+        const result=await appendNationalPassages(current.corpus,existing,records,
+          {upsertText,validateCorpus,now:new Date().toISOString()});
+        if (result.saved) {
+          await repo.save(result.corpus,current.revision);
+          await reload();
+          render();
+        }
+        return result;
+      })
+    });
 }
 `;
   source = "import { bankTagAssignable, bankTagVisible, isGrammarGrouping, isRetiredTag, compactGrammarTags, infinitiveId, isInfinitiveTag, matchesInfinitive, matchesSelectividad, selectividadLabel, selectividadSession, compareSelectividadYear } from './atl-bank-curriculum.js';\n" + source;
@@ -286,7 +321,8 @@ window.addEventListener('atl-view', () => {
     [corpus, notebooks] = await Promise.all([loadCombinedCorpus(), workspace.listEditions()]);
     if (previous) {
         const latinById = new Map(previous.texts.map(text => [text.id, text.latin]));
-        scheduleBankAnalysis(corpus.texts.filter(text => latinById.get(text.id) !== text.latin));
+        scheduleBankAnalysis(corpus.texts.filter(text => latinById.get(text.id) !== text.latin &&
+            !isPristineNationalSeed(text, nationalSeedSignatures)));
     }`);
   replace('    left.replaceChildren();', `    left.replaceChildren();
     left.dataset.atlReady = 'true';
@@ -316,7 +352,7 @@ window.addEventListener('atl-view', () => {
   replace("        title: nextNotebookTextTitle(composer.activeEdition()?.placements ?? []),\n        latin: fragment.text, author: fragment.author, work: fragment.obra, reference: fragment.cita,",
     "        title: nextNotebookTextTitle(composer.activeEdition()?.placements ?? []),\n        latin: fragment.text, author: fragment.author, work: fragment.obra, reference: fragment.cita,\n        origin: { kind: 'library', urn: fragment.urn },");
   replace('let next = upsertText(loaded.corpus, { ...data, id }, id, new Date().toISOString());',
-    `const ownVocabulary = current.teacherDocx && changedLatin ? glossary.read({ asOwn: true })
+    `const ownVocabulary = current.teacherDocx && changedLatin && !current.teacherDocx.nationalPau ? glossary.read({ asOwn: true })
                 : current.teacherDocx ? undefined : vocabulary;
             let next = upsertText(loaded.corpus, { ...data, id, origin: current.origin,
                 vocabulary: ownVocabulary ?? current.vocabulary }, id, new Date().toISOString());
@@ -355,9 +391,9 @@ window.addEventListener('atl-view', () => {
     };
     inputs.get('latin').addEventListener('input', updateEstimate);
     updateEstimate();
-    const exam = selectividadEditor(source.selectividad);
+    const exam = selectividadEditor(source.selectividad, {national:source.id.startsWith('pau.national.')});
     const sessionInfo = selectividadSession(source);
-    if (sessionInfo) exam.container.append(el('p', 'small muted', 'Convocatoria: ' + sessionInfo.label));
+    if (sessionInfo && !source.id.startsWith('pau.national.')) exam.container.append(el('p', 'small muted', 'Convocatoria: ' + sessionInfo.label));
     form.append(courseField, difficultyField, exam.container);
     const glossary = vocabularyEditor(source);
     form.append(glossary.section);
@@ -376,7 +412,7 @@ window.addEventListener('atl-view', () => {
                 JSON.stringify(data.courseIds) === JSON.stringify(current.courseIds ?? [])) {`);
   replace('const saveCopy = linked || (changedLatin && Boolean(current.teacherDocx));',
     `const saveCopy = linked && !same && !current.teacherDocx;
-            if (changedLatin && current.teacherDocx &&
+            if (changedLatin && current.teacherDocx && !current.teacherDocx.nationalPau &&
                 !window.confirm('Vas a modificar el texto latino importado de Word en esta misma ficha. ' +
                     'Las marcas y el vocabulario originales del DOCX dejarán de estar vinculados ' +
                     'a la nueva versión del texto. Los cuadernos ya creados conservarán su copia. ¿Continuar?')) return;`);
@@ -817,7 +853,7 @@ window.addEventListener('atl-view', () => {
         pendingIndex.clear();
         for (const [id, result] of saved) setAnalysis(id, result);
         if (activePointers.size) refreshResults(); else populate();
-        scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current), (text, review) => {
+        scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current && !isPristineNationalSeed(text, nationalSeedSignatures)), (text, review) => {
             if (!bank.isConnected) return;
             const live = currentBankText(text.id);
             if (!live || live.latin !== text.latin) return;

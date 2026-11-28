@@ -1,0 +1,366 @@
+[
+  {
+    "path": "PAU_Latin/andalucia/2019/andalucia-latin-pevau-2019-ordinaria.pdf",
+    "sha256": "51779d5bad9744d217c521148e98cc7a2549b32ee13c1d09c01dc37d76fc4bf8",
+    "passages": [
+      {
+        "option": "A",
+        "latinSha256": "d8439a1738a59afeba10cc3942bcb038ea7d67c38180dc3938a5005d1b8caf4a",
+        "morphology": []
+      },
+      {
+        "option": "B",
+        "latinSha256": "e3a88c9822c60272829a613810ba50ffae69c07057bb019b95ae74413c9af4ec",
+        "morphology": []
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/andalucia/2020/andalucia-latin-pevau-2020-ordinaria.pdf",
+    "sha256": "bcb55e48935133407f1e19c3121000790707c99ce288fe5ab7ac68fd8082966f",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/andalucia/2022/andalucia-latin-pevau-2022-extraordinaria.pdf",
+    "sha256": "87e5ccb30b727a2c551366b43990f9d5f0f4e663f327b49d02fc6cb0d7450791",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/andalucia/2025/andalucia-latin-pevau-2025-ordinaria.pdf",
+    "sha256": "7286550f76a1056ddd9acdc7d898a5fb08edd3ecc2d3decdb0e071a7cd98d64b",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2006/aragon-latin-selectividad-2006-extraordinaria.pdf",
+    "sha256": "f8bbc57f312fd240d0d7dfdcd317504a60d3e0351097496bc0d718c6106975bd",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2006/aragon-latin-selectividad-2006-ordinaria.pdf",
+    "sha256": "6668dc37a6b83d117f6186039d217c42a66cb1ad0f61ee04dd7d3bb88f423ff3",
+    "passages": [
+      {
+        "option": "A",
+        "latinSha256": "b7d01d378281a7ecf6c95ba7bbe6310d682d127535dc8a002e1e1cad39ccb8ae",
+        "morphology": [
+          "integebatur"
+        ]
+      },
+      {
+        "option": "B",
+        "latinSha256": "620ac6b0c35612584c7d248d5a2141fee77f0de62b4fc0b0607d06d7ce57a30e",
+        "morphology": [
+          "Da"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2012/aragon-latin-pau-2012-extraordinaria.pdf",
+    "sha256": "87bca2c1f46b4a3b6d9a3d8fa31e4712cb0b72e9c24ba54b297e3d390abc1cda",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2014/aragon-latin-pau-2014-ordinaria.pdf",
+    "sha256": "a2a94290f636a3de45caab77ffb547be0340e24acce889ea007cc80802baa6e1",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2015/aragon-latin-pau-2015-extraordinaria.pdf",
+    "sha256": "7f896678f8ffa23f99853593ad63bfde5bb84e3e5a6280ba16f4ad7bcf501a68",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2023/aragon-latin-evau-2023-extraordinaria.pdf",
+    "sha256": "89ea02b6d3db950eb59eaa75df93cba3510f374db62f8853df9cc26849bf61fd",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      },
+      {
+        "option": "C"
+      },
+      {
+        "option": "D"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2023/aragon-latin-evau-2023-ordinaria.pdf",
+    "sha256": "9c70a7c1e333290d3e9e85d125f360a81167d45ca87bae915363c2d2d84d8240",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      },
+      {
+        "option": "C"
+      },
+      {
+        "option": "D"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/aragon/2025/aragon-latin-evau-2025-extraordinaria.pdf",
+    "sha256": "fa5ee679f350a86ba31c4e265daf90d500044426ebb6ff334e8a2b14ea768c4b",
+    "passages": [
+      {
+        "option": ""
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/1999/asturias-latin-selectividad-1999-ordinaria.pdf",
+    "sha256": "ec255602833d8cd142097d1ed08195470a5b64d3383e6e46704bbc2d9e52311a",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2003/asturias-latin-selectividad-2003-extraordinaria.pdf",
+    "sha256": "5ccf736eee56fcfdfea003a03df92713711862f55f39b9a31ff1e75bae12305c",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2004/asturias-latin-selectividad-2004-ordinaria.pdf",
+    "sha256": "9cf717c6e2c1186670a2cb5170ec9e59ea172c74a33765c7400ab822f027db4e",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2005/asturias-latin-selectividad-2005-ordinaria.pdf",
+    "sha256": "473ae496e1352300c7df4d65dad707479754120acafc59d7c6798bf4dbf7ba71",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2007/asturias-latin-selectividad-2007-extraordinaria.pdf",
+    "sha256": "212872194d923f3049d3ee6cf8fb5c5c1022c1bdb0ff1ad1730fe92aa5183f39",
+    "passages": [
+      {
+        "option": "I",
+        "latinSha256": "6482d20b7dcb54ed60b4186a393fb126e7c065fd947c930ad824349a5149bc75",
+        "morphology": [
+          "bello",
+          "quarum",
+          "illis"
+        ]
+      },
+      {
+        "option": "II",
+        "latinSha256": "76bd223f3738718851bba6af9c0bd0a26508b19066eabd5bbb170afd344488cf",
+        "morphology": [
+          "Romae",
+          "premeretur",
+          "sibi"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2012/asturias-latin-pau-2012-extraordinaria.pdf",
+    "sha256": "a537027f8635388cdf5f42d4529f5be6005f1013453c65cc08747f299ec0c248",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2014/asturias-latin-pau-2014-ordinaria.pdf",
+    "sha256": "d6cfd6fa7c878572d791495546a480c33fab6a7025505964de755e370d49f135",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2019/asturias-latin-ebau-2019-extraordinaria.pdf",
+    "sha256": "5661e29c497d412266c829339a17b3caca8fb03d78ddd26abf7835f10a1252c8",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2023/asturias-latin-ebau-2023-extraordinaria.pdf",
+    "sha256": "2a28fa3c3933f57f3e352acb2313cc74d6d627ca3f18842dd38c5b0b0a404eeb",
+    "passages": [
+      {
+        "option": ""
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2023/asturias-latin-ebau-2023-ordinaria.pdf",
+    "sha256": "bdfffa19e77ea539c32dd60ac7cf6dde569d6b61b7c06ef0933340859836019f",
+    "passages": [
+      {
+        "option": ""
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/cantabria/2014/cantabria-latin-pau-2014-ordinaria.pdf",
+    "sha256": "d97f1732ab2c39b937352d0827afe262548db12602cb2a0fe02605d368fbde62",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/cantabria/2017/cantabria-latin-ebau-2017-ordinaria.pdf",
+    "sha256": "66fc7c5485c246800dcf83dc005a4dc590488a5e9fe9da865a5b81e6231c1332",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/cantabria/2019/cantabria-latin-ebau-2019-extraordinaria.pdf",
+    "sha256": "ecf053bffe82d20a11103ddd51db44f8de5b90464a8ad29be35b06036eaa835c",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/cantabria/2020/cantabria-latin-ebau-2020-ordinaria.pdf",
+    "sha256": "54fed3d3d6bd29ce92a592921aaf57c4563b3a19d4f1248402d613333488f0a2",
+    "passages": [
+      {
+        "option": "1",
+        "latinSha256": "d9b9b3e4532042918ecae33b87cf4fcec972b28e7a026deba6be1b6cd8f3977a",
+        "morphology": [
+          "suscepit",
+          "adiecit",
+          "periit"
+        ]
+      },
+      {
+        "option": "2",
+        "latinSha256": "9b774917e18e5663b0d552f4f89d63f0cd7d31a6ac256013b0699de96a11a34e",
+        "morphology": [
+          "occupaverant",
+          "occiso",
+          "attingunt",
+          "redegit"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/cantabria/2024/cantabria-latin-ebau-2024-extraordinaria.pdf",
+    "sha256": "caebedf341d4416e4551b9a1268cd8a7ba4f56061fec3df6eb85d2bd3f692cdf",
+    "passages": [
+      {
+        "option": "1"
+      },
+      {
+        "option": "2"
+      }
+    ]
+  }
+]

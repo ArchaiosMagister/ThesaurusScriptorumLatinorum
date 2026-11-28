@@ -188,7 +188,11 @@ export function selectividadSession(text) {
   const fallback = /^PAU CV\s*·\s*(.+?)\s+(\d{4})\s*·\s*Opción\s+([AB])\b/iu.exec(notes);
   const raw = match?.[2] ?? fallback?.[1];
   const option = (match?.[3] ?? fallback?.[3])?.toUpperCase();
-  if (!raw) return null;
+  if (!raw) {
+    const {session,model,series,option: nationalOption}=text.selectividad;
+    const label=[session,model,series&&'Serie '+series,nationalOption&&'Opción '+nationalOption].filter(Boolean).join(' · ');
+    return label?{kind:session,reserve:false,option:nationalOption,label}:null;
+  }
   const source = raw.trim().toLocaleLowerCase('es');
   const reserve = /\breserva\b/u.test(source);
   const name = source.replace(/\s*\(reserva\)\s*/gu,'').trim();

@@ -1,0 +1,68 @@
+[
+  {
+    "path": "PAU_Latin/asturias/1999/asturias-latin-selectividad-1999-extraordinaria.pdf",
+    "sha256": "9cf2116da346f54ac9ef6b7d5022772544a030dca41f12ef2c7f88140351125d",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2005/asturias-latin-selectividad-2005-extraordinaria.pdf",
+    "sha256": "83802f169fa1e52187413bb6282307853e9b61844778a0547790ea1a4206752c",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2010/asturias-latin-pau-2010-ordinaria.pdf",
+    "sha256": "f739abc180b9721bce1b9e22d447d0d3233acc677643d73abd6ae04ac835360d",
+    "passages": [
+      {
+        "option": "I"
+      },
+      {
+        "option": "II"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2017/asturias-latin-ebau-2017-extraordinaria.pdf",
+    "sha256": "310b3fffd0750b2273d097872ec62de8ab29f380e04b4c93d148682b367dc4ff",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2021/asturias-latin-ebau-2021-extraordinaria.pdf",
+    "sha256": "3c3697509663db91c8e21c7f204df4fba724cf711a4266a2ee71dad4c81c51cd",
+    "passages": [
+      {
+        "option": ""
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/asturias/2024/asturias-latin-ebau-2024-ordinaria.pdf",
+    "sha256": "b189b728d9fd902c74829c8d1e24692cdef0472b0c95191c5b62089d6f37a60d",
+    "passages": [
+      {
+        "option": ""
+      }
+    ]
+  }
+]

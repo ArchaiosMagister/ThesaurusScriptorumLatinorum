@@ -1,9 +1,12 @@
+import { isolateBank } from './isolated-bank.mjs';
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 const path='/ThesaurusScriptorumLatinorum/';
 const data=JSON.parse(await readFile(new URL('../scripts/pau-cv-seed-data.json',import.meta.url),'utf8'));
 const recent=data.find(row=>row.doc.pauCv==='2026 EXTRAORDINARIA / B').doc;
 const old=data.find(row=>row.doc.pauCv==='2006 JUNIO / B').doc;
+
+test.beforeEach(async ({context}) => isolateBank(context, ['national']));
 
 test('Examinator exporta PAU real con marcas compuestas y léxico original a Word y PDF',async({page})=>{
  test.setTimeout(120000);

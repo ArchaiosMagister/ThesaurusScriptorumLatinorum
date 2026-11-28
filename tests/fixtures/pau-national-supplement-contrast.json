@@ -1,0 +1,86 @@
+[
+  {
+    "path": "PAU_Latin/canarias/2020/canarias-latin-oficial-2020-extraordinaria.pdf",
+    "sha256": "2f1160fd78e6718f36b29c915af5c271a1c0816a6462333ce8c890c7faf0ace6",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/castilla-la-mancha/2016/castilla-la-mancha-latin-oficial-2016-ordinaria.pdf",
+    "sha256": "11d60d8d86e8b1bb91829e03405a6ed4cdd7641df87d6cb70ef1b81e0b503027",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/castilla-y-leon/2024/castilla-y-leon-latin-oficial-2024-ordinaria-2.pdf",
+    "sha256": "2911b4eb50c55dda92ae765bde72a854668d51381ab285a71f5f2c55935e1f39",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/la-rioja/2024/latin-2024-ordinaria-examen-criterios-es.pdf",
+    "sha256": "aad0aa1eaa43b472bed0b1e7b903b1610bf1b8404cb779163648e1917ccca500",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/madrid/2020/madrid-latin-oficial-2020-ordinaria.pdf",
+    "sha256": "10715d8485a96c4ce4747c19d3d03d3c79a2767f4d1d136000205c9c6c8957cc",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/murcia/2023/latin-2023-extraordinaria-examen-criterios-es.pdf",
+    "sha256": "40d3d85522d3b345090dfe1bb4d9530035f3d9e81f6bceff83ae1a6f02d9873e",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  },
+  {
+    "path": "PAU_Latin/pais-vasco/2016/pais-vasco-latin-oficial-2016-extraordinaria.pdf",
+    "sha256": "55b0cb5f504388c26d5c3bf408ea5e1b37284c2cca1e40d710ff8231b6bd41a0",
+    "passages": [
+      {
+        "option": "A"
+      },
+      {
+        "option": "B"
+      }
+    ]
+  }
+]

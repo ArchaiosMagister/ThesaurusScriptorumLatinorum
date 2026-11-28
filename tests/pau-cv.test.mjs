@@ -15,3 +15,51 @@ test('PAU CV 2026: léxico común, título castellano, subrayados y bases',()=>{
  assert.deepEqual(a.doc.lexical,b.doc.lexical);assert.deepEqual(a.doc.preverbBases,['habebant','instruit']);assert.deepEqual(a.doc.lexical.prefix,['pernoctar','preposición','transformar','circuncisión']);
  assert.throws(()=>morphologyMarks('Gallia est','fuit'.split(',')),/no localizada/);
 });
+
+test('PAU CV conserva las cuatro entradas de cada tabla lateral bilingüe',()=>{
+ const latin='Puella amicas uidit et ad uillam cum parentibus properat.';
+ const placed=(text,x,face)=>({...row(text),x,face});
+ const passage=label=>[
+   row('Opció '+label+' / Opción '+label),row('Un pasaje para traducir'),
+   row('(Autor, Obra I 2)'),
+   placed('Una nota de context en valencià /',125,'italics'),
+   placed('Una nota de contexto en castellano.',110,'italics'),
+   {...placed(latin,57,'latin'),smallUnderlines:['amicas','uidit','parentibus','properat']},
+   placed('Se ha de tener en cuenta esta nota.',105,'normal')
+ ];
+ const side=(text,prose='')=>({...row([text,prose].filter(Boolean).join(' ')),
+   firstCell:{x:67,text,separated:Boolean(prose)}});
+ const options=[row('CONVOCATORIA: JUNIO 2025 LATÍN II'),...passage('A'),...passage('B')];
+ const questions=[row('PREGUNTA 2'),row('PREGUNTA 3'),row('Qüestió A / Cuestión A:'),
+   side('sŏmnum','Aplique las NORMAS FONÉTICAS de evolución al castellano.'),
+   side('pŏpŭlum'),side('flammam','Explique las que intervienen.'),side('aurum'),
+   row('Qüestió B / Cuestión B:'),
+   side('interlineat / interlineado','Indique el PREFIJO DE ORIGEN LATINO.'),
+   side('preposició / preposición'),side('transformar'),side('circular'),
+   row('Qüestió C / Cuestión C:'),
+   side('plàcet / plácet','Explique el significado de las cuatro EXPRESIONES LATINAS y escriba una ORACIÓN.'),
+   side('in situ'),side('ex aequo'),side('post mortem'),
+   row('Qüestió D / Cuestión D:'),
+   row('Componga por modificación preverbial a partir de la base léxica de mittit y de la base léxica de ferunt.'),
+   row('PREGUNTA 4')];
+ const [a,b]=parsePauCvPages([options,questions]);
+ const rightCell=text=>({...row(text),firstCell:{x:215,right:500,text}});
+ const staggered=questions.flatMap(question=>{
+   if (!question.firstCell) return [question];
+   const cell=question.firstCell;
+   const term={...side(cell.text),firstCell:{x:67,right:140,text:cell.text}};
+   return cell.separated?[term,rightCell(question.text.slice(cell.text.length).trim()),
+     rightCell('Explique el significado o la evolución de las formas impresas.')]:[term];
+ });
+ const [offset]=parsePauCvPages([options,staggered]);
+ assert.deepEqual(offset.doc.lexical,a.doc.lexical);
+ assert.equal(a.doc.latin,latin);
+ assert.equal(b.doc.latin,latin);
+ assert.deepEqual(a.doc.underlines.map(mark=>mark.exact),['amicas','uidit','parentibus','properat']);
+ assert.deepEqual(a.doc.lexical.phonetics,['sŏmnum','pŏpŭlum','flammam','aurum']);
+ assert.deepEqual(a.doc.lexical.prefix,['interlineado','preposición','transformar','circular']);
+ assert.deepEqual(a.doc.lexical.latinism,['plácet','in situ','ex aequo','post mortem']);
+ assert.deepEqual(a.doc.preverbBases,['mittit','ferunt']);
+ assert.deepEqual(a.doc.lexical,b.doc.lexical);
+ assert.throws(()=>parsePauCvPages([options,questions.filter(r=>r.text!=='aurum')]),/cuatro términos de phonetics/);
+});

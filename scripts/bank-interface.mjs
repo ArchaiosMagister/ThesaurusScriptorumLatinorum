@@ -64,9 +64,13 @@ export function modernizeBank(source) {
   replace("    bankActions.append(button('Pegar en el banco', () => pasteText('bank'), 'hbtn primary'), button('Biblioteca latina', openLibrary, 'hbtn'), button('Importar Word al banco', () => importWord('bank'), 'hbtn'), button('Auditar textos repetidos', openDuplicateAudit, 'hbtn'));",
     `    const addActions = el('div', 'atl-bank-action-group');
     addActions.setAttribute('aria-label', 'Añadir textos');
+    const importDocuments = button('Importar Word al banco', () => importWord('bank'), 'hbtn');
+    importDocuments.title = 'Selecciona archivos Word o TXT';
     addActions.append(button('Pegar en el banco', () => pasteText('bank'), 'hbtn primary'),
-        button('Importar Word al banco', () => importWord('bank'), 'hbtn'),
+        importDocuments,
+        button('Descargar plantilla TXT', downloadTeacherTxtTemplate, 'hbtn'),
         button('Importar PDF · PAU CV', openPauCvImport, 'hbtn'),
+        button('Importar PDF · Selectividad', openNationalPauImport, 'hbtn'),
         button('Biblioteca latina', openLibrary, 'hbtn'));
     bankActions.append(addActions, button('Auditar textos repetidos', openDuplicateAudit, 'tbtn'));`);
   const from = source.indexOf("    bankToolbar.append(bankField('Buscar'");

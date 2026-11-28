@@ -11,7 +11,7 @@ export default defineConfig({
   projects: [
     { name: 'iPad', use: { viewport: { width: 820, height: 1180 }, hasTouch: true } },
     { name: 'escritorio', use: { viewport: { width: 1440, height: 900 } } },
-    { name: 'iPhone', testMatch: '**/latin-context.spec.mjs', use: { ...devices['iPhone 13'] } }
+    { name: 'iPhone', testMatch: ['**/latin-context.spec.mjs', '**/pau-national-import.spec.mjs', '**/teacher-txt.spec.mjs', '**/pau-national-seed.spec.mjs'], use: { ...devices['iPhone 13'] } }
   ],
   webServer: {
     command: 'node scripts/serve.mjs',

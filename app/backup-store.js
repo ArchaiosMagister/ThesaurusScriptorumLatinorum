@@ -2,6 +2,8 @@ import { saveRecoveryCopy } from './recovery-history.js';
 import { isTemplateKey, localTemplates, validateTemplate } from './curriculum-templates.js';
 import { applyBankReviewDecision } from './dropbox-plan.js';
 import { isPristineSeed } from './modulos/cuaderno-integrado/ui/atl-pau-cv-seed.js';
+import { isPristinePauFactory } from './modulos/cuaderno-integrado/ui/pau-national-seed.js';
+import nationalSeedSignatures from './modulos/cuaderno-integrado/ui/atl-pau-national-signatures.js';
 import { validateCorpus } from './modulos/cuaderno-integrado/core/validation.js';
 import { validateWorkspaceSnapshot } from './modulos/cuaderno-integrado/storage/workspace-repository.js';
 import { readBackup } from './modulos/cuaderno-integrado/core/backup.js';
@@ -11,6 +13,7 @@ import { bankReviewKey } from './modulos/cuaderno-integrado/ui/atl-bank-review.j
 import { partialFormat, partialTypes, subsetCorpus, mergeBank, parseProposals, tagChanges, validateTemplateRows } from './partial-backup.js';
 import { combineNotebookCorpora, createNotebookBackup, readWorkspaceBackup } from './modulos/cuaderno-integrado/storage/workspace-backup.js';
 
+const isFactoryCorpus = corpus => isPristinePauFactory(corpus, nationalSeedSignatures, isPristineSeed, allGrammarTags(corpus));
 const format = 'administrator-textorum-latinorum';
 export const maxBackupSize = 128 * 1024 * 1024;
 const schemas = {
@@ -271,7 +274,7 @@ export async function planRestore(payload) {
     // On a fresh installation only, the bundled corpus is a default, not
     // teacher data. A verified backup may replace it, with a guarded rollback.
     if (name === corpusName && stores.corpus?.length === 1 && existing.corpus.length === 1 &&
-        isPristineSeed(existing.corpus[0][1].corpus) && !equal(existing.corpus, stores.corpus)) {
+        isFactoryCorpus(existing.corpus[0][1].corpus) && !equal(existing.corpus, stores.corpus)) {
       pristineReplacement = { before: existing, after: { corpus: stores.corpus } };
       continue;
     }
@@ -531,7 +534,7 @@ export function isEmptySyncEditor(editor) {
   return syncNames.slice(0, 2).every(name => {
     const stores = editor[name];
     return !stores.editions?.length && !stores.history?.length && stores.corpus.every(([, { corpus }]) =>
-      (isPristineSeed(corpus) || (!corpus.pauCvSeedVersion && !corpus.texts.length && !corpus.tags.length && !corpus.notebooks.length)));
+      (isFactoryCorpus(corpus) || (!corpus.pauCvSeedVersion && !corpus.pauNationalSeedVersion && !corpus.texts.length && !corpus.tags.length && !corpus.notebooks.length)));
   });
 }
 
