@@ -102,3 +102,116 @@ test('Aragón: las cuatro opciones dejan fuera los fragmentos sintácticos y com
    assert.match(doc.warnings.join(' '),/ambigua: dux/u);
  }
 });
+
+test('Aragón histórico reconoce dos opciones sin incipits ni atribuciones fijas',()=>{
+ const latinA='Nautae tempestatem timebant et omnes procul ab insula fugerunt.';
+ const latinB='Magister pueros docuit et eos in scholam post meridiem uocauit.';
+ const row=(text,italic=false)=>({text,runs:[{italic}]});
+ const options=[
+   [row('OPCIÓN A'),row('Un grupo de marineros huye (Autor, Obra II 3).'),row(latinA,true),
+    row('1'),row('Notas'),row('tempestatem: tormenta.'),row('1. Traducción del texto.'),
+    row('2.1. Análisis morfológico de timebant (accidentes flexivos).'),
+    row('3. Análisis sintáctico del siguiente periodo.'),row(latinA,true)],
+   [row('OPCIÓN B'),row('Un maestro reúne a sus alumnos.'),row('Otra autora, Otra obra 4, 2'),
+    row(latinB,true),row('Notas:'),row('1. Traducción del texto.')]
+ ];
+ const result=recognizeNationalExam({pages:[[
+   row('Universidad'),row('CONVOCATORIA DE SEPTIEMBRE DE 2013'),row('Zaragoza'),
+   row('EJERCICIO DE: LATÍN II'),...options[0]],options[1]]});
+ assert.equal(result.metadata.community,'Aragón');
+ assert.equal(result.metadata.year,2013);
+ assert.equal(result.metadata.session,'Extraordinaria');
+ assert.deepEqual(result.records.map(item=>item.doc.latin),[latinA,latinB]);
+ assert.equal(result.records[0].doc.author,'Autor');
+ assert.equal(result.records[1].doc.author,'Otra autora');
+ assert.deepEqual(result.records[0].doc.underlines.map(mark=>mark.exact),['timebant']);
+ assert.ok(result.records.every(item=>item.requiresTranscriptReview));
+});
+
+test('un salto de página aragonés no entra en el pasaje y julio de 2020 se reconoce como ordinaria',()=>{
+ const row=text=>({text,runs:[]});
+ const sig='Elija una de las cuatro opciones propuestas A, B, C, D:';
+ const lines=['Universidad de Zaragoza','CONVOCATORIA DE JULIO DE 2020',
+   'EJERCICIO DE: LATÍN II','BLOQUE 1 (8 puntos)',sig];
+ for(const option of 'ABCD') lines.push('OPCIÓN '+option,'Contexto (Autor, Obra 1).',
+   'Pueri castra uident.', 'CONTINÚA AL DORSO','Ibi milites pugnant.','Notas:');
+ lines.push('BLOQUE 2 (1 punto)','BLOQUE 3 (1 punto)');
+ const result=recognizeNationalExam({pages:[lines.map(row)]});
+ assert.equal(result.metadata.session,'Ordinaria');
+ assert.equal(result.records.length,4);
+ assert.ok(result.records.every(item=>item.doc.latin==='Pueri castra uident.\nIbi milites pugnant.'));
+});
+
+test('Murcia histórico separa títulos de varias líneas y una columna sin glosas',()=>{
+ const row=(text,y,fontName='body',underline=false)=>({text,y,runs:[{fontName,start:0,end:text.length,underline}]});
+ const prompt='Las cuestiones 1, 2 y 3 se responden siempre sobre el mismo texto.';
+ const a='Nautae in portu manserunt et tandem in insulam uenerunt.';
+ const b='Pueri librum legerunt et ad scholam redire decreuerunt.';
+ const page=[
+   row('308 – LATÍN II',10),row('EBAU2024 - JULIO',20),row(prompt,30),
+   row('TEXTO A TEXTO B',40),row('Cuestión 1. Del texto seleccionado',150),
+   row('Cuestión 4. Explica la evolución fonética del latín al castellano',220),row('pŏpŭlum, fŏcum y sŏmnum',230)
+ ];
+ const columns=[
+   [row('ser siempre el mismo)',50),row('Llegada de los marineros',70,'title'),row(a,90),
+    row('Nauta, -ae: marinero.',115)],
+   [row('ser siempre el mismo)',50),row('Los alumnos deciden',70,'title'),
+    row('volver a la escuela',80,'title'),row(b,100)]
+ ];
+ const result=recognizeNationalExam({pages:[page],columns:[columns]});
+ assert.deepEqual(result.metadata,{community:'Región de Murcia',year:2024,session:'Extraordinaria',model:'Examen oficial'});
+ assert.deepEqual(result.records.map(item=>item.doc.latin),[a,b]);
+ assert.deepEqual(result.records.map(item=>item.doc.lexical.phonetics),
+   [['pŏpŭlum','fŏcum','sŏmnum'],['pŏpŭlum','fŏcum','sŏmnum']]);
+ assert.equal(result.records[1].notes,'Los alumnos deciden volver a la escuela');
+ assert.equal(result.records[0].doc.vocabulary.length,1);
+ assert.equal(result.records[1].doc.vocabulary.length,0);
+ assert.ok(result.records.every(item=>item.requiresTranscriptReview));
+});
+
+test('Asturias histórico conserva las alternativas del original y separa texto, glosas y preguntas',()=>{
+ const a='Nautae procul a portu fuerant, sed insulam laeti petiuerunt.';
+ const b='Puella uoces amicorum audiuit et libros domum portauit.';
+ const row=text=>({text,runs:[]});
+ const part=(label,body,form)=>[
+   'ALTERNATIVA '+label,'(Breve contexto del pasaje.)',body,'NOTA: uox: voz.',
+   '1. Traducción del texto.','2. CUESTIONES:',
+   '2.1.- Morfología: Analice morfológicamente “'+form+'”.',
+   '2.2.- Sintaxis: Repita la frase.','2.3.- Léxico: Explique la evolución fonética de nŏctem.',
+   '2.4.- Cuestión cultural: hable de literatura.'
+ ];
+ const result=recognizeNationalExam({pages:[[
+   'Universidad de Oviedo',...part('I',a,'insulam'),...part('II',b,'libros')
+ ].map(row)]});
+ assert.deepEqual(result.records.map(item=>item.option),['I','II']);
+ assert.deepEqual(result.records.map(item=>item.doc.latin),[a,b]);
+ assert.deepEqual(result.records.map(item=>item.doc.underlines[0].exact),['insulam','libros']);
+ assert.deepEqual(result.records[0].doc.lexical.phonetics,['nŏctem']);
+ assert.deepEqual(result.records[0].doc.vocabulary,[{headword:'uox',meaning:'voz.'}]);
+ assert.ok(result.records.every(item=>item.requiresTranscriptReview));
+});
+
+test('el modelo aragonés de 2027 reconoce la morfología explícita y omite el banco de distractores',()=>{
+ const row=text=>({text,runs:[]});
+ const page=[
+  'MODELO ORIENTATIVO DE EXAMEN 2027','EJERCICIO DE: LATÍN II','BLOQUE 1 (6 puntos)',
+  'Lea con detenimiento el siguiente texto.','Texto','Contexto (Autor, Obra 1.2).',
+  'Nautae procul navigaverunt et ad insulam pervenerunt.','Notas:','1. Traducción del texto.',
+  '2. Análisis morfológico.','2.1. Análisis morfológico de navigaverunt. Indíquese el modo.',
+  '3. Análisis sintáctico del siguiente período.','BLOQUE 2 (2 puntos)',
+  '4.1. Introduzca las expresiones latinas en los huecos.','in albis / sine die',
+  '4.2. Explique la evolución del latín al castellano.','a) cálidŭm b) capŭt','BLOQUE 3 (2 puntos)'
+ ].map(row);
+ const result=recognizeNationalExam({pages:[page]});
+ assert.deepEqual(result.metadata,{community:'Aragón',year:2027,session:'',model:'Modelo orientativo'});
+ assert.deepEqual(result.records[0].doc.underlines.map(mark=>mark.exact),['navigaverunt']);
+ assert.deepEqual(result.records[0].doc.lexical.phonetics,['cálidŭm','capŭt']);
+ assert.deepEqual(result.records[0].doc.lexical.latinism,[]);
+ const earlierPage=[
+  row('CONVOCATORIA ORDINARIA EXTRAORDINARIA DE 2025'),page[1],
+  row('BLOQUE 1 (6 puntos). Lea con detenimiento el siguiente texto.'),...page.slice(4)
+ ];
+ const earlier=recognizeNationalExam({pages:[earlierPage],advisoryModel:true});
+ assert.deepEqual(earlier.metadata,{community:'Aragón',year:2025,session:'',model:'Modelo orientativo'});
+ assert.equal(earlier.records.length,1);
+});

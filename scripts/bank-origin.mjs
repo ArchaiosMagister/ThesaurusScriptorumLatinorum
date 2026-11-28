@@ -4,21 +4,28 @@ function replace(source, from, to) {
 }
 
 export function integrateOriginValidation(source) {
-  source = replace(source, "['textRevisions']);", "['textRevisions', 'pauCvSeedVersion']);");
+  source = replace(source, "['textRevisions']);", "['textRevisions', 'pauCvSeedVersion', 'pauNationalSeedVersion']);");
   source = replace(source, "    uniqueIds(corpus.texts, 'texts');", `    if (data.pauCvSeedVersion !== undefined) {
         if (!Number.isSafeInteger(data.pauCvSeedVersion) || data.pauCvSeedVersion < 1)
             invalid('corpus.pauCvSeedVersion', 'versión de banco PAU CV inválida');
         corpus.pauCvSeedVersion = data.pauCvSeedVersion;
     }
+    if (data.pauNationalSeedVersion !== undefined) {
+        if (!Number.isSafeInteger(data.pauNationalSeedVersion) || data.pauNationalSeedVersion < 1)
+            invalid('corpus.pauNationalSeedVersion', 'versión de catálogo de Selectividad inválida');
+        corpus.pauNationalSeedVersion = data.pauNationalSeedVersion;
+    }
     corpus.texts = corpus.texts.map(normalizeSelectividadAuthor);
     uniqueIds(corpus.texts, 'texts');`);
-  source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv', 'nationalPau']);");
+  source = replace(source, "'vocabulary', 'lexical', 'preverbBases', 'warnings']);", "'vocabulary', 'lexical', 'preverbBases', 'warnings'], ['pauCv', 'nationalPau', 'textTemplate']);");
   source = replace(source, '  let preverbBases = null;', `  if (x.nationalPau !== undefined && (x.nationalPau !== true || x.pauCv !== undefined))
         invalid(path + '.nationalPau', 'identidad de Selectividad incompatible');
+    if (x.textTemplate !== undefined && (x.textTemplate !== true || x.nationalPau || x.pauCv !== undefined))
+        invalid(path + '.textTemplate', 'identidad de plantilla TXT incompatible');
     let preverbBases = null;`);
   source = replace(source, 'x.preverbBases.length !== 2', '!(x.nationalPau ? x.preverbBases.length > 0 && x.preverbBases.length <= 500 : x.preverbBases.length === 2)');
   source = replace(source, 'preverbBases = [', "preverbBases = x.nationalPau ? x.preverbBases.map((base, index) => nonBlank(base, path+'.preverbBases['+index+']',500)) : [");
-  source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }), ...(x.nationalPau ? { nationalPau:true } : {}) };");
+  source = replace(source, "preverbBases, warnings };", "preverbBases, warnings, ...(x.pauCv === undefined ? {} : { pauCv: nonBlank(x.pauCv, path + '.pauCv', 120) }), ...(x.nationalPau ? { nationalPau:true } : {}), ...(x.textTemplate ? { textTemplate:true } : {}) };");
   source = replace(source, "['notes', 'vocabulary', 'reviewed', 'teacherDocx']);",
     "['notes', 'vocabulary', 'reviewed', 'teacherDocx', 'origin', 'difficulty', 'selectividad', 'courseIds', 'pauCv']);");
   return "import { communities } from '../ui/atl-bank-curriculum.js';\n" + replace(source, "        ...(data.teacherDocx === undefined ? {} : { teacherDocx: teacherDocx(",
@@ -48,7 +55,7 @@ function studyCourses(value, path) {
     return value;
 }
 function selectividad(value, path) {
-    const entry = record(value, path, [], ['year', 'community', 'hecho', 'session', 'model', 'option']);
+    const entry = record(value, path, [], ['year', 'community', 'hecho', 'session', 'model', 'option', 'series', 'sourceUrl']);
     if (entry.hecho !== undefined && typeof entry.hecho !== 'boolean') invalid(path + '.hecho', 'estado de Selectividad inválido');
     if (entry.year !== undefined && (!Number.isInteger(entry.year) || entry.year < 1900 || entry.year > 2099))
         invalid(path + '.year', 'año de Selectividad inválido');
@@ -56,8 +63,17 @@ function selectividad(value, path) {
         invalid(path + '.community', 'comunidad de Selectividad inválida');
     if (entry.session !== undefined && !['Ordinaria','Extraordinaria'].includes(entry.session)) invalid(path+'.session','convocatoria inválida');
     if (entry.model !== undefined && !['Examen oficial','Modelo orientativo'].includes(entry.model)) invalid(path+'.model','tipo de examen inválido');
+    let sourceUrl;
+    if (entry.sourceUrl !== undefined) {
+        sourceUrl = nonBlank(entry.sourceUrl, path+'.sourceUrl', 1500);
+        let link;
+        try { link = new URL(sourceUrl); } catch { invalid(path+'.sourceUrl', 'URL del examen inválida'); }
+        if (link.protocol !== 'https:' || link.username || link.password) invalid(path+'.sourceUrl', 'URL del examen inválida');
+    }
     return { ...(entry.session && {session:entry.session}), ...(entry.model && {model:entry.model}),
         ...(entry.option !== undefined && {option:nonBlank(entry.option,path+'.option',120)}),
+        ...(entry.series !== undefined && {series:nonBlank(entry.series,path+'.series',50)}),
+        ...(sourceUrl && {sourceUrl}),
         ...(entry.year !== undefined && { year: entry.year }),
         ...(entry.community !== undefined && { community: entry.community }), ...(entry.hecho === true && { hecho: true }) };
 }

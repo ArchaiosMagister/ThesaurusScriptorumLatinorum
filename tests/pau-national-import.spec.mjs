@@ -85,3 +85,72 @@ test('lote de Selectividad, revisión manual, exclusión y duplicados',async({pa
   expect(document.xml).not.toContain('Latinismos:');
 
 });
+
+test('lote rechaza un HTML renombrado y avisa de copias idénticas',async({page})=>{
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame=page.frameLocator('#panel-cuaderno iframe');
+  const chooser=page.waitForEvent('filechooser');
+  await frame.getByRole('button',{name:'Importar PDF · Selectividad',exact:true}).click();
+  await (await chooser).setFiles([
+    {name:'examen.pdf',mimeType:'application/pdf',buffer:explicit},
+    {name:'copia.pdf',mimeType:'application/pdf',buffer:explicit},
+    {name:'descarga.pdf',mimeType:'text/html',buffer:Buffer.from('<!doctype html><title>Cuota diaria superada</title>')}
+  ]);
+  const modal=frame.locator('.modal').last();
+  await expect(modal.getByText('3 archivos · 2 fichas propuestas · 1 archivo con incidencias · 1 duplicado en el lote.')).toBeVisible();
+  await expect(modal.getByText('Archivo idéntico a «examen.pdf» en este lote.')).toBeVisible();
+  const invalid=modal.locator('section.atl-pau-pair').filter({hasText:'descarga.pdf'});
+  await expect(invalid.getByText(/El archivo contiene una página HTML/)).toBeVisible();
+  await expect(invalid.getByRole('link',{name:'Abrir PDF original'})).toHaveCount(0);
+  await expect(modal.getByRole('checkbox',{name:'Incluir ficha'})).toHaveCount(2);
+});
+
+test('el importador nacional lee el primer PDF después de preparar la PWA sin red',async({page},testInfo)=>{
+  test.setTimeout(120000);
+  const {createServer}=await import('node:http');
+  const {once}=await import('node:events');
+  let offline=false;
+  const server=createServer(async(request,response)=>{
+    if (offline) {response.writeHead(503).end();return;}
+    try {
+      const result=await fetch(new URL(request.url,testInfo.project.use.baseURL));
+      response.writeHead(result.status,{'Content-Type':result.headers.get('Content-Type')||'text/plain'});
+      response.end(Buffer.from(await result.arrayBuffer()));
+    } catch {response.writeHead(502).end();}
+  });
+  server.listen(0,'127.0.0.1');
+  await once(server,'listening');
+  try {
+    await page.goto('http://127.0.0.1:'+server.address().port+'/ThesaurusScriptorumLatinorum/');
+    await page.getByRole('button',{name:'Preparar sin conexión'}).click();
+    await expect(page.locator('#app-status')).toHaveText(/tres pestañas están preparadas/,{timeout:60000});
+    await expect.poll(()=>page.evaluate(()=>Boolean(navigator.serviceWorker.controller))).toBe(true);
+    offline=true;
+    await page.reload();
+    const frame=page.frameLocator('#panel-cuaderno iframe');
+    const chooser=page.waitForEvent('filechooser');
+    await frame.getByRole('button',{name:'Importar PDF · Selectividad',exact:true}).click();
+    await (await chooser).setFiles({name:'sin-red.pdf',mimeType:'application/pdf',buffer:explicit});
+    const modal=frame.locator('.modal').last();
+    await expect(modal.getByRole('textbox',{name:'Texto latino',exact:true}).first()).toHaveValue('Puer aquam portat.');
+    await expect(modal.getByRole('checkbox',{name:'Incluir ficha'})).toHaveCount(2);
+  } finally {server.close();}
+});
+
+test('un PDF histórico abre la revisión manual y ofrece propuestas a petición',async({page})=>{
+  await page.goto('/ThesaurusScriptorumLatinorum/');
+  const frame=page.frameLocator('#panel-cuaderno iframe');
+  const chooser=page.waitForEvent('filechooser');
+  await frame.getByRole('button',{name:'Importar PDF · Selectividad',exact:true}).click();
+  await (await chooser).setFiles({name:'historico.pdf',mimeType:'application/pdf',buffer:examPdf([
+    'Universidad de Oviedo','Convocatoria ordinaria 2024','LATÍN II',
+    'OPCIÓN A','Texto latino: Puer aquam portat.','Preguntas:','1. Analiza morfológicamente las palabras: aquam.'
+  ])});
+  const modal=frame.locator('.modal').last();
+  await expect(modal.getByText('Examen histórico. La importación se prepara manualmente.')).toBeVisible();
+  await expect(modal.getByRole('textbox',{name:'Texto extraído del PDF'})).toBeVisible();
+  await expect(modal.getByRole('checkbox',{name:'Incluir ficha'})).toHaveCount(0);
+  await modal.getByRole('button',{name:'Mostrar propuestas para cotejo'}).click();
+  await expect(modal.getByRole('textbox',{name:'Texto latino',exact:true})).toHaveValue('Puer aquam portat.');
+  await expect(modal.getByText(/1 ficha propuesta/)).toBeVisible();
+});

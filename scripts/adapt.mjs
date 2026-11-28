@@ -18,6 +18,7 @@ import { integrateMorphologyControls, integrateMorphologyEdition, integrateManua
 import { cp, readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { nationalSeedSignature, nationalSeedText } from './pau-national-seed.js';
 import { integrateNotebook } from './notebook-integration.mjs';
 import { integrateNotebookWorkflow, integrateEditionSourceRefresh } from './notebooks-phase.mjs';
 import { integrateOriginValidation, integrateOriginWrites } from './bank-origin.mjs';
@@ -187,19 +188,29 @@ export function lexicalValuesForDocument(option) {
     await writeFile(join(directory, 'ui', 'atl-bank-vocabulary.js'), bankVocabulary);
     await cp(new URL('./pau-cv-parser.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-parser.js'));
     await cp(new URL('./pau-cv-import.js', import.meta.url), join(directory, 'ui', 'atl-pau-cv-import.js'));
-    for (const file of ['pdf','parser','cyl','profiles','import','storage'])
+    for (const file of ['pdf','parser','cyl','profiles','historic','import','storage'])
       await cp(new URL('./pau-national-' + file + '.js', import.meta.url), join(directory, 'ui', 'pau-national-' + file + '.js'));
+    await cp(new URL('./teacher-txt.js', import.meta.url), join(directory, 'ui', 'teacher-txt.js'));
     const pauSeedData = await readFile(new URL('./pau-cv-seed-data.json', import.meta.url), 'utf8');
     const pauSeedScript = await readFile(new URL('./pau-cv-seed.js', import.meta.url), 'utf8');
     await writeFile(join(directory, 'ui', 'atl-pau-cv-seed.json'), pauSeedData);
     await writeFile(join(directory, 'ui', 'atl-pau-cv-seed.js'), pauSeedScript);
+    const nationalSeed = await readFile(new URL('./pau-national-seed-data.json', import.meta.url), 'utf8');
+    const signatures = Object.fromEntries(JSON.parse(nationalSeed).flatMap(exam => exam.passages.map(passage => {
+      const text = nationalSeedText(exam, passage);
+      return [text.id, nationalSeedSignature(text)];
+    })));
+    await cp(new URL('./pau-national-seed.js', import.meta.url), join(directory, 'ui', 'pau-national-seed.js'));
+    await writeFile(join(directory, 'ui', 'atl-pau-national-seed.json'), nationalSeed);
+    await writeFile(join(directory, 'ui', 'atl-pau-national-signatures.js'),
+      'export default ' + JSON.stringify(signatures) + ';\n');
     const applyFile = join(directory, 'core', 'docx-import-apply.js');
     let apply = await readFile(applyFile, 'utf8');
     const anchor = 'questions, vocabulary: vocab';
     if (!apply.includes(anchor)) throw Error('Revisar importación PAU CV.');
     apply = requiredPatch(apply, anchor, 'questions, vocabulary: vocab, ...(doc.pauCv ? { pauCv: doc.pauCv } : {})', 'Metadatos PAU CV');
     // Las bases de la PAU se mantienen como enunciado manual, sin IDs generados de otras bases.
-    apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
+    apply = requiredPatch(apply, "...(doc.preverbBases ? {", "...(doc.preverbBases ? {\n                    ...(doc.pauCv || doc.textTemplate ? { slots: [], preverbBaseIds: undefined, preverbBasesProtected: undefined } : {}),", 'Bases preverbiales PAU CV');
     apply = requiredPatches(apply, [
       [': base.text.markup;', ": doc.nationalPau ? base.text.markup.filter(mark => mark.kind !== 'morph-underline') : base.text.markup;"],
       ['return { ...q, words: doc.underlines.length ?', "return { ...q, ...(doc.nationalPau ? {enabled:Boolean(doc.underlines.length)} : {}), words: doc.underlines.length ?"],
@@ -212,7 +223,7 @@ export function lexicalValuesForDocument(option) {
       }
       if (o.kind === 'preverb') {`, 'Bases originales de Selectividad');
     apply = requiredPatch(apply, 'originals.slice(0, 4).map', '(doc.nationalPau ? originals : originals.slice(0,4)).map', 'Léxico original de Selectividad');
-    apply = requiredPatch(apply, 'for (const generated of o.slots) {', 'if (doc.nationalPau) return {...o,enabled:Boolean(actual.length),slots:actual};\n                for (const generated of o.slots) {', 'Opciones de Selectividad');
+    apply = requiredPatch(apply, 'for (const generated of o.slots) {', 'if (doc.nationalPau) return {...o,enabled:Boolean(actual.length),slots:actual};\n                if (doc.textTemplate && actual.length) return {...o,enabled:true,slots:actual};\n                for (const generated of o.slots) {', 'Opciones de Selectividad');
     apply = requiredPatch(apply, 'questions, vocabulary: vocab,', `questions:doc.nationalPau ? questions.map(q=>q.kind==='choice'
         ? {...q,enabled:q.options.some(option=>option.enabled),requiredCount:Math.max(1,Math.min(q.requiredCount,q.options.filter(option=>option.enabled).length))}
         : q.kind==='syntax' ? {...q,enabled:false} : q) : questions,
@@ -221,6 +232,14 @@ export function lexicalValuesForDocument(option) {
     const integrated = requiredPatches(requiredReplaceAll(
       integrateBankContextAcademic(integrateContextBank(composeNotebookSource(await readFile(file, 'utf8')))), './pwa-controls.js', './atl-pwa.js'), [
       ['./edition-app.js', './atl-edition.js'],
+      ["function reviewWordImport(documents, failures, editionId) {", "function reviewWordImport(documents, failures, editionId, format = 'Word') {"],
+      ["M.modal('Revisar importación Word', panel", "M.modal('Revisar importación ' + format, panel"],
+      ["M.modal('Resultado de la importación Word', report", "M.modal('Resultado de la importación ' + format, report"],
+      ["' textos Word guardados en el banco.'", "' textos guardados en el banco.'"],
+      ["picker.accept = '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document';",
+        "picker.accept = '.docx,.txt,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain';"],
+      ["data: await readTeacherDocx(file)", "data: await (/\\.txt$/iu.test(file.name) ? readTeacherTxt(file) : readTeacherDocx(file))"],
+      ["reviewWordImport(documents, failures, editionId);", "const txtCount = files.filter(file => /\\.txt$/iu.test(file.name)).length;\n        reviewWordImport(documents, failures, editionId, txtCount===0 ? 'Word' : txtCount===files.length ? 'TXT' : 'Word y TXT');"],
       ["button('Gestionar cuadernos', openNotebooks", "button('Todos los cuadernos', openNotebooks"]
     ], 'Entradas de Cuadernos');
     await writeFile(join(directory, 'ui', 'atl-repertorios.js'), requiredPatch(integrated,
@@ -376,6 +395,17 @@ export function lexicalValuesForDocument(option) {
             manual:true,atlOfficialVocabulary:true,head:entry.headword,trad:entry.meaning??'',note:'',on:true
           })));
         }
+      } else if (d.bank.textTemplate) {
+        const doc=d.bank.textTemplate;
+        S.atlPauLexical=true;
+        S.subr=[];
+        if (doc.underlines.length) S.atlPauMorph={text:d.text,underlines:doc.underlines,national:true};
+        S.prev=doc.preverbBases
+          ? doc.preverbBases.map((txt,k)=>({txt,n:k===0?3:2,rows:[],lplain:''}))
+          : [{txt:'',n:3,rows:[],lplain:''},{txt:'',n:2,rows:[],lplain:''}];
+        if (doc.lexical.phonetics.length) S.evol=doc.lexical.phonetics.map(w=>({w,g:''})); else P.evol(S);
+        if (doc.lexical.prefix.length) S.pref=[...doc.lexical.prefix]; else P.pref(S);
+        if (doc.lexical.latinism.length) S.latin=[...doc.lexical.latinism]; else P.latin(S);
       } else if (S.atlPauLexical && !d.bank.pau) {
         delete S.atlPauLexical;
         S.prev = [{ txt: '', n: 3, rows: [], lplain: '' }, { txt: '', n: 2, rows: [], lplain: '' }];
@@ -656,7 +686,8 @@ export function lexicalValuesForDocument(option) {
       additions.push('./atl-index.html', './atl-cuadernos.html', './atl-repertorios.html', '../ui/atl-repertorios.js', '../ui/atl-edition.js',
         '../ui/atl-pwa.js', '../ui/atl-bank-catalog.js', '../ui/atl-bank-review.js', '../ui/atl-bank-difficulty.js', '../ui/atl-bank-curriculum.js', '../ui/atl-bank-planner.js',
         '../ui/atl-bank-editorial-context.js', '../ui/atl-notebook-context.js', '../ui/atl-notebook-context-academic.js', '../../shared/latin-context-edit.js', '../../shared/latin-context-menu.js', '../../shared/latin-context-academic.js',
-        '../core/atl-marked-latin.js', '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../../shared/text-usage.js');
+        '../core/atl-marked-latin.js', '../ui/atl-bank-vocabulary.js', '../ui/atl-pau-cv-seed.js', '../ui/atl-pau-cv-seed.json', '../ui/pau-national-seed.js', '../ui/atl-pau-national-seed.json',
+        '../ui/atl-pau-national-signatures.js', '../ui/pau-national-storage.js', '../../shared/text-usage.js');
     }
     await writeFile(workerPath, requiredPatch(worker, marker, marker + additions.map(path => JSON.stringify(path)).join(',') + ',', workerPath));
   }

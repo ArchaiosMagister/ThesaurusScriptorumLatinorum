@@ -32,6 +32,8 @@ function field(parent,label,value,options={}) {
   return control;
 }
 
+// The active validation target starts with the 2026 exams and the published 2027 models.
+const firstCurrentYear = 2026;
 const lexicalFields = {
   phonetics:'Evolución fonética', prefix:'Prefijos', latinism:'Latinismos'
 };
@@ -157,7 +159,17 @@ export function importNationalPau({modal,save,toast}) {
     status.setAttribute('role','status');
     root.append(status);
     let saving=false;
-    const records=[],urls=[];
+    const records=[],urls=[],seen=new Map();
+    let duplicates=0, manual=0;
+    const summary=node('p');
+    const updateSummary=()=>{
+      summary.textContent=[
+        files.length+(files.length===1?' archivo':' archivos'),
+        records.length+(records.length===1?' ficha propuesta':' fichas propuestas'),
+        manual+(manual===1?' archivo con incidencias':' archivos con incidencias'),
+        duplicates+(duplicates===1?' duplicado en el lote.':' duplicados en el lote.')
+      ].join(' · ');
+    };
     const popup=modal('Importar PDF · Selectividad',root,[{label:'Cancelar'}],
       {width:'min(1000px,96vw)',noFocus:true,beforeClose:()=>{
         if (saving) return false;
@@ -165,24 +177,41 @@ export function importNationalPau({modal,save,toast}) {
         return true;
       }});
     const assets=new URL('../pdfjs/',import.meta.url);
-    for (const file of files) {
+    for (const [index,file] of files.entries()) {
       if (!root.isConnected) return;
+      status.textContent='Leyendo PDF '+(index+1)+' de '+files.length+'…';
       const section=node('section');
       section.className='atl-pau-pair';
       section.append(node('h3',file.name));
-      const original=node('a','Abrir PDF original');
-      original.href=URL.createObjectURL(file);
-      urls.push(original.href);
-      original.target='_blank';
-      original.rel='noopener noreferrer';
-      section.append(original);
       root.append(section);
       let extraction,result,digest='';
       try {
+        const header=new TextDecoder().decode(await file.slice(0,1024).arrayBuffer());
+        const html=/^\s*<(?:!doctype html|html)\b/iu.test(header);
+        if (html || !header.includes('%PDF-')) {
+          manual++;
+          section.append(node('p',html
+            ? 'El archivo contiene una página HTML. Vuelve a descargar el PDF del examen.'
+            : 'El archivo carece de una cabecera PDF válida.'));
+          continue;
+        }
         if (file.size<=24*1024*1024) {
           const hash=await crypto.subtle.digest('SHA-256',await file.arrayBuffer());
           digest=Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join('');
+          if (seen.has(digest)) {
+            duplicates++;
+            section.append(node('p','Archivo idéntico a «'+seen.get(digest)+'» en este lote.'));
+            continue;
+          }
+          seen.set(digest,file.name);
         }
+        if (!root.isConnected) return;
+        const original=node('a','Abrir PDF original');
+        original.href=URL.createObjectURL(file.slice(0,file.size,'application/pdf'));
+        urls.push(original.href);
+        original.target='_blank';
+        original.rel='noopener noreferrer';
+        section.append(original);
         const pdfjs=await import(new URL('pdf.mjs',assets).href);
         extraction=await extractNationalPdfPages(file,{pdfjs,
           workerSrc:new URL('pdf.worker.mjs',assets).href,assetRoot:assets.href});
@@ -210,7 +239,7 @@ export function importNationalPau({modal,save,toast}) {
       section.append(details);
       const selection=()=>source.value.slice(source.selectionStart,source.selectionEnd);
       const cards=node('div');
-      const add=record=>records.push(editCandidate(cards,record,selection,digest));
+      const add=record=>{records.push(editCandidate(cards,record,selection,digest));updateSummary();};
       section.append(button('Añadir pasaje manualmente',()=>{
         details.open=true;
         const selected=selection().trim();
@@ -219,8 +248,30 @@ export function importNationalPau({modal,save,toast}) {
         const sourceKey=JSON.stringify(['selection',view.value,source.selectionStart,source.selectionEnd,selected]);
         add({...result.metadata,...record,...(selected&&{source:sourceKey})});
       }),cards);
-      for (const record of result.records) add({...record,source:'profile:'+(record.option||'único')});
-      if (!result.records.length) details.open=true;
+      const {community,year}=result.metadata;
+      const isCurrent=Boolean(community&&(Number.isInteger(year)?year>=firstCurrentYear:
+        result.records.length && result.records.every(record=>record.currentLayout)));
+      const addProposals=()=> {
+        for (const record of result.records) add({...record,source:'profile:'+(record.option||'único')});
+      };
+      if (isCurrent && result.records.length) {
+        addProposals();
+        if (result.warnings.length || result.records.some(record=>
+          record.requiresTranscriptReview || record.doc.warnings.length)) manual++;
+      } else {
+        details.open=true;
+        manual++;
+        if (result.records.length) {
+          const expired=result.metadata.year && result.metadata.year<firstCurrentYear;
+          section.append(node('p',expired?'Examen histórico. La importación se prepara manualmente.'
+            :'Modelo vigente sin confirmar. La importación se prepara manualmente.'));
+          const suggest=button('Mostrar propuestas para cotejo',()=>{
+            suggest.remove();
+            addProposals();
+          });
+          section.append(suggest);
+        }
+      }
     }
     const submit=button('Guardar fichas seleccionadas',async()=>{
       if (saving) return;
@@ -244,7 +295,8 @@ export function importNationalPau({modal,save,toast}) {
       }
     });
     status.textContent='Revisa cada ficha con el PDF original antes de guardar.';
-    root.append(submit);
+    updateSummary();
+    root.append(summary,submit);
   });
   input.click();
 }

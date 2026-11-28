@@ -3,6 +3,12 @@ import { IndexedDbCorpusRepository } from '../cuaderno-integrado/storage/indexed
 import { foldLatin } from '../cuaderno-integrado/core/library.js';
 import { WorkspaceRepository } from '../cuaderno-integrado/storage/workspace-repository.js';
 import { combineNotebookCorpora } from '../cuaderno-integrado/storage/workspace-backup.js';
+import { validateCorpus } from '../cuaderno-integrado/core/validation.js';
+import { allGrammarTags } from '../cuaderno-integrado/core/grammar-tags.js';
+import { selectividadLabel } from '../cuaderno-integrado/ui/atl-bank-curriculum.js';
+import { installPauCvSeed } from '../cuaderno-integrado/ui/atl-pau-cv-seed.js';
+import { installNationalSeed } from '../cuaderno-integrado/ui/pau-national-seed.js';
+import nationalSeedSignatures from '../cuaderno-integrado/ui/atl-pau-national-signatures.js';
 import { findTextUses, loadUsageIndex, recordExam, savedExam, usageList } from '../shared/text-usage.js';
 
 const exam = window.M;
@@ -16,11 +22,21 @@ window.atlOpenRelated = async id => {
 };
 
 async function loadBank() {
-  const [historical, editorial] = await Promise.all([
-    new IndexedDbCorpusRepository().load(),
-    new WorkspaceRepository().loadCorpus()
-  ]);
-  return combineNotebookCorpora(editorial.corpus, historical.corpus);
+  const repo = new IndexedDbCorpusRepository();
+  const workspace = new WorkspaceRepository();
+  const loadCombinedCorpus = async () => {
+    const [historical, editorial] = await Promise.all([repo.load(), workspace.loadCorpus()]);
+    return combineNotebookCorpora(editorial.corpus, historical.corpus);
+  };
+  const options = {repo, loadCombinedCorpus, validateCorpus, grammarCatalogue:allGrammarTags};
+  for (const install of [installPauCvSeed, installNationalSeed]) {
+    try { await install({...options, signatures:nationalSeedSignatures}); }
+    catch (error) {
+      console.warn('Banco inicial de Selectividad:', error);
+      exam.toast('No se ha podido cargar el banco inicial de Selectividad.', 7000);
+    }
+  }
+  return loadCombinedCorpus();
 }
 
 function sourceData(text) {
@@ -30,7 +46,8 @@ function sourceData(text) {
     bank: { id: text.id, updatedAt: text.updatedAt, title: text.title,
       underlines: text.teacherDocx?.pauCv ? [] : text.editorialUnderlines ?? text.teacherDocx?.underlines ?? [],
       ...(text.teacherDocx?.pauCv ? { pau: text.teacherDocx } : {}),
-      ...(text.teacherDocx?.nationalPau ? { national: text.teacherDocx } : {}) }
+      ...(text.teacherDocx?.nationalPau ? { national: text.teacherDocx } : {}),
+      ...(text.teacherDocx?.textTemplate ? { textTemplate: text.teacherDocx } : {}) }
   };
 }
 
@@ -96,7 +113,7 @@ document.addEventListener('click', async event => {
     const panel = document.createElement('div');
     const search = document.createElement('input');
     search.type = 'search';
-    search.placeholder = 'Título, autor, obra, referencia o latín';
+    search.placeholder = 'Título, autor, latín o datos de Selectividad';
     search.setAttribute('aria-label', 'Buscar en el banco de textos');
     const status = document.createElement('p');
     status.setAttribute('role', 'status');
@@ -107,7 +124,7 @@ document.addEventListener('click', async event => {
     const compare = new Intl.Collator('es', { numeric: true, sensitivity: 'base' }).compare;
     const entries = corpus.texts.map(text => ({
       text,
-      key: foldLatin([text.title, text.latin, text.source.author, text.source.work, text.source.reference].join(' '))
+      key: foldLatin([text.title, text.latin, text.source.author, text.source.work, text.source.reference, selectividadLabel(text)].join(' '))
     })).sort((a, b) => compare(a.text.source.author, b.text.source.author) || compare(a.text.title, b.text.title));
     let limit = 50;
 
@@ -126,7 +143,14 @@ document.addEventListener('click', async event => {
         reference.textContent = [text.source.author, text.source.work, text.source.reference].filter(Boolean).join(' · ');
         const excerpt = document.createElement('i');
         excerpt.textContent = text.latin.length > 160 ? text.latin.slice(0, 160) + '…' : text.latin;
-        row.append(title, reference, excerpt);
+        row.append(title);
+        if (reference.textContent) row.append(reference);
+        if (text.selectividad) {
+          const examSource = document.createElement('span');
+          examSource.textContent = selectividadLabel(text);
+          row.append(examSource);
+        }
+        row.append(excerpt);
         row.addEventListener('click', async () => {
           const current = exam.S;
           const useText = () => {

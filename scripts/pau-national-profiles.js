@@ -1,24 +1,25 @@
 import { parseExplicitNationalRows, prepareNationalPassage, nationalMorphologyMarks } from './pau-national-parser.js';
 import { scanCastillaLeonRows, prepareCastillaLeonPassage } from './pau-national-cyl.js';
+import { recognizeHistoricExam } from './pau-national-historic.js';
 
 const institutions = [
   ['Comunidad Valenciana', /comunidad valenciana|comunitat valenciana|conselleria d.educaci[oó]/iu],
-  ['Andalucía', /andaluc[ií]a, ceuta, melilla/iu],
-  ['Aragón', /universidad de zaragoza|\bUNIZAR\b|ejercicio de: lat[ií]n ii.*lea con detenimiento el siguiente texto.*An[aá]lisis morfol[oó]gico del siguiente t[eé]rmino/iu],
-  ['Asturias', /universidad de oviedo|ejercicio 2 \(morfolog[ií]a\..*sede:.*ejercicio 1 \(traducci[oó]n\./iu],
-  ['Canarias', /universidad de la laguna|universidad de las palmas|distrito universitario de canarias|materia: lat[ií]n ii.*traducci[oó]n, comprensi[oó]n y an[aá]lisis de un texto.*1\.2 Morfolog[ií]a/iu],
-  ['Cantabria', /universidad de cantabria/iu],
-  ['Castilla-La Mancha', /castilla.la mancha|\bUCLM\b|realiza la traducci[oó]n de uno de estos textos:.*Texto A-.*Texto B-.*PREGUNTA 2 .*An[aá]lisis morfosint[aá]ctico/iu],
+  ['Andalucía', /andaluc[ií]a, ceuta, melilla|universidades de andaluc[ií]a/iu],
+  ['Aragón', /universidad de zaragoza|\bUNIZAR\b|universidad\b.{0,100}\bzaragoza\b.{0,50}ejercicio de: lat[ií]n ii|ejercicio de: lat[ií]n ii.*lea con detenimiento el siguiente texto.*An[aá]lisis morfol[oó]gico del siguiente t[eé]rmino/iu],
+  ['Asturias', /universidad de\s+oviedo|university\s+of\s*oviedo|ejercicio 2 \(morfolog[ií]a\..*sede:.*ejercicio 1 \(traducci[oó]n\./iu],
+  ['Canarias', /universidad de la laguna|universidad de las palmas|distrito universitario de canarias|fase general.*materia: lat[ií]n ii \(2\).*convocatoria:\s*j\s*u\s*l\s*i\s*o|materia: lat[ií]n ii.*traducci[oó]n, comprensi[oó]n y an[aá]lisis de un texto.*1\.2 Morfolog[ií]a/iu],
+  ['Cantabria', /universidad de cantabria|LOMCE [–-] (?:JUNIO|JULIO|SEPTIEMBRE) 20\d{2}.*PARTE 1\. \[8 PUNTOS\].*dos textos latinos/iu],
+  ['Castilla-La Mancha', /castilla.la mancha|\bUCLM\b|realiza la traducci[oó]n de uno de estos textos:.*Texto A-.*Texto B-.*PREGUNTA 2 .*An[aá]lisis morfosint[aá]ctico|bloque A vincula necesariamente la opci[oó]n del bloque B/iu],
   ['Castilla y León', /castilla y le[oó]n/iu],
   ['Cataluña', /generalitat de catalunya|llengua i cultura llatines.*s[eè]rie/iu],
   ['Comunidad de Madrid', /universidades p[uú]blicas de la comunidad de madrid/iu],
   ['Extremadura', /universidad de extremadura/iu],
   ['Galicia', /\bCIUG\b|comprensi[oó]n e interpretaci[oó]n de textos.*cuesti[oó]ns/iu],
-  ['Islas Baleares', /universitat de les illes balears|llat[ií] ii model \d.*indicau/iu],
-  ['La Rioja', /universidad.{0,25}de la rioja/iu],
+  ['Islas Baleares', /universitat de les illes balears|llat[ií] ii model \d.*indicau|prova d.acc[eé]s a la universitat.*llat[ií] ii.*triau una opci[oó]/iu],
+  ['La Rioja', /universidad.{0,25}de la rioja|universidad de la rioja/iu],
   ['Navarra', /universidad p[uú]blica de navarra/iu],
   ['País Vasco', /unibertsitatean sartzeko/iu],
-  ['Región de Murcia', /universidad de murcia|universidad polit[eé]cnica de cartagena|308 [–-] LAT[IÍ]N II.*PAU20\d{2}.*cuestiones 4 y 5 son comunes/iu]
+  ['Región de Murcia', /universidad de murcia|universidad polit[eé]cnica de cartagena|308 [–-] LAT[IÍ]N II.*PAU20\d{2}.*cuestiones 4 y 5 son comunes|208LAT[IÍ]N.*EBAU2021 - JUNIO.*cuestiones 4 y 5 son comunes/iu]
 ];
 
 const text = row => row.text;
@@ -188,7 +189,35 @@ function galicia(pages) {
       latinism:latinism?quoted(latinism.match.input+' '+join(latinism.rows)):[]}})];
 }
 
+function extremaduraCurrent(rows) {
+  const body=bounds(rows,/^Pregunta 1\.\s*Traducci[oó]n con diccionario.*Traduce el siguiente texto:/iu,
+    /^Pregunta 2\.\s*An[aá]lisis morfol[oó]gico/iu).filter(row=>!digits.test(row.text));
+  const citation=body[0]?.text.match(/^([^,]+),\s*([^\d]+?)\s+([\d, .–-]*\d)\.?$/u);
+  const contextEnd=body.findIndex(row=>/\]$/u.test(row.text));
+  if (!citation || !body[1]?.text.startsWith('[') || contextEnd<1)
+    throw Error('Confirma la cita y el contexto del pasaje extremeño.');
+  const first=contextEnd+1;
+  const noteAt=body.findIndex((row,index)=>index>first && row.x>body[first].x+10);
+  const latinRows=body.slice(first,noteAt<0?undefined:noteAt);
+  if (!latinRows.length || !/\.$/u.test(latinRows.at(-1).text))
+    throw Error('Confirma el final del pasaje extremeño.');
+  const morphology=bounds(rows,/^Pregunta 2\.\s*An[aá]lisis morfol[oó]gico.*Analiza morfol[oó]gicamente/iu,
+    /^Pregunta\s*3\.\s*An[aá]lisis sint[aá]ctico.*Analiza/iu);
+  const forms=morphology.flatMap(row=>row.text.match(/:\s*([\p{L}\p{M}]+(?: [\p{L}\p{M}]+)?)\s*\(0[,.]5 puntos\)/iu)?.slice(1)??[]);
+  const phonetics=bounds(rows,/^Pregunta\s*5\.\s*Evoluci[oó]n fon[eé]tica/iu,/^BLOQUE 3\./iu,{optional:true})
+    .flatMap(row=>row.text.match(/(?:del vocablo latino|remite al lat[ií]n) ([\p{L}\p{M}]+)\./iu)?.slice(1)??[]);
+  const vocabulary=noteAt<0?[]:body.slice(noteAt).flatMap(row=>{
+    const note=row.text.match(/^([^.!?]{1,50})\.\s+(.+)$/u);
+    return note?[{headword:note[1],meaning:note[2]}]:[];
+  });
+  return [{...passage({latinRows,notes:join(body.slice(1,first)),author:citation[1],work:citation[2],reference:citation[3],
+    forms,vocabulary,lexical:{phonetics},warnings:['Coteja las llamadas de nota y la puntuación con el PDF.']}),
+    requiresTranscriptReview:true}];
+}
+
 function extremadura(rows) {
+  if (rows.some(row=>/^Pregunta 1\.\s*Traducci[oó]n con diccionario.*Traduce el siguiente texto:/iu.test(row.text)))
+    return extremaduraCurrent(rows);
   const part=bounds(rows,/^1\.1\. TRADUCCI[ÓO]N CON DICCIONARIO DEL SIGUIENTE TEXTO/iu,/^1\.2\. AN[ÁA]LISIS MORFOL[ÓO]GICO/iu);
   const source=part[0].text.match(/^([^,]+),\s*(.+?)\s+([\d,.]+)\.$/u);
   const contextEnd=part.findIndex(row=>/\]$/u.test(row.text));
@@ -299,21 +328,25 @@ function cantabria(rows) {
 }
 
 function canarias(rows) {
-  const part=bounds(rows,/^1\. TRADUCCI[ÓO]N, COMPRENSI[ÓO]N Y AN[ÁA]LISIS/iu,/^2\. (?:EL )?L[ÉE]XICO\b/iu);
+  const part=bounds(rows,/^1\. TRADUCCI[ÓO]N, COMPRENSI[ÓO]N Y AN[ÁA]LISIS/iu,/^2\.? (?:EL )?L[ÉE]XICO\b/iu);
+  const withSeparateGlossary=/glosario adjunto a este examen/iu.test(join(rows.slice(0,25)));
   const options=numbered(part,/^OPCI[ÓO]N ([AB])$/u);
   if (options.length!==2) throw Error('Confirma los dos pasajes de traducción.');
   const etymon=rows.find(row=>/^2\.3 Explica la evoluci[oó]n fon[eé]tica al espa[nñ]ol de /iu.test(row.text))
     ?.text.match(/ de ([\p{L}\p{M}]+) \(/u)?.[1];
   return options.map(({match,rows:body})=>{
     const start=body.findIndex(row=>/^1\.1 Traducci[oó]n/iu.test(row.text));
-    const [contextAndLatin,glossary]=before(body.slice(start+1),/^NOTAS$/iu);
-    const {latinRows,notes}=separate(contextAndLatin,(row,first)=>Math.abs(row.size-first.size)<1);
+    const content=body.slice(start+1);
+    const [contextAndLatin,glossary]=before(content,withSeparateGlossary?/^1\.2 Morfolog[ií]a/iu:/^NOTAS$/iu);
+    const {latinRows,notes}=separate(contextAndLatin,withSeparateGlossary
+      ? (row,first)=>row.x>=first.x-3 : (row,first)=>Math.abs(row.size-first.size)<1);
     const morphology=bounds(body,/^1\.2 Morfolog[ií]a/iu,/^1\.3 Analiza/iu);
     const forms=morphology.map(text).filter(form=>new RegExp('^'+word+'$','u').test(form) &&
       latinRows.some(row=>row.text.toLowerCase().includes(form.toLowerCase())));
-    return passage({latinRows,notes,option:match[1],forms,lexical:{phonetics:etymon?[etymon]:[]},
-      vocabulary:notesVocabulary(glossary.slice(1,glossary.findIndex(row=>/^1\.2 Morfolog[ií]a/iu.test(row.text)))),
-      warnings:['Revisa las formas de la tabla y el apartado léxico compartido.']});
+    const item=passage({latinRows,notes,option:match[1],forms,lexical:{phonetics:etymon?[etymon]:[]},
+      vocabulary:withSeparateGlossary?[]:notesVocabulary(glossary.slice(1,glossary.findIndex(row=>/^1\.2 Morfolog[ií]a/iu.test(row.text)))),
+      warnings:[withSeparateGlossary?'Revisa las ocurrencias de la tabla y el glosario anexo.':'Revisa las formas de la tabla y el apartado léxico compartido.']});
+    return withSeparateGlossary ? {...item,currentLayout:true} : item;
   });
 }
 
@@ -392,12 +425,12 @@ function aragonPassage(rows, lexical, option='') {
   const context=join(part.slice(0,contextEnd+1));
   const source=context.match(/\s+\(([^,()]+?)(?:, ([^()]+?))? ((?:[IVXLCDM]+\s+)?\d[\d.\-]*)\)\.?$/u);
   if (contextEnd<0 || !source) throw Error('Confirma la contextualización y la referencia.');
-  const latinRows=part.slice(contextEnd+1).filter(row=>!/^[;," ]+$/u.test(row.text));
+  const latinRows=part.slice(contextEnd+1).filter(row=>!/^CONTIN[ÚU]A AL DORSO$/iu.test(row.text) && !/^[;," ]+$/u.test(row.text));
   const morphology=bounds(glossaryAndQuestions,/^2\. An[aá]lisis morfol[oó]gico\./iu,/^3\. An[aá]lisis sint[aá]ctico/iu,{optional:true});
   const forms=morphology.flatMap(row=>{
     const alternatives=row.text.match(/^[-–]([\p{L}\p{M} /]+)\s+\(/u)?.[1];
     if (alternatives) return alternatives.split('/').map(form=>form.trim());
-    return row.text.match(/^2\.[12]\. An[aá]lisis morfol[oó]gico de (?!un[oa] de\b)([\p{L}\p{M} ]+?)\s+\(/iu)?.slice(1)??[];
+    return row.text.match(/^2\.[12]\. An[aá]lisis morfol[oó]gico de (?!un[oa] de\b)([\p{L}\p{M} ]+?)(?=\s+\(|\.\s*(?:Ind[ií]quese|$))/iu)?.slice(1)??[];
   });
   const glossary=bounds(glossaryAndQuestions,/^Notas:$/iu,/^1\. Traducci[oó]n del texto\./iu,{optional:true});
   const vocabulary=glossary.flatMap(row=>{
@@ -472,28 +505,69 @@ function murcia(pages) {
   });
 }
 
+function murciaHistorical(page, columns) {
+  const afterHeading = page.findIndex(row=>/^TEXTO A TEXTO B$/iu.test(row.text));
+  const questions = page.findIndex((row,i)=>i>afterHeading && /^Cuesti[oó]n 1\./iu.test(row.text));
+  if (afterHeading<0 || questions<=afterHeading || columns.length!==2)
+    throw Error('Confirma los límites de las columnas murcianas.');
+  const phoneticsPrompt = page.findIndex((row,i)=>i>questions && /^Cuesti[oó]n 4\. Explica la evoluci[oó]n fon[eé]tica del lat[ií]n al castellano/iu.test(row.text));
+  const candidate = phoneticsPrompt<0 ? [] : page.slice(phoneticsPrompt+1,phoneticsPrompt+5)
+    .map(row=>terms(row.text.trim().replace(/\.$/u,'')))
+    .find(items=>items.length>=2 && items.every(item=>new RegExp('^'+word+'$','u').test(item)));
+  return ['A','B'].map((option,i)=>{
+    const beforeQuestions = columns[i].filter(row=>row.y>page[afterHeading].y && row.y<page[questions].y);
+    const instruction = beforeQuestions.findIndex(row=>/mismo\)$/iu.test(row.text));
+    const body=beforeQuestions.slice(instruction+1).filter(row=>!digits.test(row.text));
+    const titleFace=body[0]?.runs[0]?.fontName;
+    const start=body.findIndex(row=>row.runs[0]?.fontName!==titleFace);
+    if (instruction<0 || !titleFace || start<1 || start>3)
+      throw Error('Confirma el inicio de la traducción en ambas columnas.');
+    const glossaryAt=body.findIndex((row,index)=>index>start && /^[\p{L}\p{M}]+,\s*-/u.test(row.text));
+    const latinRows=body.slice(start,glossaryAt<0?undefined:glossaryAt);
+    if (!latinRows.length || latinRows.some(row=>row.runs[0]?.fontName!==latinRows[0].runs[0]?.fontName))
+      throw Error('Confirma el final de la traducción en ambas columnas.');
+    const glossary = glossaryAt<0 ? [] : join(body.slice(glossaryAt)).split(/\s*[;/]\s*/u).map(text=>({text}));
+    const item=typedMarks(passage({latinRows,notes:join(body.slice(0,start)),option,
+      vocabulary:notesVocabulary(glossary),lexical:{phonetics:candidate??[]},
+      warnings:['Coteja los límites de la columna y los términos subrayados con el PDF.']}),latinRows,'underline');
+    return {...item,requiresTranscriptReview:true};
+  });
+}
+
 export function recognizeNationalExam({pages,columns=[],info={},warnings=[],advisoryModel=false}) {
   const rows=pages.flat();
   const header=join(rows.slice(0,48))+' '+(info.Title??'')+' '+(info.Author??'');
-  const institutionsFound=institutions.filter(([,pattern])=>pattern.test(header) ||
-    (pattern.source==='universidad de cantabria' && rows.some(row=>/^Universidad de Cantabria\. \d{4}, PAU/u.test(row.text))));
+  const institutionsFound=institutions.filter(([name,pattern])=>pattern.test(header) ||
+    (name==='Extremadura' && rows.some(row=>/^Universidad de Extremadura · Prueba de Acceso/iu.test(row.text))) ||
+    (name==='Cantabria' && rows.some(row=>/^Universidad de Cantabria\. \d{4}, PAU/u.test(row.text))));
   // The Zaragoza seal is sometimes an image. Fall back to a corroborated
   // layout signature when the header supplies no textual institution.
+  const murciaLayout=rows.slice(0,15).some(row=>/^(?:[—–-]\s*)?(?:208\s*LAT[IÍ]N|308\s*[—–-]\s*LAT[IÍ]N II)/iu.test(row.text)) &&
+    /Las cuestiones 1, 2 y 3 se responden siempre sobre el mismo texto/iu.test(header) &&
+    rows.some(row=>/^TEXTO A TEXTO B$/iu.test(row.text));
   const aragonLayout=rows.slice(0,10).some(row=>aragonExercise.test(row.text)) &&
     rows.some(row=>/^4\.2\. Explique la evoluci[oó]n del lat[ií]n al castellano/iu.test(row.text)) &&
     (rows.some(row=>aragonFourOptions.test(row.text)) ||
-      (advisoryModel && rows.some(row=>/^BLOQUE 1 .*Lea con detenimiento el siguiente texto/iu.test(row.text))));
+      ((advisoryModel || /MODELO ORIENTATIVO DE EXAMEN/iu.test(header)) &&
+        /\bBLOQUE 1(?:\s*\(\d+\s+puntos\))?\.?\s+Lea con detenimiento el siguiente texto/iu.test(header)));
+  const andaluciaLayout = rows.slice(0, 12).some(row => /^PRUEBA DE ACCESO Y ADMISI[ÓO]N A LA\b/iu.test(row.text)) &&
+    rows.filter(row => /^1\. Traduzca el siguiente texto de .+\(valoraci[oó]n:/iu.test(row.text)).length === 2 &&
+    rows.filter(row => /^2\. Analice desde el punto de vista morfosint[aá]ctico la frase subrayada/iu.test(row.text)).length === 2;
   const community=institutionsFound.length===1?institutionsFound[0][0]:
-    !institutionsFound.length&&aragonLayout?'Aragón':'';
+    !institutionsFound.length?(aragonLayout?'Aragón':andaluciaLayout?'Andalucía':murciaLayout?'Región de Murcia':''):'';
   const period=header.match(/\b(20\d{2})\s*[–/-]\s*(20\d{2}|\d{2})\b/u);
-  const explicitYear=header.match(/(?:convocatoria (?:ordinaria|extraordinaria)(?:[\s/]+(?:ordinaria|extraordinaria))?(?: de)?|(?:junio|julio|septiembre)|ordin[aà]ria|propuesta \d+\/|convocat[oò]ria)\s*(20\d{2})\b/iu);
+  const explicitYear=header.match(/(?:modelo orientativo de examen|convocatoria (?:ordinaria|extraordinaria)(?:[\s/]+(?:ordinaria|extraordinaria))?(?: de)?|(?:junio|julio|septiembre)(?: de)?|ordin[aà]ria|propuesta \d+\/|convocat[oò]ria)\s*(20\d{2})\b/iu);
   const footerYear=rows.map(row=>row.text.match(/^LAT[IÍ]N II [–-] Ejercicio [–-].+\/(20\d{2})\b/iu)?.[1]).find(Boolean);
-  const repeatedYear=header.match(/\bPAU(20\d{2})\s*-/iu)?.[1];
+  const repeatedYear=header.match(/\b(?:PAU|EBAU)(20\d{2})\s*-/iu)?.[1];
   const year=repeatedYear?Number(repeatedYear):explicitYear?Number(explicitYear[1]):period?Number(period[2].padStart(4,period[1].slice(0,2))):footerYear?Number(footerYear):null;
   const alternativeCall=/\bconvocatoria (?:ordinaria[\s/]+extraordinaria|extraordinaria[\s/]+ordinaria)\b/iu.test(header);
+  // La ordinaria aragonesa de 2020 se aplazó a julio (BOA20200508010).
+  const july2020 = community === 'Aragón' && year === 2020 && /\bconvocatoria de julio de 2020\b/iu.test(header);
   const session = alternativeCall?'':/\b(?:convocatoria extraordinaria|prueba extraordinaria)\b/iu.test(header)?'Extraordinaria':
-    /\b(?:convocatoria ordinaria|prueba ordinaria|PAU ordin[àa]ria|ohikoa)\b/iu.test(header)||/\bPAU20\d{2}\s*-\s*JUNIO\b/iu.test(header)?'Ordinaria':'';
-  const model=advisoryModel||/\bmodelo\s*(?:0|orientativo)|\bmodelo de muestra\b/iu.test(header)?'Modelo orientativo':session?'Examen oficial':'';
+    /\b(?:convocatoria ordinaria|prueba ordinaria|PAU ordin[àa]ria|ohikoa)\b/iu.test(header)||july2020||/\b(?:PAU|EBAU|LOMCE)\s*20\d{2}\s*-\s*JUNIO\b/iu.test(header)||/\b(?:LOMCE\s*[–-]\s*JUNIO|CONVOCATORIA DE JUNIO)\b/iu.test(header)?'Ordinaria':/\b(?:CONVOCATORIA\s*:\s*J\s*U\s*L\s*I\s*O|CONVOCATORIA\s+DE\s+(?:JULIO|SEPTIEMBRE))\b/iu.test(header)||
+      community==='Región de Murcia'&&/\b(?:PAU|EBAU)20\d{2}\s*-\s*JULIO\b/iu.test(header)?'Extraordinaria':'';
+  const model=advisoryModel||/\bmodelo\s*(?:0|orientativo)|\bmodelo de muestra\b/iu.test(header)||
+    community==='Región de Murcia'&&/\bPAU20\d{2}\s*-\s*MODELO DE EXAMEN\b/iu.test(header)?'Modelo orientativo':session?'Examen oficial':'';
   const metadata={community,year,session,model};
   const valencianLexical=/\bComponga por modificaci[oó]n preverbial\b/iu.test(join(rows)) &&
     ['A','B','C','D'].every(option=>rows.some(row=>new RegExp('Cuesti[oó]n '+option+'\\s*:','iu').test(row.text)));
@@ -506,12 +580,22 @@ export function recognizeNationalExam({pages,columns=[],info={},warnings=[],advi
       'Islas Baleares':()=>baleares(pages), 'País Vasco':()=>paisVasco(pages),
       'Cantabria':()=>cantabria(rows), 'Canarias':()=>canarias(rows),
       'Castilla-La Mancha':()=>castillaLaMancha(rows), 'Asturias':()=>asturias(pages,columns),
-      'Navarra':()=>navarra(rows), 'Región de Murcia':()=>murcia(pages), 'Aragón':()=>aragon(rows)
+      'Navarra':()=>navarra(rows), 'Región de Murcia':()=>{
+        try { return murcia(pages); }
+        catch { return murciaHistorical(pages[0],columns[0]??[]); }
+      }, 'Aragón':()=>aragon(rows)
     };
     const profile=profiles[community];
     const explicit=rows.some(row=>/^texto latino\s*:/iu.test(row.text));
-    const records=(profile&&!explicit?profile():parseExplicitNationalRows(pages)).map(item=>({
-      ...metadata,...item,requiresTranscriptReview:['Navarra','Aragón'].includes(community),year:item.year??year,session:item.session||session,model:item.isModel?'Modelo orientativo':model
+    let raw;
+    try { raw = profile&&!explicit?profile():parseExplicitNationalRows(pages); }
+    catch (error) {
+      try { raw = recognizeHistoricExam(community,pages,columns); }
+      catch (historicError) { throw Error(error.message+' '+historicError.message); }
+      if (!raw) throw error;
+    }
+    const records=raw.map(item=>({
+      ...metadata,...item,requiresTranscriptReview:Boolean(item.requiresTranscriptReview || ['Navarra','Aragón'].includes(community)),year:item.year??year,session:item.session||session,model:item.isModel?'Modelo orientativo':model
     }));
     if (new Set(records.map(record=>record.option||'')).size!==records.length)
       throw Error('Hay opciones repetidas o sin identificar. Confirma los pasajes en el PDF.');

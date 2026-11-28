@@ -189,8 +189,8 @@ export function selectividadSession(text) {
   const raw = match?.[2] ?? fallback?.[1];
   const option = (match?.[3] ?? fallback?.[3])?.toUpperCase();
   if (!raw) {
-    const {session,model,option: nationalOption}=text.selectividad;
-    const label=[session,model,nationalOption&&'Opción '+nationalOption].filter(Boolean).join(' · ');
+    const {session,model,series,option: nationalOption}=text.selectividad;
+    const label=[session,model,series&&'Serie '+series,nationalOption&&'Opción '+nationalOption].filter(Boolean).join(' · ');
     return label?{kind:session,reserve:false,option:nationalOption,label}:null;
   }
   const source = raw.trim().toLocaleLowerCase('es');

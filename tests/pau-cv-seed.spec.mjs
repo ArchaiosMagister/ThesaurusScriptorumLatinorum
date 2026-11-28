@@ -1,5 +1,9 @@
 import {isolateAnalysis} from './isolated-analysis.mjs';
 import {expect,test} from '@playwright/test';
+import { isolateBank } from './isolated-bank.mjs';
+
+test.beforeEach(async ({context}) => isolateBank(context, ['national']));
+
 test('el banco inicial PAU CV se instala una vez, persiste y respeta las bajas',async({page})=>{
  await page.goto('/ThesaurusScriptorumLatinorum/');
  const frame=page.frameLocator('#panel-cuaderno iframe');
@@ -114,6 +118,7 @@ test('una copia integral con bajas PAU sustituye el banco de fábrica sin resuci
  const backup=await page.evaluate(async()=> (await import('./backup-store.js')).captureBackup());
  const context=await browser.newContext();
  await isolateAnalysis(context);
+ await isolateBank(context, ['national']);
  try {
   const target=await context.newPage();
   await target.goto(page.url());

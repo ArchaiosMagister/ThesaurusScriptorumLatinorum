@@ -46,7 +46,7 @@ export function selectividadEditor(value, {national=false}={}) {
   doneLabel.className = 'atl-pau-done';
   doneLabel.append(done, node('span', 'Hecho'));
   details.append(field('Año de Selectividad', year), field('Comunidad autónoma', community), doneLabel);
-  const session = node('select'), model = node('select'), option = node('input');
+  const session = node('select'), model = node('select'), option = node('input'), series = node('input');
   if (national) {
     community.querySelector('option[value="Comunidad Valenciana"]')?.remove();
     for (const item of ['', 'Ordinaria', 'Extraordinaria']) session.append(new Option(item||'Sin indicar',item));
@@ -54,9 +54,16 @@ export function selectividadEditor(value, {national=false}={}) {
     session.value=value?.session??'';
     model.value=value?.model??'';
     option.value=value?.option??'';
+    series.value=value?.series??'';
     details.append(field('Convocatoria',session),field('Tipo de examen',model),field('Opción',option));
+    if (value?.series) details.append(field('Serie', series));
   }
   const update = () => { details.hidden = !enabled.checked; };
+  if (value?.sourceUrl) {
+    const original = node('a', 'Consultar el examen original');
+    Object.assign(original, { href: value.sourceUrl, target: '_blank', rel: 'noopener noreferrer' });
+    details.append(original);
+  }
   enabled.addEventListener('change', update);
   update();
   container.append(node('legend', 'Procedencia de examen'), field('Selectividad', enabled), details);
@@ -65,7 +72,7 @@ export function selectividadEditor(value, {national=false}={}) {
     read() {
       if (!enabled.checked) return null;
       if (!year.validity.valid) throw Error('Introduce un año entero entre 1900 y 2099.');
-      const exam={session:session.value,model:model.value,option:option.value.trim()};
+      const exam={session:session.value,model:model.value,option:option.value.trim(),series:series.value.trim(),sourceUrl:value?.sourceUrl};
       return { ...Object.fromEntries(Object.entries(exam).filter(([,value])=>value)), ...(year.value ? { year: Number(year.value) } : {}), ...(community.value ? { community: community.value } : {}), ...(done.checked && { hecho: true }) };
     }
   };

@@ -87,13 +87,23 @@ export function integrateNotebook(source) {
 function renderHome() {`);
 
   source = "import { installPauCvSeed, pauCvIdentity, isVerifiedPauTag } from './atl-pau-cv-seed.js';\n" + source;
+  source = "import { installNationalSeed, isPristineNationalSeed } from './pau-national-seed.js';\n" +
+    "import nationalSeedSignatures from './atl-pau-national-signatures.js';\n" + source;
   source = "import { importPauCv } from './atl-pau-cv-import.js';\n" + source;
+  source = "import { downloadTeacherTxtTemplate, readTeacherTxt } from './teacher-txt.js';\n" + source;
   replace('        await composer.open();\n        wireButtons();', `        await composer.open();
     try {
         if (await installPauCvSeed({ repo, loadCombinedCorpus, validateCorpus, grammarCatalogue: allGrammarTags })) await reload();
     } catch (error) {
         console.warn('Banco inicial PAU CV:', error);
         M.toast('No se ha podido incorporar el banco inicial PAU CV. Tus datos no se han modificado.', 7000);
+    }
+    try {
+        if (await installNationalSeed({ repo, loadCombinedCorpus, validateCorpus, grammarCatalogue: allGrammarTags,
+            signatures: nationalSeedSignatures })) await reload();
+    } catch (error) {
+        console.warn('Catálogo inicial de Selectividad:', error);
+        M.toast('No se ha podido cargar el catálogo inicial de Selectividad.', 7000);
     }
     wireButtons();`);
   source += `\nfunction openPauCvImport() {
@@ -311,7 +321,8 @@ window.addEventListener('atl-view', () => {
     [corpus, notebooks] = await Promise.all([loadCombinedCorpus(), workspace.listEditions()]);
     if (previous) {
         const latinById = new Map(previous.texts.map(text => [text.id, text.latin]));
-        scheduleBankAnalysis(corpus.texts.filter(text => latinById.get(text.id) !== text.latin));
+        scheduleBankAnalysis(corpus.texts.filter(text => latinById.get(text.id) !== text.latin &&
+            !isPristineNationalSeed(text, nationalSeedSignatures)));
     }`);
   replace('    left.replaceChildren();', `    left.replaceChildren();
     left.dataset.atlReady = 'true';
@@ -842,7 +853,7 @@ window.addEventListener('atl-view', () => {
         pendingIndex.clear();
         for (const [id, result] of saved) setAnalysis(id, result);
         if (activePointers.size) refreshResults(); else populate();
-        scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current), (text, review) => {
+        scheduleBankAnalysis(corpus.texts.filter(text => !saved.get(text.id)?.current && !isPristineNationalSeed(text, nationalSeedSignatures)), (text, review) => {
             if (!bank.isConnected) return;
             const live = currentBankText(text.id);
             if (!live || live.latin !== text.latin) return;
